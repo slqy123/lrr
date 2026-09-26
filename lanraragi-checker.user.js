@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      MIT
-// @version      1.2.3
+// @version      1.2.4
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -196,6 +196,8 @@
             transition: left .22s ease, top .22s ease, width .22s ease, border-radius .22s ease, border-color .22s ease, box-shadow .2s ease;
         }
         .lrr-floating-panel.dragging { transition: none; }
+        .lrr-floating-panel.measuring,
+        .lrr-floating-panel.measuring * { transition: none !important; }
 
         .lrr-panel-header {
             display: flex;
@@ -1259,8 +1261,8 @@
 
     function expandTo(x, y) {
         const width = Math.min(260, window.innerWidth - 2 * PANEL_MARGIN);
-        // Transitions are paused so offsetHeight reports the expanded, not the collapsed, size.
-        panelEl.classList.add('dragging');
+        // Transitions are paused on the panel and its descendants so offsetHeight reports the expanded height.
+        panelEl.classList.add('measuring');
         setCollapsed(false);
         const height = panelEl.offsetHeight;
         const maxLeft = Math.max(PANEL_MARGIN, window.innerWidth - width - PANEL_MARGIN);
@@ -1270,7 +1272,7 @@
             : clamp(y, PANEL_MARGIN, maxTop);
         setPanelPos(clamp(x - width / 2, PANEL_MARGIN, maxLeft), top);
         gmSet('panelPos', panelPos);
-        requestAnimationFrame(function () { panelEl.classList.remove('dragging'); });
+        requestAnimationFrame(function () { panelEl.classList.remove('measuring'); });
     }
 
     function setCollapsed(collapsed) {
