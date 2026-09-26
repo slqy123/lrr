@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      MIT
-// @version      1.2.1
+// @version      1.2.2
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -1373,6 +1373,7 @@
                     <button type="button" class="lrr-btn lrr-btn-primary" id="lrr-copy">复制链接</button>
                     <button type="button" class="lrr-btn" id="lrr-clear">清除选择</button>
                     <button type="button" class="lrr-btn lrr-btn-blue" id="lrr-send">发送到队列</button>
+                    <button type="button" class="lrr-btn" id="lrr-open-backend">打开后端界面</button>
                 </div>
                 <div class="lrr-view" id="lrr-view-settings" style="display:none">
                     <div class="lrr-section">
@@ -1475,6 +1476,10 @@
                 onerror: function () { setStatus('无法连接队列服务器'); },
                 ontimeout: function () { setStatus('请求超时'); },
             });
+        });
+
+        panel.querySelector('#lrr-open-backend').addEventListener('click', function () {
+            window.open(CONFIG.queueServerUrl, '_blank', 'noopener');
         });
 
         makeDraggable(panel, header);
