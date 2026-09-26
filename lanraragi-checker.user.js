@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      MIT
-// @version      1.1.5
+// @version      1.1.6
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -950,12 +950,19 @@
         function tokens() { return input.value.split(/\s+/).filter(Boolean); }
 
         const ALL_CAT_BITS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512];
+        const ALL_AGES_BIT = 256;
+        const ALL_CATS = ALL_CAT_BITS.reduce(function (sum, bit) { return sum | bit; }, 0);
         let allAgesBase = null;
         let applyingCats = false;
 
         function getCats() {
             const el = document.getElementById('f_cats');
             return el ? (parseInt(el.value, 10) || 0) : 0;
+        }
+
+        // f_cats is the excluded-categories mask: a set bit means the category is off.
+        function isSelected(bit) {
+            return (getCats() & bit) === 0;
         }
 
         function setCats(mask) {
@@ -973,7 +980,7 @@
                 btn.classList.toggle('active', tokens().some(function (t) { return t.toLowerCase() === btn.dataset.lang; }));
             });
             box.querySelectorAll('[data-cat]').forEach(function (btn) {
-                btn.classList.toggle('active', (getCats() & parseInt(btn.dataset.cat, 10)) !== 0);
+                btn.classList.toggle('active', isSelected(parseInt(btn.dataset.cat, 10)));
             });
         }
 
@@ -993,12 +1000,12 @@
             const catBtn = e.target.closest('[data-cat]');
             if (catBtn) {
                 const bit = parseInt(catBtn.dataset.cat, 10);
-                if ((getCats() & bit) !== 0) {
-                    setCats(allAgesBase !== null ? allAgesBase : (getCats() & ~bit));
+                if (isSelected(bit)) {
+                    setCats(allAgesBase !== null ? allAgesBase : (getCats() | bit));
                     allAgesBase = null;
                 } else {
                     allAgesBase = getCats();
-                    setCats(bit);
+                    setCats(ALL_CATS & ~bit);
                 }
                 updateActive();
             }
