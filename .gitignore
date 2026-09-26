@@ -3,7 +3,7 @@ SPEC.md
 refs/
 __pycache__/
 .venv/
-tasks.db
+tasks.db*
 REFACTOR_PLAN.md
 web/dist/
 node_modules/

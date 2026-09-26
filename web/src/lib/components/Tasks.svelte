@@ -126,7 +126,7 @@
               {#if task.status === 'done' && task.lrr_archive_id}
                 <div class="text-xs text-muted">LRR: {task.title || task.lrr_archive_id}</div>
               {/if}
-              {#if task.error}
+              {#if task.error && (task.status === 'failed' || task.status === 'dead')}
                 <div class="text-xs text-err">{task.error}</div>
               {/if}
               {#if task.status === 'failed' && task.next_attempt_at > 0}

@@ -98,9 +98,15 @@ def recheck_with_urlfinder(lrr: LrrClient) -> int:
             log.warning("urlfinder recheck failed for task %s: %s", task.id, exc)
             continue
         new_status = Status.DONE.value if found else Status.DEAD.value
-        if new_status != task.status:
-            (Task.update(status=new_status, updated_at=time.time()).where(Task.id == task.id)).execute()
-            affected += 1
+        if new_status == task.status:
+            continue
+        now = time.time()
+        fields: dict[str, object] = {"status": new_status, "updated_at": now}
+        if new_status == Status.DONE.value:
+            fields["error"] = ""
+            fields["finished_at"] = task.finished_at or now
+        (Task.update(**fields).where(Task.id == task.id)).execute()
+        affected += 1
     return affected
 
 
