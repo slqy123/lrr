@@ -1,0 +1,15 @@
+[Unit]
+Description=LRR Queue Server
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=@PYTHON@ @DIR@/queue_server.py
+WorkingDirectory=@DIR@
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

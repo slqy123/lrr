@@ -1,0 +1,6 @@
+.env
+SPEC.md
+refs/
+__pycache__/
+.venv/
+tasks.db
