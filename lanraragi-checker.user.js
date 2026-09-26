@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      MIT
-// @version      1.1.9
+// @version      1.2.0
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -178,10 +178,11 @@
 
         .lrr-floating-panel {
             position: fixed;
-            right: 16px;
-            bottom: 16px;
+            right: 12px;
+            bottom: 12px;
+            box-sizing: border-box;
             width: 260px;
-            max-width: calc(100vw - 32px);
+            max-width: calc(100vw - 24px);
             background: #161616;
             color: #ddd;
             border: 1px solid #333;
@@ -192,8 +193,9 @@
             font-size: 13px;
             line-height: 1.4;
             overflow: hidden;
-            transition: width .22s ease, border-radius .22s ease, border-color .22s ease, box-shadow .2s ease;
+            transition: left .22s ease, top .22s ease, width .22s ease, border-radius .22s ease, border-color .22s ease, box-shadow .2s ease;
         }
+        .lrr-floating-panel.dragging { transition: none; }
 
         .lrr-panel-header {
             display: flex;
@@ -217,12 +219,13 @@
             transition: grid-template-rows .22s ease;
         }
         .lrr-panel-body-inner {
+            box-sizing: border-box;
             min-height: 0;
-            max-height: calc(100vh - 120px);
+            max-height: calc(100vh - 64px);
             overflow-y: auto;
             padding: 10px;
             opacity: 1;
-            transition: opacity .18s ease, padding .22s ease;
+            transition: opacity .18s ease;
         }
         .lrr-panel-body-inner::-webkit-scrollbar { width: 6px; }
         .lrr-panel-body-inner::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
@@ -300,14 +303,14 @@
         .lrr-status { margin-top: 8px; min-height: 16px; font-size: 12px; color: #888; }
 
         .lrr-floating-panel.collapsed { width: 46px; border-radius: 50%; border-color: #28a745; }
-        .lrr-floating-panel.collapsed .lrr-panel-header { height: 46px; padding: 0; justify-content: center; background: #28a745; }
+        .lrr-floating-panel.collapsed .lrr-panel-header { height: 44px; padding: 0; justify-content: center; background: #28a745; }
         .lrr-floating-panel.collapsed .lrr-panel-header:hover { background: #2fb350; }
         .lrr-floating-panel.collapsed .lrr-panel-title { display: none; }
         .lrr-floating-panel.collapsed .lrr-panel-count { display: none; }
         .lrr-floating-panel.collapsed .lrr-settings-btn { display: none; }
         .lrr-floating-panel.collapsed .lrr-panel-icon { display: flex; }
         .lrr-floating-panel.collapsed .lrr-panel-body { grid-template-rows: 0fr; }
-        .lrr-floating-panel.collapsed .lrr-panel-body-inner { opacity: 0; padding-top: 0; padding-bottom: 0; }
+        .lrr-floating-panel.collapsed .lrr-panel-body-inner { opacity: 0; }
 
         .lrr-checkbox-wrapper { display: inline-block; margin-right: 4px; line-height: 1; }
         .lrr-item-checkbox { display: none; }
@@ -1097,7 +1100,10 @@
     let statusEl = null;
     let itemCheckboxSeq = 0;
     let clampTimer = null;
-    let panelPos = { h: 'right', hOff: 16, v: 'bottom', vOff: 16 };
+    let panelPos = null;
+    const PANEL_MARGIN = 12;
+
+    function clamp(value, min, max) { return Math.min(Math.max(value, min), max); }
 
     function setStatus(text) {
         if (statusEl) statusEl.textContent = text || '';
@@ -1224,22 +1230,44 @@
         setStatus('已恢复默认');
     }
 
-    function applyPanelPos() {
-        if (!panelEl) return;
-        panelEl.style.left = panelPos.h === 'left' ? panelPos.hOff + 'px' : 'auto';
-        panelEl.style.right = panelPos.h === 'right' ? panelPos.hOff + 'px' : 'auto';
-        panelEl.style.top = panelPos.v === 'top' ? panelPos.vOff + 'px' : 'auto';
-        panelEl.style.bottom = panelPos.v === 'bottom' ? panelPos.vOff + 'px' : 'auto';
+    function setPanelPos(left, top) {
+        panelEl.style.left = left + 'px';
+        panelEl.style.top = top + 'px';
+        panelEl.style.right = 'auto';
+        panelEl.style.bottom = 'auto';
+        panelPos = { left: left, top: top };
     }
 
     function clampPanelPosition() {
-        if (!panelEl) return;
-        const maxH = Math.max(0, window.innerWidth - panelEl.offsetWidth);
-        const maxV = Math.max(0, window.innerHeight - panelEl.offsetHeight);
-        panelPos.hOff = Math.min(Math.max(0, panelPos.hOff), maxH);
-        panelPos.vOff = Math.min(Math.max(0, panelPos.vOff), maxV);
-        applyPanelPos();
+        if (!panelEl || !panelPos) return;
+        setPanelPos(
+            clamp(panelPos.left, PANEL_MARGIN, Math.max(PANEL_MARGIN, window.innerWidth - panelEl.offsetWidth - PANEL_MARGIN)),
+            clamp(panelPos.top, PANEL_MARGIN, Math.max(PANEL_MARGIN, window.innerHeight - panelEl.offsetHeight - PANEL_MARGIN))
+        );
         gmSet('panelPos', panelPos);
+    }
+
+    function collapseTo(x, y) {
+        const size = 46;
+        setPanelPos(
+            clamp(x - size / 2, PANEL_MARGIN, window.innerWidth - size - PANEL_MARGIN),
+            clamp(y - size / 2, PANEL_MARGIN, window.innerHeight - size - PANEL_MARGIN)
+        );
+        gmSet('panelPos', panelPos);
+        setCollapsed(true);
+    }
+
+    function expandTo(x, y) {
+        const inner = panelEl.querySelector('.lrr-panel-body-inner');
+        const width = Math.min(260, window.innerWidth - 2 * PANEL_MARGIN);
+        const bodyHeight = Math.min(inner.scrollHeight, window.innerHeight - 64);
+        const height = bodyHeight + 40;
+        setPanelPos(
+            clamp(x - width / 2, PANEL_MARGIN, window.innerWidth - width - PANEL_MARGIN),
+            clamp(y, PANEL_MARGIN, window.innerHeight - height - PANEL_MARGIN)
+        );
+        gmSet('panelPos', panelPos);
+        setCollapsed(false);
     }
 
     function setCollapsed(collapsed) {
@@ -1258,13 +1286,17 @@
         btn.textContent = settingsViewShown ? '←' : '⚙';
         btn.title = settingsViewShown ? '返回' : '设置';
         btn.classList.toggle('active', settingsViewShown);
+        if (panelPos) {
+            const maxTop = Math.max(PANEL_MARGIN, window.innerHeight - panelEl.offsetHeight - PANEL_MARGIN);
+            if (panelPos.top > maxTop) { setPanelPos(panelPos.left, maxTop); gmSet('panelPos', panelPos); }
+        }
     }
 
     function makeDraggable(panel, header) {
         let dragging = false;
         let moved = false;
         let suppressClick = false;
-        let startX = 0, startY = 0, startHOff = 0, startVOff = 0;
+        let startX = 0, startY = 0, startLeft = 0, startTop = 0;
 
         panel.addEventListener('mousedown', function (e) {
             if (e.button !== 0) return;
@@ -1274,10 +1306,11 @@
             const rect = panel.getBoundingClientRect();
             startX = e.clientX;
             startY = e.clientY;
-            startHOff = panelPos.h === 'left' ? rect.left : window.innerWidth - rect.right;
-            startVOff = panelPos.v === 'top' ? rect.top : window.innerHeight - rect.bottom;
+            startLeft = rect.left;
+            startTop = rect.top;
             moved = false;
             dragging = true;
+            panel.classList.add('dragging');
             e.preventDefault();
         });
 
@@ -1287,26 +1320,20 @@
             const dy = e.clientY - startY;
             if (!moved && Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
             moved = true;
-            const maxH = Math.max(0, window.innerWidth - panel.offsetWidth);
-            const maxV = Math.max(0, window.innerHeight - panel.offsetHeight);
-            panelPos.hOff = Math.min(Math.max(0, startHOff + (panelPos.h === 'left' ? dx : -dx)), maxH);
-            panelPos.vOff = Math.min(Math.max(0, startVOff + (panelPos.v === 'top' ? dy : -dy)), maxV);
-            applyPanelPos();
+            setPanelPos(
+                clamp(startLeft + dx, PANEL_MARGIN, window.innerWidth - panel.offsetWidth - PANEL_MARGIN),
+                clamp(startTop + dy, PANEL_MARGIN, window.innerHeight - panel.offsetHeight - PANEL_MARGIN)
+            );
         });
 
         document.addEventListener('mouseup', function () {
             if (!dragging) return;
             dragging = false;
+            panel.classList.remove('dragging');
             if (!moved) return;
             suppressClick = true;
             // click fires before this 0ms timeout, so the same interaction consumes the flag.
             setTimeout(function () { suppressClick = false; }, 0);
-            const rect = panel.getBoundingClientRect();
-            panelPos.h = (rect.left + rect.width / 2) < window.innerWidth / 2 ? 'left' : 'right';
-            panelPos.hOff = panelPos.h === 'left' ? rect.left : window.innerWidth - rect.right;
-            panelPos.v = (rect.top + rect.height / 2) < window.innerHeight / 2 ? 'top' : 'bottom';
-            panelPos.vOff = panelPos.v === 'top' ? rect.top : window.innerHeight - rect.bottom;
-            applyPanelPos();
             gmSet('panelPos', panelPos);
         });
 
@@ -1314,8 +1341,8 @@
             if (suppressClick) { suppressClick = false; e.preventDefault(); e.stopPropagation(); return; }
             const settingsBtn = panel.querySelector('.lrr-settings-btn');
             if (settingsBtn && settingsBtn.contains(e.target)) { toggleSettingsView(); return; }
-            if (panel.classList.contains('collapsed')) { setCollapsed(false); return; }
-            if (header.contains(e.target)) setCollapsed(true);
+            if (panel.classList.contains('collapsed')) { expandTo(e.clientX, e.clientY); return; }
+            if (header.contains(e.target)) collapseTo(e.clientX, e.clientY);
         });
     }
 
@@ -1379,12 +1406,14 @@
         statusEl = panel.querySelector('.lrr-status');
         const header = panel.querySelector('.lrr-panel-header');
 
-        const savedPos = gmGet('panelPos', null);
-        if (savedPos && typeof savedPos.h === 'string' && typeof savedPos.v === 'string') {
-            panelPos = { h: savedPos.h, hOff: savedPos.hOff, v: savedPos.v, vOff: savedPos.vOff };
-        }
         if (CONFIG.panelCollapsed) panel.classList.add('collapsed');
-        applyPanelPos();
+        const savedPos = gmGet('panelPos', null);
+        if (savedPos && typeof savedPos.left === 'number' && typeof savedPos.top === 'number') {
+            setPanelPos(savedPos.left, savedPos.top);
+        } else {
+            const rect = panel.getBoundingClientRect();
+            setPanelPos(rect.left, rect.top);
+        }
         clampPanelPosition();
         window.addEventListener('resize', function () {
             clearTimeout(clampTimer);
