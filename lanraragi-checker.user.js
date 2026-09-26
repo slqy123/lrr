@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      MIT
-// @version      1.2.4
+// @version      1.2.5
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -196,8 +196,6 @@
             transition: left .22s ease, top .22s ease, width .22s ease, border-radius .22s ease, border-color .22s ease, box-shadow .2s ease;
         }
         .lrr-floating-panel.dragging { transition: none; }
-        .lrr-floating-panel.measuring,
-        .lrr-floating-panel.measuring * { transition: none !important; }
 
         .lrr-panel-header {
             display: flex;
@@ -212,7 +210,6 @@
         }
         .lrr-panel-title { font-weight: 700; font-size: 13px; color: #fff; }
         .lrr-panel-count { margin-left: auto; font-size: 11px; color: #888; }
-        .lrr-panel-icon { display: none; align-items: center; justify-content: center; color: #fff; }
 
         .lrr-panel-body {
             display: grid;
@@ -227,7 +224,7 @@
             overflow-y: auto;
             padding: 10px;
             opacity: 1;
-            transition: opacity .18s ease;
+            transition: opacity .18s ease, padding .22s ease;
         }
         .lrr-panel-body-inner::-webkit-scrollbar { width: 6px; }
         .lrr-panel-body-inner::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
@@ -304,13 +301,6 @@
 
         .lrr-status { margin-top: 8px; min-height: 16px; font-size: 12px; color: #888; }
 
-        .lrr-floating-panel.collapsed { width: 46px; border-radius: 50%; border-color: #28a745; }
-        .lrr-floating-panel.collapsed .lrr-panel-header { height: 44px; padding: 0; justify-content: center; background: #28a745; }
-        .lrr-floating-panel.collapsed .lrr-panel-header:hover { background: #2fb350; }
-        .lrr-floating-panel.collapsed .lrr-panel-title { display: none; }
-        .lrr-floating-panel.collapsed .lrr-panel-count { display: none; }
-        .lrr-floating-panel.collapsed .lrr-settings-btn { display: none; }
-        .lrr-floating-panel.collapsed .lrr-panel-icon { display: flex; }
         .lrr-floating-panel.collapsed .lrr-panel-body { grid-template-rows: 0fr; }
         .lrr-floating-panel.collapsed .lrr-panel-body-inner { opacity: 0; padding-top: 0; padding-bottom: 0; }
 
@@ -1249,32 +1239,6 @@
         gmSet('panelPos', panelPos);
     }
 
-    function collapseTo(x, y) {
-        const size = 46;
-        setPanelPos(
-            clamp(x - size / 2, PANEL_MARGIN, window.innerWidth - size - PANEL_MARGIN),
-            clamp(y - size / 2, PANEL_MARGIN, window.innerHeight - size - PANEL_MARGIN)
-        );
-        gmSet('panelPos', panelPos);
-        setCollapsed(true);
-    }
-
-    function expandTo(x, y) {
-        const width = Math.min(260, window.innerWidth - 2 * PANEL_MARGIN);
-        // Transitions are paused on the panel and its descendants so offsetHeight reports the expanded height.
-        panelEl.classList.add('measuring');
-        setCollapsed(false);
-        const height = panelEl.offsetHeight;
-        const maxLeft = Math.max(PANEL_MARGIN, window.innerWidth - width - PANEL_MARGIN);
-        const maxTop = Math.max(PANEL_MARGIN, window.innerHeight - height - PANEL_MARGIN);
-        const top = y > window.innerHeight / 2
-            ? clamp(y - height, PANEL_MARGIN, maxTop)
-            : clamp(y, PANEL_MARGIN, maxTop);
-        setPanelPos(clamp(x - width / 2, PANEL_MARGIN, maxLeft), top);
-        gmSet('panelPos', panelPos);
-        requestAnimationFrame(function () { panelEl.classList.remove('measuring'); });
-    }
-
     function setCollapsed(collapsed) {
         panelEl.classList.toggle('collapsed', collapsed);
         CONFIG.panelCollapsed = collapsed;
@@ -1346,8 +1310,11 @@
             if (suppressClick) { suppressClick = false; e.preventDefault(); e.stopPropagation(); return; }
             const settingsBtn = panel.querySelector('.lrr-settings-btn');
             if (settingsBtn && settingsBtn.contains(e.target)) { toggleSettingsView(); return; }
-            if (panel.classList.contains('collapsed')) { expandTo(e.clientX, e.clientY); return; }
-            if (header.contains(e.target)) collapseTo(e.clientX, e.clientY);
+            if (header.contains(e.target)) setCollapsed(!panel.classList.contains('collapsed'));
+        });
+
+        panel.querySelector('.lrr-panel-body').addEventListener('transitionend', function (e) {
+            if (e.propertyName === 'grid-template-rows' && !panel.classList.contains('collapsed')) clampPanelPosition();
         });
     }
 
@@ -1356,9 +1323,6 @@
         panel.className = 'lrr-floating-panel';
         panel.innerHTML = `
             <div class="lrr-panel-header">
-                <span class="lrr-panel-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
-                </span>
                 <span class="lrr-panel-title">LRR</span>
                 <span class="lrr-panel-count"></span>
                 <button type="button" class="lrr-settings-btn" id="lrr-settings-btn" title="设置">⚙</button>
