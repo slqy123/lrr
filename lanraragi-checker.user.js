@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      MIT
-// @version      1.1.4
+// @version      1.1.5
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -949,13 +949,31 @@
 
         function tokens() { return input.value.split(/\s+/).filter(Boolean); }
 
+        const ALL_CAT_BITS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512];
+        let allAgesBase = null;
+        let applyingCats = false;
+
+        function getCats() {
+            const el = document.getElementById('f_cats');
+            return el ? (parseInt(el.value, 10) || 0) : 0;
+        }
+
+        function setCats(mask) {
+            applyingCats = true;
+            ALL_CAT_BITS.forEach(function (bit) {
+                if (((getCats() & bit) !== 0) === ((mask & bit) !== 0)) return;
+                const el = document.getElementById('cat_' + bit);
+                if (el) el.click();
+            });
+            applyingCats = false;
+        }
+
         function updateActive() {
             box.querySelectorAll('[data-lang]').forEach(function (btn) {
                 btn.classList.toggle('active', tokens().some(function (t) { return t.toLowerCase() === btn.dataset.lang; }));
             });
             box.querySelectorAll('[data-cat]').forEach(function (btn) {
-                const el = document.getElementById('cat_' + btn.dataset.cat);
-                btn.classList.toggle('active', !!el && !el.hasAttribute('data-disabled'));
+                btn.classList.toggle('active', (getCats() & parseInt(btn.dataset.cat, 10)) !== 0);
             });
         }
 
@@ -974,10 +992,30 @@
             if (langBtn) { toggleLang(langBtn.dataset.lang); updateActive(); return; }
             const catBtn = e.target.closest('[data-cat]');
             if (catBtn) {
-                const el = document.getElementById('cat_' + catBtn.dataset.cat);
-                if (el) el.click();
+                const bit = parseInt(catBtn.dataset.cat, 10);
+                if ((getCats() & bit) !== 0) {
+                    setCats(allAgesBase !== null ? allAgesBase : (getCats() & ~bit));
+                    allAgesBase = null;
+                } else {
+                    allAgesBase = getCats();
+                    setCats(bit);
+                }
                 updateActive();
             }
+        });
+
+        // Manual category changes while the preset is active fold into its saved state and end the preset.
+        document.addEventListener('click', function (e) {
+            if (applyingCats || allAgesBase === null) return;
+            const el = e.target.closest && e.target.closest('[id^="cat_"]');
+            if (!el) return;
+            const bit = parseInt(el.id.slice(4), 10);
+            if (ALL_CAT_BITS.indexOf(bit) === -1) return;
+            if ((getCats() & bit) !== 0) allAgesBase |= bit; else allAgesBase &= ~bit;
+            const base = allAgesBase;
+            allAgesBase = null;
+            setCats(base);
+            updateActive();
         });
 
         function open() { updateActive(); box.classList.add('open'); }
