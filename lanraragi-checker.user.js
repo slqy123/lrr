@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      MIT
-// @version      1.1.8
+// @version      1.1.9
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -181,7 +181,7 @@
             right: 16px;
             bottom: 16px;
             width: 260px;
-            max-width: calc(100vw - 24px);
+            max-width: calc(100vw - 32px);
             background: #161616;
             color: #ddd;
             border: 1px solid #333;
@@ -218,7 +218,7 @@
         }
         .lrr-panel-body-inner {
             min-height: 0;
-            max-height: 70vh;
+            max-height: calc(100vh - 120px);
             overflow-y: auto;
             padding: 10px;
             opacity: 1;
@@ -1097,6 +1097,7 @@
     let statusEl = null;
     let itemCheckboxSeq = 0;
     let clampTimer = null;
+    let panelPos = { h: 'right', hOff: 16, v: 'bottom', vOff: 16 };
 
     function setStatus(text) {
         if (statusEl) statusEl.textContent = text || '';
@@ -1223,23 +1224,28 @@
         setStatus('已恢复默认');
     }
 
+    function applyPanelPos() {
+        if (!panelEl) return;
+        panelEl.style.left = panelPos.h === 'left' ? panelPos.hOff + 'px' : 'auto';
+        panelEl.style.right = panelPos.h === 'right' ? panelPos.hOff + 'px' : 'auto';
+        panelEl.style.top = panelPos.v === 'top' ? panelPos.vOff + 'px' : 'auto';
+        panelEl.style.bottom = panelPos.v === 'bottom' ? panelPos.vOff + 'px' : 'auto';
+    }
+
     function clampPanelPosition() {
-        if (!panelEl || !panelEl.style.left) return;
-        const maxLeft = Math.max(0, window.innerWidth - panelEl.offsetWidth);
-        const maxTop = Math.max(0, window.innerHeight - panelEl.offsetHeight);
-        const left = Math.min(Math.max(0, parseFloat(panelEl.style.left) || 0), maxLeft);
-        const top = Math.min(Math.max(0, parseFloat(panelEl.style.top) || 0), maxTop);
-        panelEl.style.left = left + 'px';
-        panelEl.style.top = top + 'px';
-        gmSet('panelPos', { left: left, top: top });
+        if (!panelEl) return;
+        const maxH = Math.max(0, window.innerWidth - panelEl.offsetWidth);
+        const maxV = Math.max(0, window.innerHeight - panelEl.offsetHeight);
+        panelPos.hOff = Math.min(Math.max(0, panelPos.hOff), maxH);
+        panelPos.vOff = Math.min(Math.max(0, panelPos.vOff), maxV);
+        applyPanelPos();
+        gmSet('panelPos', panelPos);
     }
 
     function setCollapsed(collapsed) {
         panelEl.classList.toggle('collapsed', collapsed);
         CONFIG.panelCollapsed = collapsed;
         gmSet('panelCollapsed', collapsed);
-        clearTimeout(clampTimer);
-        clampTimer = setTimeout(clampPanelPosition, 240);
     }
 
     let settingsViewShown = false;
@@ -1258,7 +1264,7 @@
         let dragging = false;
         let moved = false;
         let suppressClick = false;
-        let startX = 0, startY = 0, startLeft = 0, startTop = 0;
+        let startX = 0, startY = 0, startHOff = 0, startVOff = 0;
 
         panel.addEventListener('mousedown', function (e) {
             if (e.button !== 0) return;
@@ -1268,8 +1274,8 @@
             const rect = panel.getBoundingClientRect();
             startX = e.clientX;
             startY = e.clientY;
-            startLeft = rect.left;
-            startTop = rect.top;
+            startHOff = panelPos.h === 'left' ? rect.left : window.innerWidth - rect.right;
+            startVOff = panelPos.v === 'top' ? rect.top : window.innerHeight - rect.bottom;
             moved = false;
             dragging = true;
             e.preventDefault();
@@ -1281,12 +1287,11 @@
             const dy = e.clientY - startY;
             if (!moved && Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
             moved = true;
-            const maxLeft = Math.max(0, window.innerWidth - panel.offsetWidth);
-            const maxTop = Math.max(0, window.innerHeight - panel.offsetHeight);
-            panel.style.right = 'auto';
-            panel.style.bottom = 'auto';
-            panel.style.left = Math.min(Math.max(0, startLeft + dx), maxLeft) + 'px';
-            panel.style.top = Math.min(Math.max(0, startTop + dy), maxTop) + 'px';
+            const maxH = Math.max(0, window.innerWidth - panel.offsetWidth);
+            const maxV = Math.max(0, window.innerHeight - panel.offsetHeight);
+            panelPos.hOff = Math.min(Math.max(0, startHOff + (panelPos.h === 'left' ? dx : -dx)), maxH);
+            panelPos.vOff = Math.min(Math.max(0, startVOff + (panelPos.v === 'top' ? dy : -dy)), maxV);
+            applyPanelPos();
         });
 
         document.addEventListener('mouseup', function () {
@@ -1296,7 +1301,13 @@
             suppressClick = true;
             // click fires before this 0ms timeout, so the same interaction consumes the flag.
             setTimeout(function () { suppressClick = false; }, 0);
-            gmSet('panelPos', { left: parseInt(panel.style.left, 10), top: parseInt(panel.style.top, 10) });
+            const rect = panel.getBoundingClientRect();
+            panelPos.h = (rect.left + rect.width / 2) < window.innerWidth / 2 ? 'left' : 'right';
+            panelPos.hOff = panelPos.h === 'left' ? rect.left : window.innerWidth - rect.right;
+            panelPos.v = (rect.top + rect.height / 2) < window.innerHeight / 2 ? 'top' : 'bottom';
+            panelPos.vOff = panelPos.v === 'top' ? rect.top : window.innerHeight - rect.bottom;
+            applyPanelPos();
+            gmSet('panelPos', panelPos);
         });
 
         panel.addEventListener('click', function (e) {
@@ -1369,13 +1380,11 @@
         const header = panel.querySelector('.lrr-panel-header');
 
         const savedPos = gmGet('panelPos', null);
-        if (savedPos && typeof savedPos === 'object' && typeof savedPos.left === 'number' && typeof savedPos.top === 'number') {
-            panel.style.left = Math.max(0, savedPos.left) + 'px';
-            panel.style.top = Math.max(0, savedPos.top) + 'px';
-            panel.style.right = 'auto';
-            panel.style.bottom = 'auto';
+        if (savedPos && typeof savedPos.h === 'string' && typeof savedPos.v === 'string') {
+            panelPos = { h: savedPos.h, hOff: savedPos.hOff, v: savedPos.v, vOff: savedPos.vOff };
         }
         if (CONFIG.panelCollapsed) panel.classList.add('collapsed');
+        applyPanelPos();
         clampPanelPosition();
         window.addEventListener('resize', function () {
             clearTimeout(clampTimer);
