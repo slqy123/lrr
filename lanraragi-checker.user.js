@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      MIT
-// @version      1.1.7
+// @version      1.1.8
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -74,7 +74,6 @@
 
         /* Fixed to body: avoids both overflow clipping and inheriting the selected-title color. */
         .lrr-hover-card {
-            display: none;
             position: fixed;
             z-index: 1000000;
             min-width: 320px;
@@ -91,7 +90,12 @@
             line-height: 1.5;
             color: #ddd;
             text-align: left;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-4px);
+            transition: opacity .12s ease, transform .12s ease, visibility .12s;
         }
+        .lrr-hover-card.show { opacity: 1; visibility: visible; transform: translateY(0); }
 
         .lrr-hc-header {
             display: flex;
@@ -181,30 +185,47 @@
             background: #161616;
             color: #ddd;
             border: 1px solid #333;
-            border-radius: 8px;
+            border-radius: 10px;
             box-shadow: 0 6px 18px rgba(0,0,0,.5);
             z-index: 999999;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             font-size: 13px;
             line-height: 1.4;
             overflow: hidden;
+            transition: width .22s ease, border-radius .22s ease, border-color .22s ease, box-shadow .2s ease;
         }
 
         .lrr-panel-header {
             display: flex;
             align-items: center;
             gap: 6px;
-            padding: 8px 10px;
+            height: 38px;
+            padding: 0 10px;
             background: #1e1e1e;
             cursor: move;
             user-select: none;
+            transition: background .22s ease, height .22s ease, padding .22s ease;
         }
         .lrr-panel-title { font-weight: 700; font-size: 13px; color: #fff; }
         .lrr-panel-count { margin-left: auto; font-size: 11px; color: #888; }
+        .lrr-panel-icon { display: none; align-items: center; justify-content: center; color: #fff; }
 
-        .lrr-panel-body { max-height: 70vh; overflow-y: auto; padding: 10px; }
-        .lrr-panel-body::-webkit-scrollbar { width: 6px; }
-        .lrr-panel-body::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        .lrr-panel-body {
+            display: grid;
+            grid-template-rows: 1fr;
+            overflow: hidden;
+            transition: grid-template-rows .22s ease;
+        }
+        .lrr-panel-body-inner {
+            min-height: 0;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 10px;
+            opacity: 1;
+            transition: opacity .18s ease, padding .22s ease;
+        }
+        .lrr-panel-body-inner::-webkit-scrollbar { width: 6px; }
+        .lrr-panel-body-inner::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 
         .lrr-settings-btn {
             background: transparent;
@@ -214,6 +235,7 @@
             line-height: 1;
             padding: 0 2px;
             cursor: pointer;
+            transition: color .15s ease;
         }
         .lrr-settings-btn:hover { color: #fff; }
         .lrr-settings-btn.active { color: #28a745; }
@@ -263,8 +285,10 @@
             border-radius: 6px;
             cursor: pointer;
             font-size: 12px;
+            transition: background .15s ease, transform .1s ease;
         }
         .lrr-btn:hover { background: #454545; }
+        .lrr-btn:active { transform: scale(.98); }
         .lrr-btn-primary { background: #28a745; color: #fff; }
         .lrr-btn-primary:hover { background: #2fb350; }
         .lrr-btn-blue { background: #0366d6; color: #fff; }
@@ -275,12 +299,15 @@
 
         .lrr-status { margin-top: 8px; min-height: 16px; font-size: 12px; color: #888; }
 
-        .lrr-floating-panel.collapsed { width: 40px; height: 40px; }
-        .lrr-floating-panel.collapsed .lrr-panel-header { height: 40px; padding: 0; justify-content: center; }
-        .lrr-floating-panel.collapsed .lrr-panel-title { font-size: 12px; }
+        .lrr-floating-panel.collapsed { width: 46px; border-radius: 50%; border-color: #28a745; }
+        .lrr-floating-panel.collapsed .lrr-panel-header { height: 46px; padding: 0; justify-content: center; background: #28a745; }
+        .lrr-floating-panel.collapsed .lrr-panel-header:hover { background: #2fb350; }
+        .lrr-floating-panel.collapsed .lrr-panel-title { display: none; }
         .lrr-floating-panel.collapsed .lrr-panel-count { display: none; }
-        .lrr-floating-panel.collapsed .lrr-panel-body { display: none; }
         .lrr-floating-panel.collapsed .lrr-settings-btn { display: none; }
+        .lrr-floating-panel.collapsed .lrr-panel-icon { display: flex; }
+        .lrr-floating-panel.collapsed .lrr-panel-body { grid-template-rows: 0fr; }
+        .lrr-floating-panel.collapsed .lrr-panel-body-inner { opacity: 0; padding-top: 0; padding-bottom: 0; }
 
         .lrr-checkbox-wrapper { display: inline-block; margin-right: 4px; line-height: 1; }
         .lrr-item-checkbox { display: none; }
@@ -319,7 +346,7 @@
             z-index: 100000;
             min-width: 220px;
             margin-top: 4px;
-            display: none;
+            display: block;
             padding: 8px;
             background: #1e1e1e;
             border: 1px solid #333;
@@ -328,8 +355,12 @@
             color: #ddd;
             font-size: 12px;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-4px);
+            transition: opacity .15s ease, transform .15s ease, visibility .15s;
         }
-        #lrr-search-suggest.open { display: block; }
+        #lrr-search-suggest.open { opacity: 1; visibility: visible; transform: translateY(0); }
         .lrr-suggest-group { margin-bottom: 8px; }
         .lrr-suggest-group:last-child { margin-bottom: 0; }
         .lrr-suggest-label { margin-bottom: 4px; color: #888; font-size: 11px; }
@@ -343,6 +374,7 @@
             font-size: 12px;
             font-family: inherit;
             cursor: pointer;
+            transition: background .15s ease, border-color .15s ease, color .15s ease;
         }
         .lrr-suggest-item:hover { border-color: #28a745; color: #fff; }
         .lrr-suggest-item.active { background: #28a745; border-color: #28a745; color: #fff; }
@@ -646,11 +678,10 @@
 
     function showHoverCard(marker, card) {
         cancelHide();
-        if (activeHoverCard && activeHoverCard !== card) activeHoverCard.style.display = 'none';
+        if (activeHoverCard && activeHoverCard !== card) activeHoverCard.classList.remove('show');
         activeHoverCard = card;
         if (!card.isConnected) document.body.appendChild(card);
-        card.style.display = 'block';
-        card.style.visibility = 'hidden';
+        card.classList.add('show');
         const rect = marker.getBoundingClientRect();
         const width = card.offsetWidth;
         const height = card.offsetHeight;
@@ -659,13 +690,12 @@
         const left = Math.max(4, Math.min(rect.left, window.innerWidth - width - 4));
         card.style.left = left + 'px';
         card.style.top = top + 'px';
-        card.style.visibility = '';
     }
 
     function scheduleHide() {
         clearTimeout(hoverHideTimer);
         hoverHideTimer = setTimeout(function () {
-            if (activeHoverCard) activeHoverCard.style.display = 'none';
+            if (activeHoverCard) activeHoverCard.classList.remove('show');
             activeHoverCard = null;
         }, 250);
     }
@@ -676,7 +706,7 @@
 
     window.addEventListener('scroll', function (e) {
         if (activeHoverCard && !activeHoverCard.contains(e.target)) {
-            activeHoverCard.style.display = 'none';
+            activeHoverCard.classList.remove('show');
             activeHoverCard = null;
         }
     }, true);
@@ -1066,6 +1096,7 @@
     let countEl = null;
     let statusEl = null;
     let itemCheckboxSeq = 0;
+    let clampTimer = null;
 
     function setStatus(text) {
         if (statusEl) statusEl.textContent = text || '';
@@ -1192,10 +1223,23 @@
         setStatus('已恢复默认');
     }
 
+    function clampPanelPosition() {
+        if (!panelEl || !panelEl.style.left) return;
+        const maxLeft = Math.max(0, window.innerWidth - panelEl.offsetWidth);
+        const maxTop = Math.max(0, window.innerHeight - panelEl.offsetHeight);
+        const left = Math.min(Math.max(0, parseFloat(panelEl.style.left) || 0), maxLeft);
+        const top = Math.min(Math.max(0, parseFloat(panelEl.style.top) || 0), maxTop);
+        panelEl.style.left = left + 'px';
+        panelEl.style.top = top + 'px';
+        gmSet('panelPos', { left: left, top: top });
+    }
+
     function setCollapsed(collapsed) {
         panelEl.classList.toggle('collapsed', collapsed);
         CONFIG.panelCollapsed = collapsed;
         gmSet('panelCollapsed', collapsed);
+        clearTimeout(clampTimer);
+        clampTimer = setTimeout(clampPanelPosition, 240);
     }
 
     let settingsViewShown = false;
@@ -1269,11 +1313,15 @@
         panel.className = 'lrr-floating-panel';
         panel.innerHTML = `
             <div class="lrr-panel-header">
+                <span class="lrr-panel-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
+                </span>
                 <span class="lrr-panel-title">LRR</span>
                 <span class="lrr-panel-count"></span>
                 <button type="button" class="lrr-settings-btn" id="lrr-settings-btn" title="设置">⚙</button>
             </div>
             <div class="lrr-panel-body">
+                <div class="lrr-panel-body-inner">
                 <div class="lrr-view" id="lrr-view-main">
                     <div class="lrr-section">
                         <div class="lrr-section-title">按状态选择</div>
@@ -1310,6 +1358,7 @@
                     </div>
                 </div>
                 <div class="lrr-status"></div>
+                </div>
             </div>
         `;
         document.body.appendChild(panel);
@@ -1327,6 +1376,11 @@
             panel.style.bottom = 'auto';
         }
         if (CONFIG.panelCollapsed) panel.classList.add('collapsed');
+        clampPanelPosition();
+        window.addEventListener('resize', function () {
+            clearTimeout(clampTimer);
+            clampTimer = setTimeout(clampPanelPosition, 100);
+        });
 
         fillConfigInputs();
 
