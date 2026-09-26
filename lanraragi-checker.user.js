@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      MIT
-// @version      1.1.6
+// @version      1.1.7
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -952,6 +952,7 @@
         const ALL_CAT_BITS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512];
         const ALL_AGES_BIT = 256;
         const ALL_CATS = ALL_CAT_BITS.reduce(function (sum, bit) { return sum | bit; }, 0);
+        const DEFAULT_EXCLUDE = ALL_AGES_BIT;
         let allAgesBase = null;
         let applyingCats = false;
 
@@ -963,6 +964,11 @@
         // f_cats is the excluded-categories mask: a set bit means the category is off.
         function isSelected(bit) {
             return (getCats() & bit) === 0;
+        }
+
+        // True only when `bit` is the sole selected category, i.e. the preset is actually applied.
+        function isExclusive(bit) {
+            return isSelected(bit) && (getCats() | bit) === ALL_CATS;
         }
 
         function setCats(mask) {
@@ -980,17 +986,32 @@
                 btn.classList.toggle('active', tokens().some(function (t) { return t.toLowerCase() === btn.dataset.lang; }));
             });
             box.querySelectorAll('[data-cat]').forEach(function (btn) {
-                btn.classList.toggle('active', isSelected(parseInt(btn.dataset.cat, 10)));
+                btn.classList.toggle('active', isExclusive(parseInt(btn.dataset.cat, 10)));
+            });
+        }
+
+        function uniqueTokens() {
+            const seen = {};
+            return tokens().filter(function (t) {
+                const key = t.toLowerCase();
+                if (seen[key]) return false;
+                seen[key] = true;
+                return true;
             });
         }
 
         function toggleLang(token) {
-            const kept = tokens().filter(function (t) {
-                return !LANG_TOKENS.some(function (l) { return l !== token && l === t.toLowerCase(); });
-            });
-            const index = kept.findIndex(function (t) { return t.toLowerCase() === token; });
-            if (index === -1) kept.push(token); else kept.splice(index, 1);
-            input.value = kept.join(' ');
+            const target = token.toLowerCase();
+            const current = uniqueTokens();
+            const present = current.some(function (t) { return t.toLowerCase() === target; });
+            let next;
+            if (present) {
+                next = current.filter(function (t) { return t.toLowerCase() !== target; });
+            } else {
+                next = current.filter(function (t) { return LANG_TOKENS.indexOf(t.toLowerCase()) === -1; });
+                next.push(token);
+            }
+            input.value = next.join(' ');
         }
 
         box.addEventListener('mousedown', function (e) { e.preventDefault(); });
@@ -1000,8 +1021,8 @@
             const catBtn = e.target.closest('[data-cat]');
             if (catBtn) {
                 const bit = parseInt(catBtn.dataset.cat, 10);
-                if (isSelected(bit)) {
-                    setCats(allAgesBase !== null ? allAgesBase : (getCats() | bit));
+                if (isExclusive(bit)) {
+                    setCats(allAgesBase !== null ? allAgesBase : DEFAULT_EXCLUDE);
                     allAgesBase = null;
                 } else {
                     allAgesBase = getCats();
