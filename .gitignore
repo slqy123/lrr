@@ -4,3 +4,7 @@ refs/
 __pycache__/
 .venv/
 tasks.db
+REFACTOR_PLAN.md
+web/dist/
+node_modules/
+.firecrawl/

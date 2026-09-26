@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      MIT
-// @version      1.2.0
+// @version      1.2.1
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -30,7 +30,7 @@
         requestTimeoutMs: 45000,
         searchTimeoutMs: 40000,
         enableLogging: false,
-        queueServerUrl: 'http://localhost:8080',
+        queueServerUrl: 'http://localhost:29481',
         panelCollapsed: true,
     };
 
