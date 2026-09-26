@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      MIT
-// @version      1.2.2
+// @version      1.2.3
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -310,7 +310,7 @@
         .lrr-floating-panel.collapsed .lrr-settings-btn { display: none; }
         .lrr-floating-panel.collapsed .lrr-panel-icon { display: flex; }
         .lrr-floating-panel.collapsed .lrr-panel-body { grid-template-rows: 0fr; }
-        .lrr-floating-panel.collapsed .lrr-panel-body-inner { opacity: 0; }
+        .lrr-floating-panel.collapsed .lrr-panel-body-inner { opacity: 0; padding-top: 0; padding-bottom: 0; }
 
         .lrr-checkbox-wrapper { display: inline-block; margin-right: 4px; line-height: 1; }
         .lrr-item-checkbox { display: none; }
@@ -1258,16 +1258,19 @@
     }
 
     function expandTo(x, y) {
-        const inner = panelEl.querySelector('.lrr-panel-body-inner');
         const width = Math.min(260, window.innerWidth - 2 * PANEL_MARGIN);
-        const bodyHeight = Math.min(inner.scrollHeight, window.innerHeight - 64);
-        const height = bodyHeight + 40;
-        setPanelPos(
-            clamp(x - width / 2, PANEL_MARGIN, window.innerWidth - width - PANEL_MARGIN),
-            clamp(y, PANEL_MARGIN, window.innerHeight - height - PANEL_MARGIN)
-        );
-        gmSet('panelPos', panelPos);
+        // Transitions are paused so offsetHeight reports the expanded, not the collapsed, size.
+        panelEl.classList.add('dragging');
         setCollapsed(false);
+        const height = panelEl.offsetHeight;
+        const maxLeft = Math.max(PANEL_MARGIN, window.innerWidth - width - PANEL_MARGIN);
+        const maxTop = Math.max(PANEL_MARGIN, window.innerHeight - height - PANEL_MARGIN);
+        const top = y > window.innerHeight / 2
+            ? clamp(y - height, PANEL_MARGIN, maxTop)
+            : clamp(y, PANEL_MARGIN, maxTop);
+        setPanelPos(clamp(x - width / 2, PANEL_MARGIN, maxLeft), top);
+        gmSet('panelPos', panelPos);
+        requestAnimationFrame(function () { panelEl.classList.remove('dragging'); });
     }
 
     function setCollapsed(collapsed) {
