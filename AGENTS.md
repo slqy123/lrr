@@ -22,6 +22,7 @@ Three parts, one repo:
 | `lrr_queue/legacy.py` | `/add` and `/status` compatibility routes. |
 | `lrr_queue/main.py` | `create_app` + lifespan. |
 | `lrr_queue/web.py` | Static mount of `web/dist`. |
+| `tests/` | pytest suite (API, worker, service, schema adoption). |
 | `web/` | Frontend source; `web/dist` is generated. |
 | `install.sh` | Builds frontend, installs/restarts the systemd user unit. |
 | `lrr-queue.service.in` | Unit template; `@PYTHON@` / `@DIR@` placeholders. |
@@ -55,6 +56,28 @@ pnpm --dir web build          # writes web/dist, served by FastAPI
 
 `install.sh` builds the frontend, substitutes `@PYTHON@` (prefers `.venv/bin/python`) and `@DIR@`, then runs `daemon-reload` / `enable` / `restart` and `loginctl enable-linger`.
 
+## Deployment
+
+This machine is the source of truth; the NAS (`nas:dev/lrr`, Arch, **fish** login shell, no repo until bootstrapped) is a read-only deploy target.
+
+One-time bootstrap made the NAS checkout track `main` with `receive.denyCurrentBranch=updateInstead`, and added the remote:
+
+```bash
+git remote add nas nas:dev/lrr
+```
+
+Node is at `/usr/bin` and its npm prefix is `/usr` (root-owned), so `pnpm` is installed user-locally: `npm install -g --prefix "$HOME/.local" pnpm`.
+
+Deploy = commit here, push to the NAS, rebuild there:
+
+```bash
+git add -A && git commit -m "..."
+git push nas main
+ssh nas 'cd dev/lrr && ./install.sh'   # builds web/dist, rewrites the unit, restarts
+```
+
+The NAS `.env` and `tasks.db` are gitignored and never overwritten by a push. Never edit source on the NAS.
+
 ## HTTP API
 
 - `POST /add` `{"urls": [...]}` → `{"ok": true, "added": n, "duplicates": m}` (userscript contract)
@@ -67,9 +90,14 @@ pnpm --dir web build          # writes web/dist, served by FastAPI
 
 Single-thread reconciler (`worker.py`): DB is the source of truth, one writer thread converges local state to LRR. States: `pending → running → done | failed`, with `dead` as the terminal failure after `MAX_ATTEMPTS`, plus `cancelled`. `running` holds `lrr_job_id` as a lease. Backoff is exponential with jitter, scheduled via `next_attempt_at` (survives restarts). When permanent failures reach `BREAKER_THRESHOLD`, the queue pauses (never kills the process); resume from the UI or `/api/control/resume`.
 
+Invariant: a `done` task has `error == ''` and a non-null `finished_at`. Every transition into `done` — worker finish (`_finish`), urlfinder recheck (`recheck_with_urlfinder`), and the dispatch pre-check — must clear the error and stamp `finished_at`.
+
+Already-downloaded URLs never enter the download path: dispatch pre-checks `urlfinder` and marks a hit `done` directly, without consuming a concurrency slot or the submit interval. LRR also reports duplicates as a finished job with `result.id` set and `result.message == 'URL already downloaded!'`; reconcile treats that as `done` too (fallback).
+
 ## Conventions
 
 - **No migrations.** `ensure_schema` creates missing tables and adds missing columns idempotently, and merges duplicate URLs before enforcing the unique index. Never drop, rename, or narrow a column; add new fields with defaults.
+- Store status as plain strings in SQLite; compare against `Status.*.value`.
 - Keep the worker single-threaded; do not fan out per-task threads — LRR's minion owns execution concurrency.
 - Peewee is synchronous; API handlers are sync `def` (FastAPI threadpool). Do not introduce async DB access.
 - Frontend: Svelte 5 runes only (no stores/`on:click` legacy syntax), no router, 2s polling. Design tokens live in `web/src/app.css` (`@theme`).

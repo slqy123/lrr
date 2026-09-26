@@ -97,7 +97,7 @@ def recheck_with_urlfinder(lrr: LrrClient) -> int:
         except Exception as exc:
             log.warning("urlfinder recheck failed for task %s: %s", task.id, exc)
             continue
-        new_status = Status.DONE.value if found else Status.DEAD.value
+        new_status = Status.DONE.value if found is not None else Status.DEAD.value
         if new_status == task.status:
             continue
         now = time.time()
@@ -105,6 +105,8 @@ def recheck_with_urlfinder(lrr: LrrClient) -> int:
         if new_status == Status.DONE.value:
             fields["error"] = ""
             fields["finished_at"] = task.finished_at or now
+            if found:
+                fields["lrr_archive_id"] = found
         (Task.update(**fields).where(Task.id == task.id)).execute()
         affected += 1
     return affected

@@ -33,8 +33,11 @@ class LrrClient:
             message=result.get("message", ""),
         )
 
-    def urlfinder(self, url: str) -> bool:
-        return bool(self._api.misc.use_plugin(plugin="urlfinder", arg=url).success)
+    def urlfinder(self, url: str) -> str | None:
+        response = self._api.misc.use_plugin(plugin="urlfinder", arg=url)
+        if not response.success:
+            return None
+        return (response.data or {}).get("id")
 
     def ping(self) -> None:
         self._api.misc.get_server_information()

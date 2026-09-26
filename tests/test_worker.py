@@ -16,6 +16,20 @@ def test_dispatch_respects_capacity(client, fake_lrr):
     assert len(fake_lrr.submitted) == 2
 
 
+def test_already_present_is_done_without_submitting(client, fake_lrr):
+    _add(client, "https://e/g/1", "https://e/g/2")
+    fake_lrr.library["https://e/g/1"] = "abc123"
+    worker = client.app.state.worker
+
+    worker._dispatch()
+
+    task = Task.get(Task.url == "https://e/g/1")
+    assert task.status == Status.DONE.value
+    assert task.lrr_archive_id == "abc123"
+    assert task.attempts == 0
+    assert [url for _job, url in fake_lrr.submitted] == ["https://e/g/2"]
+
+
 def test_reconcile_marks_done(client, fake_lrr):
     _add(client, "https://e/g/1")
     worker = client.app.state.worker

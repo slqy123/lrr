@@ -14,6 +14,7 @@ from lrr_queue.main import create_app
 class FakeLrr:
     submitted: list[tuple[int, str]] = field(default_factory=list)
     jobs: dict[int, JobStatus] = field(default_factory=dict)
+    library: dict[str, str] = field(default_factory=dict)
     fail_next: str | None = None
     _next_job: int = 1
 
@@ -30,8 +31,8 @@ class FakeLrr:
     def job_status(self, job_id: int) -> JobStatus:
         return self.jobs[job_id]
 
-    def urlfinder(self, url: str) -> bool:
-        return True
+    def urlfinder(self, url: str) -> str | None:
+        return self.library.get(url)
 
     def ping(self) -> None:
         return None

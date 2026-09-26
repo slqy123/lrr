@@ -88,6 +88,10 @@ class QueueWorker(threading.Thread):
             task = self._next_task(time.time())
             if task is None:
                 return
+            archive_id = self._already_present(task.url)
+            if archive_id is not None:
+                self._mark_already_present(task.id, archive_id)
+                continue
             self._wait_for_submit_slot()
             if self._stop.is_set():
                 return
@@ -116,6 +120,26 @@ class QueueWorker(threading.Thread):
         wait = self._settings.min_submit_interval_sec - (time.time() - self._last_submit)
         if wait > 0:
             self._stop.wait(wait)
+
+    def _already_present(self, url: str) -> str | None:
+        try:
+            return self._lrr.urlfinder(url)
+        except Exception as exc:
+            log.warning("urlfinder pre-check failed for %s: %s", url, exc)
+            return None
+
+    def _mark_already_present(self, task_id: int, archive_id: str) -> None:
+        now = time.time()
+        (
+            Task.update(
+                status=Status.DONE.value,
+                lrr_archive_id=archive_id,
+                error="",
+                updated_at=now,
+                finished_at=now,
+            ).where(Task.id == task_id)
+        ).execute()
+        log.info("task %s already in library (%s), skipped download", task_id, archive_id)
 
     def _mark_running(self, task_id: int, attempts: int, job_id: int | None) -> None:
         now = time.time()
