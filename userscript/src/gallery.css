@@ -23,6 +23,32 @@
 [data-lrr-status=error] .lrr-check-state { color: var(--lrr-error); }
 [data-lrr-status=downloaded] .lrr-check-state { color: var(--lrr-accent); }
 [data-lrr-status=duplicate] .lrr-check-state { color: var(--lrr-warning); }
+[data-lrr-status=queued] .lrr-check-state,
+[data-lrr-status=downloading] .lrr-check-state,
+[data-lrr-status=retrying] .lrr-check-state,
+[data-lrr-status=queue-failed] .lrr-check-state,
+[data-lrr-status=queue-unknown] .lrr-check-state {
+  display: inline-block;
+  padding: 2px 7px;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  font-weight: 600;
+  color: var(--lrr-muted);
+  background: var(--lrr-surface);
+}
+[data-lrr-status=downloading] .lrr-check-state {
+  color: var(--lrr-accent);
+  background: var(--lrr-accent-soft);
+}
+[data-lrr-status=retrying] .lrr-check-state {
+  color: var(--lrr-warning);
+  background: var(--lrr-warning-soft);
+}
+[data-lrr-status=queue-failed] .lrr-check-state,
+[data-lrr-status=queue-unknown] .lrr-check-state {
+  color: var(--lrr-error);
+  background: var(--lrr-error-soft);
+}
 .lrr-marker-span {
   display: inline-flex;
   align-items: center;

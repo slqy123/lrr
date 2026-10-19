@@ -1,18 +1,24 @@
-export type GalleryStatus = 'checking' | 'downloaded' | 'duplicate' | 'missing' | 'error'
+export type QueueStatus = 'queued' | 'downloading' | 'retrying' | 'queue-failed' | 'queue-unknown'
+export type GalleryStatus = 'checking' | 'downloaded' | 'duplicate' | 'missing' | 'error' | QueueStatus
 export interface Gallery {
   url: string
   title: HTMLElement
   selected: boolean
   status: GalleryStatus
+  libraryStatus?: GalleryStatus
+  queueStatus?: QueueStatus
 }
 export const galleries = new Map<string, Gallery>()
 export const labels: Record<GalleryStatus, string> = {
   checking: '检查中', downloaded: '已入库', duplicate: '疑似重复', missing: '未入库', error: '检查失败',
+  queued: '待下载', downloading: '下载中', retrying: '等待重试', 'queue-failed': '下载失败', 'queue-unknown': '队列查询失败',
 }
 export function notify() { document.dispatchEvent(new Event('lrr:state')) }
 export function setStatus(title: HTMLElement, status: GalleryStatus) {
   const gallery = [...galleries.values()].find(item => item.title === title)
   if (!gallery) return
+  gallery.libraryStatus = status
+  if (status !== 'downloaded' && status !== 'checking') status = gallery.queueStatus ?? status
   gallery.status = status
   title.dataset.lrrStatus = status
   let badge = title.querySelector<HTMLElement>('.lrr-check-state')
@@ -23,6 +29,12 @@ export function setStatus(title: HTMLElement, status: GalleryStatus) {
   }
   badge.textContent = labels[status]
   notify()
+}
+export function setQueueStatus(url: string, status?: QueueStatus) {
+  const gallery = galleries.get(url)
+  if (!gallery) return
+  gallery.queueStatus = status
+  setStatus(gallery.title, gallery.libraryStatus ?? 'checking')
 }
 export function collect() {
   document.querySelectorAll<HTMLAnchorElement>('.itg .gl1t a[href*="/g/"]').forEach(link => {

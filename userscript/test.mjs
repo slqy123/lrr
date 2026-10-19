@@ -13,8 +13,13 @@ window.GM_setValue=(key,value)=>values[key]=value;
 window.GM_addStyle=css=>{const style=document.createElement('style');style.textContent=css;document.head.append(style)};
 window.GM_setClipboard=text=>window.copied=text;
 window.confirm=()=>true;
-let failSend=true,hold=false,held=[];
+let failSend=true,hold=false,held=[],queueTasks=[],queueOffline=false;
 window.GM_xmlhttpRequest=options=>{
+  if(options.url.endsWith('/api/tasks/lookup')) {
+    const urls=JSON.parse(options.data).urls;
+    setTimeout(()=>queueOffline?options.onerror(new Error('offline')):options.onload({status:200,responseText:JSON.stringify({items:queueTasks.filter(task=>urls.includes(task.url))})}),5);
+    return;
+  }
   if(options.url.endsWith('/add')) {
     if(failSend)setTimeout(()=>options.onerror(new Error('offline')),20);
     else setTimeout(()=>options.onload({status:200,responseText:JSON.stringify({ok:true,added:1,duplicates:0})}),50);
@@ -81,6 +86,19 @@ const assert=(condition,message)=>{if(!condition)throw new Error(message)};
   document.querySelector('.itg').append(row);await pause(600);
   assert(row.querySelector('.lrr-item-checkbox'),'dynamic gallery checkbox');
   assert(row.querySelector('[data-lrr-status="missing"]'),'dynamic gallery checked');
+  queueTasks=[['1','pending',0],['2','pending',0],['3','running',1],['4','failed',1],['6','dead',3],['7','failed',3]].map(([id,status,attempts])=>({url:'https://exhentai.org/g/'+id+'/test/',status,attempts,max_attempts:3}));
+  button('recheck').click();await pause(150);
+  assert(document.querySelectorAll('[data-lrr-status="downloaded"]').length===1,'library hit takes priority over queue');
+  assert(document.querySelectorAll('[data-lrr-status="queued"]').length===1,'pending queue badge');
+  assert(document.querySelectorAll('[data-lrr-status="downloading"]').length===1,'running queue badge');
+  assert(document.querySelectorAll('[data-lrr-status="retrying"]').length===1,'scheduled retry badge');
+  assert(document.querySelectorAll('[data-lrr-status="queue-failed"]').length===2,'dead and exhausted failure badges');
+  root.querySelector('[data-select="missing"]').click();
+  assert(document.querySelectorAll('.lrr-item-checkbox:checked').length===0,'queue entries excluded from select missing');
+  queueOffline=true;button('recheck').click();await pause(150);
+  assert(document.querySelectorAll('[data-lrr-status="queue-unknown"]').length===6,'queue failure is not missing');
+  queueOffline=false;queueTasks=[];button('recheck').click();await pause(150);
+  assert(document.querySelectorAll('[data-lrr-status="missing"]').length===4,'removed queue entries restore library status');
   const rect=root.querySelector('.panel').getBoundingClientRect();
   assert(rect.left>=0&&rect.top>=0&&rect.right<=innerWidth&&rect.bottom<=innerHeight,'panel within viewport');
   button('close').click();assert(root.querySelector('.panel').hidden,'close');

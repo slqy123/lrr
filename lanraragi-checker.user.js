@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      MIT
-// @version      1.3.1
+// @version      1.3.2
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -47,7 +47,7 @@
 	var CONFIG = Object.fromEntries(Object.entries(DEFAULT_CONFIG).map(([key, fallback]) => [key, gmGet(key, fallback)]));
 	//#endregion
 	//#region ../userscript/src/gallery.css?inline
-	var gallery_default = ".lrr-item-checkbox {\n  appearance: auto !important;\n  position: static !important;\n  opacity: 1 !important;\n  width: 16px !important;\n  height: 16px !important;\n  margin: 0 8px 0 0 !important;\n  accent-color: var(--lrr-accent);\n  cursor: pointer;\n}\n.lrr-item-checkbox:focus-visible, .lrr-marker-span:focus-visible,\n.lrr-hc-btn:focus-visible, .lrr-hc-searchall:focus-visible,\n.lrr-suggest-item:focus-visible {\n  outline: 2px solid var(--lrr-accent);\n  outline-offset: 3px;\n}\n.lrr-check-state {\n  font: var(--lrr-font);\n  font-size: 11px;\n  margin-left: 8px;\n  color: var(--lrr-muted);\n}\n[data-lrr-status=error] .lrr-check-state { color: var(--lrr-error); }\n[data-lrr-status=downloaded] .lrr-check-state { color: var(--lrr-accent); }\n[data-lrr-status=duplicate] .lrr-check-state { color: var(--lrr-warning); }\n.lrr-marker-span {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  min-width: 20px;\n  height: 20px;\n  margin-right: 6px;\n  padding: 0 5px;\n  border: 1px solid currentColor;\n  border-radius: 6px;\n  font: 600 12px/1 system-ui, sans-serif;\n  vertical-align: middle;\n  cursor: pointer;\n}\n.lrr-marker-downloaded { color: var(--lrr-accent); background: var(--lrr-accent-soft); }\n.lrr-marker-file { color: var(--lrr-warning); background: var(--lrr-warning-soft); }\n.lrr-marker-error { color: var(--lrr-error); background: var(--lrr-error-soft); }\n.lrr-title-selected {\n  outline: 2px solid var(--lrr-accent);\n  outline-offset: 3px;\n  border-radius: 4px;\n}\n/* Fixed to body: avoids both overflow clipping and inheriting the selected-title color. */\n.lrr-hover-card {\n  position: fixed;\n  z-index: 1000000;\n  min-width: min(320px, calc(100vw - 24px));\n  max-width: min(440px, calc(100vw - 24px));\n  max-height: min(480px, calc(100dvh - 24px));\n  overflow-y: auto;\n  background: var(--lrr-bg);\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius-lg);\n  box-shadow: var(--lrr-shadow);\n  font: var(--lrr-font);\n  color: var(--lrr-text);\n  text-align: left;\n  opacity: 0;\n  visibility: hidden;\n  transform: translateY(-4px);\n  transition: opacity .12s ease, transform .12s ease, visibility .12s;\n}\n.lrr-hover-card.show { opacity: 1; visibility: visible; transform: none; }\n.lrr-hc-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 12px;\n  padding: 12px 14px;\n  border-bottom: 1px solid var(--lrr-line);\n  position: sticky;\n  top: 0;\n  background: var(--lrr-bg);\n}\n.lrr-hc-badge {\n  font-size: 11px;\n  font-weight: 600;\n  padding: 3px 8px;\n  border-radius: 6px;\n  background: var(--lrr-accent-soft);\n  color: var(--lrr-accent);\n}\n.lrr-hover-card[data-match=alt] .lrr-hc-badge {\n  background: var(--lrr-warning-soft);\n  color: var(--lrr-warning);\n}\n.lrr-hover-card[data-match=error] .lrr-hc-badge {\n  background: var(--lrr-error-soft);\n  color: var(--lrr-error);\n}\n.lrr-hc-count, .lrr-hc-meta { font-size: 11px; color: var(--lrr-muted); }\n.lrr-hc-meta { margin-top: 4px; }\n.lrr-hc-item { display: flex; gap: 12px; padding: 14px; border-bottom: 1px solid var(--lrr-line); }\n.lrr-hc-item:last-child { border-bottom: none; }\n.lrr-hc-thumb {\n  width: 56px;\n  height: 80px;\n  flex-shrink: 0;\n  overflow: hidden;\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius);\n  background: var(--lrr-surface);\n}\n.lrr-hc-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }\n.lrr-hc-info { flex: 1; min-width: 0; }\n.lrr-hc-title {\n  font-size: 13px;\n  font-weight: 600;\n  color: var(--lrr-text);\n  display: -webkit-box;\n  -webkit-line-clamp: 2;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  overflow-wrap: anywhere;\n}\n.lrr-hc-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }\n.lrr-hc-tag {\n  font-size: 11px;\n  padding: 2px 6px;\n  border: 1px solid var(--lrr-line);\n  border-radius: 6px;\n  background: var(--lrr-surface);\n  color: var(--lrr-muted);\n}\n.lrr-hc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }\n.lrr-hc-btn {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  padding: 6px 10px;\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius);\n  font-size: 12px;\n  font-weight: 500;\n  text-decoration: none !important;\n}\n.lrr-hc-btn-read { background: var(--lrr-accent); border-color: var(--lrr-accent); color: var(--lrr-on-accent) !important; }\n.lrr-hc-btn-read:hover { background: var(--lrr-accent-hover); border-color: var(--lrr-accent-hover); }\n.lrr-hc-btn-edit { background: var(--lrr-bg); color: var(--lrr-text) !important; }\n.lrr-hc-btn-edit:hover { background: var(--lrr-surface); }\n.lrr-hc-footer { padding: 12px 14px; border-top: 1px solid var(--lrr-line); }\n.lrr-hc-searchall { font-size: 12px; color: var(--lrr-accent) !important; text-decoration: none; }\n.lrr-hc-searchall:hover { text-decoration: underline; }\n#lrr-search-suggest {\n  position: absolute;\n  top: 100%;\n  left: 0;\n  z-index: 100000;\n  min-width: min(240px, calc(100vw - 24px));\n  max-width: calc(100vw - 24px);\n  box-sizing: border-box;\n  margin-top: 8px;\n  padding: 14px;\n  background: var(--lrr-bg);\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius-lg);\n  box-shadow: var(--lrr-shadow);\n  color: var(--lrr-text);\n  font: var(--lrr-font);\n  opacity: 0;\n  visibility: hidden;\n  transform: translateY(-4px);\n  transition: opacity .12s ease, transform .12s ease, visibility .12s;\n}\n#lrr-search-suggest.open { opacity: 1; visibility: visible; transform: none; }\n.lrr-suggest-group { margin-bottom: 14px; }\n.lrr-suggest-group:last-child { margin-bottom: 0; }\n.lrr-suggest-label { margin-bottom: 8px; color: var(--lrr-muted); font-size: 11px; font-weight: 600; }\n.lrr-suggest-items { display: flex; flex-wrap: wrap; gap: 8px; }\n.lrr-suggest-item {\n  padding: 6px 10px;\n  background: var(--lrr-bg);\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius);\n  color: var(--lrr-text);\n  font: inherit;\n  font-size: 12px;\n  cursor: pointer;\n  transition: background .12s ease, border-color .12s ease, color .12s ease;\n}\n.lrr-suggest-item:hover { border-color: var(--lrr-accent); background: var(--lrr-accent-soft); color: var(--lrr-accent); }\n.lrr-suggest-item.active { background: var(--lrr-accent); border-color: var(--lrr-accent); color: var(--lrr-on-accent); }\n@media (prefers-reduced-motion: reduce) {\n  .lrr-hover-card, #lrr-search-suggest, .lrr-suggest-item { transition: none; transform: none; }\n}\n";
+	var gallery_default = ".lrr-item-checkbox {\n  appearance: auto !important;\n  position: static !important;\n  opacity: 1 !important;\n  width: 16px !important;\n  height: 16px !important;\n  margin: 0 8px 0 0 !important;\n  accent-color: var(--lrr-accent);\n  cursor: pointer;\n}\n.lrr-item-checkbox:focus-visible, .lrr-marker-span:focus-visible,\n.lrr-hc-btn:focus-visible, .lrr-hc-searchall:focus-visible,\n.lrr-suggest-item:focus-visible {\n  outline: 2px solid var(--lrr-accent);\n  outline-offset: 3px;\n}\n.lrr-check-state {\n  font: var(--lrr-font);\n  font-size: 11px;\n  margin-left: 8px;\n  color: var(--lrr-muted);\n}\n[data-lrr-status=error] .lrr-check-state { color: var(--lrr-error); }\n[data-lrr-status=downloaded] .lrr-check-state { color: var(--lrr-accent); }\n[data-lrr-status=duplicate] .lrr-check-state { color: var(--lrr-warning); }\n[data-lrr-status=queued] .lrr-check-state,\n[data-lrr-status=downloading] .lrr-check-state,\n[data-lrr-status=retrying] .lrr-check-state,\n[data-lrr-status=queue-failed] .lrr-check-state,\n[data-lrr-status=queue-unknown] .lrr-check-state {\n  display: inline-block;\n  padding: 2px 7px;\n  border: 1px solid currentColor;\n  border-radius: 6px;\n  font-weight: 600;\n  color: var(--lrr-muted);\n  background: var(--lrr-surface);\n}\n[data-lrr-status=downloading] .lrr-check-state {\n  color: var(--lrr-accent);\n  background: var(--lrr-accent-soft);\n}\n[data-lrr-status=retrying] .lrr-check-state {\n  color: var(--lrr-warning);\n  background: var(--lrr-warning-soft);\n}\n[data-lrr-status=queue-failed] .lrr-check-state,\n[data-lrr-status=queue-unknown] .lrr-check-state {\n  color: var(--lrr-error);\n  background: var(--lrr-error-soft);\n}\n.lrr-marker-span {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  min-width: 20px;\n  height: 20px;\n  margin-right: 6px;\n  padding: 0 5px;\n  border: 1px solid currentColor;\n  border-radius: 6px;\n  font: 600 12px/1 system-ui, sans-serif;\n  vertical-align: middle;\n  cursor: pointer;\n}\n.lrr-marker-downloaded { color: var(--lrr-accent); background: var(--lrr-accent-soft); }\n.lrr-marker-file { color: var(--lrr-warning); background: var(--lrr-warning-soft); }\n.lrr-marker-error { color: var(--lrr-error); background: var(--lrr-error-soft); }\n.lrr-title-selected {\n  outline: 2px solid var(--lrr-accent);\n  outline-offset: 3px;\n  border-radius: 4px;\n}\n/* Fixed to body: avoids both overflow clipping and inheriting the selected-title color. */\n.lrr-hover-card {\n  position: fixed;\n  z-index: 1000000;\n  min-width: min(320px, calc(100vw - 24px));\n  max-width: min(440px, calc(100vw - 24px));\n  max-height: min(480px, calc(100dvh - 24px));\n  overflow-y: auto;\n  background: var(--lrr-bg);\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius-lg);\n  box-shadow: var(--lrr-shadow);\n  font: var(--lrr-font);\n  color: var(--lrr-text);\n  text-align: left;\n  opacity: 0;\n  visibility: hidden;\n  transform: translateY(-4px);\n  transition: opacity .12s ease, transform .12s ease, visibility .12s;\n}\n.lrr-hover-card.show { opacity: 1; visibility: visible; transform: none; }\n.lrr-hc-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 12px;\n  padding: 12px 14px;\n  border-bottom: 1px solid var(--lrr-line);\n  position: sticky;\n  top: 0;\n  background: var(--lrr-bg);\n}\n.lrr-hc-badge {\n  font-size: 11px;\n  font-weight: 600;\n  padding: 3px 8px;\n  border-radius: 6px;\n  background: var(--lrr-accent-soft);\n  color: var(--lrr-accent);\n}\n.lrr-hover-card[data-match=alt] .lrr-hc-badge {\n  background: var(--lrr-warning-soft);\n  color: var(--lrr-warning);\n}\n.lrr-hover-card[data-match=error] .lrr-hc-badge {\n  background: var(--lrr-error-soft);\n  color: var(--lrr-error);\n}\n.lrr-hc-count, .lrr-hc-meta { font-size: 11px; color: var(--lrr-muted); }\n.lrr-hc-meta { margin-top: 4px; }\n.lrr-hc-item { display: flex; gap: 12px; padding: 14px; border-bottom: 1px solid var(--lrr-line); }\n.lrr-hc-item:last-child { border-bottom: none; }\n.lrr-hc-thumb {\n  width: 56px;\n  height: 80px;\n  flex-shrink: 0;\n  overflow: hidden;\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius);\n  background: var(--lrr-surface);\n}\n.lrr-hc-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }\n.lrr-hc-info { flex: 1; min-width: 0; }\n.lrr-hc-title {\n  font-size: 13px;\n  font-weight: 600;\n  color: var(--lrr-text);\n  display: -webkit-box;\n  -webkit-line-clamp: 2;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  overflow-wrap: anywhere;\n}\n.lrr-hc-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }\n.lrr-hc-tag {\n  font-size: 11px;\n  padding: 2px 6px;\n  border: 1px solid var(--lrr-line);\n  border-radius: 6px;\n  background: var(--lrr-surface);\n  color: var(--lrr-muted);\n}\n.lrr-hc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }\n.lrr-hc-btn {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  padding: 6px 10px;\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius);\n  font-size: 12px;\n  font-weight: 500;\n  text-decoration: none !important;\n}\n.lrr-hc-btn-read { background: var(--lrr-accent); border-color: var(--lrr-accent); color: var(--lrr-on-accent) !important; }\n.lrr-hc-btn-read:hover { background: var(--lrr-accent-hover); border-color: var(--lrr-accent-hover); }\n.lrr-hc-btn-edit { background: var(--lrr-bg); color: var(--lrr-text) !important; }\n.lrr-hc-btn-edit:hover { background: var(--lrr-surface); }\n.lrr-hc-footer { padding: 12px 14px; border-top: 1px solid var(--lrr-line); }\n.lrr-hc-searchall { font-size: 12px; color: var(--lrr-accent) !important; text-decoration: none; }\n.lrr-hc-searchall:hover { text-decoration: underline; }\n#lrr-search-suggest {\n  position: absolute;\n  top: 100%;\n  left: 0;\n  z-index: 100000;\n  min-width: min(240px, calc(100vw - 24px));\n  max-width: calc(100vw - 24px);\n  box-sizing: border-box;\n  margin-top: 8px;\n  padding: 14px;\n  background: var(--lrr-bg);\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius-lg);\n  box-shadow: var(--lrr-shadow);\n  color: var(--lrr-text);\n  font: var(--lrr-font);\n  opacity: 0;\n  visibility: hidden;\n  transform: translateY(-4px);\n  transition: opacity .12s ease, transform .12s ease, visibility .12s;\n}\n#lrr-search-suggest.open { opacity: 1; visibility: visible; transform: none; }\n.lrr-suggest-group { margin-bottom: 14px; }\n.lrr-suggest-group:last-child { margin-bottom: 0; }\n.lrr-suggest-label { margin-bottom: 8px; color: var(--lrr-muted); font-size: 11px; font-weight: 600; }\n.lrr-suggest-items { display: flex; flex-wrap: wrap; gap: 8px; }\n.lrr-suggest-item {\n  padding: 6px 10px;\n  background: var(--lrr-bg);\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius);\n  color: var(--lrr-text);\n  font: inherit;\n  font-size: 12px;\n  cursor: pointer;\n  transition: background .12s ease, border-color .12s ease, color .12s ease;\n}\n.lrr-suggest-item:hover { border-color: var(--lrr-accent); background: var(--lrr-accent-soft); color: var(--lrr-accent); }\n.lrr-suggest-item.active { background: var(--lrr-accent); border-color: var(--lrr-accent); color: var(--lrr-on-accent); }\n@media (prefers-reduced-motion: reduce) {\n  .lrr-hover-card, #lrr-search-suggest, .lrr-suggest-item { transition: none; transform: none; }\n}\n";
 	//#endregion
 	//#region ../userscript/src/theme.css?inline
 	var theme_default = "html, :host {\n  --lrr-bg: #ffffff;\n  --lrr-surface: #f3f5f3;\n  --lrr-text: #252925;\n  --lrr-muted: #616961;\n  --lrr-line: #d7ded7;\n  --lrr-accent: #287a42;\n  --lrr-accent-hover: #206535;\n  --lrr-on-accent: #ffffff;\n  --lrr-accent-soft: #e8f3eb;\n  --lrr-warning: #825d15;\n  --lrr-warning-soft: #fbf2dd;\n  --lrr-error: #b52d3d;\n  --lrr-error-soft: #fbecef;\n  --lrr-radius: 8px;\n  --lrr-radius-lg: 14px;\n  --lrr-shadow: 0 8px 28px #0000001f;\n  --lrr-font: 13px/1.5 system-ui, sans-serif;\n}\nhtml[data-lrr-theme=dark], :host([data-theme=dark]) {\n  --lrr-bg: #242624;\n  --lrr-surface: #2d302d;\n  --lrr-text: #ecefec;\n  --lrr-muted: #adb5ad;\n  --lrr-line: #454c45;\n  --lrr-accent: #82cc95;\n  --lrr-accent-hover: #a0ddb0;\n  --lrr-on-accent: #142d1b;\n  --lrr-accent-soft: #293d2e;\n  --lrr-warning: #e4be70;\n  --lrr-warning-soft: #413823;\n  --lrr-error: #f39da7;\n  --lrr-error-soft: #442d32;\n  --lrr-shadow: 0 8px 28px #0000004d;\n}\n";
@@ -59,7 +59,12 @@
 		downloaded: "已入库",
 		duplicate: "疑似重复",
 		missing: "未入库",
-		error: "检查失败"
+		error: "检查失败",
+		queued: "待下载",
+		downloading: "下载中",
+		retrying: "等待重试",
+		"queue-failed": "下载失败",
+		"queue-unknown": "队列查询失败"
 	};
 	function notify() {
 		document.dispatchEvent(new Event("lrr:state"));
@@ -67,6 +72,8 @@
 	function setStatus(title, status) {
 		const gallery = [...galleries.values()].find((item) => item.title === title);
 		if (!gallery) return;
+		gallery.libraryStatus = status;
+		if (status !== "downloaded" && status !== "checking") status = gallery.queueStatus ?? status;
 		gallery.status = status;
 		title.dataset.lrrStatus = status;
 		let badge = title.querySelector(".lrr-check-state");
@@ -77,6 +84,12 @@
 		}
 		badge.textContent = labels[status];
 		notify();
+	}
+	function setQueueStatus(url, status) {
+		const gallery = galleries.get(url);
+		if (!gallery) return;
+		gallery.queueStatus = status;
+		setStatus(gallery.title, gallery.libraryStatus ?? "checking");
 	}
 	function collect() {
 		document.querySelectorAll(".itg .gl1t a[href*=\"/g/\"]").forEach((link) => {
@@ -957,14 +970,49 @@
 		}
 		performAlternativeSearch(author + "," + title, titleElement);
 	}
+	var queueChecks = /* @__PURE__ */ new Map();
+	async function checkQueue(urls, requestGeneration = generation) {
+		const request = {};
+		const queueUrl = CONFIG.queueServerUrl.replace(/\/$/, "");
+		for (let offset = 0; offset < urls.length; offset += 500) {
+			if (requestGeneration !== generation) return;
+			const batch = urls.slice(offset, offset + 500);
+			batch.forEach((url) => queueChecks.set(url, request));
+			try {
+				const response = await makeRequest({
+					method: "POST",
+					url: queueUrl + "/api/tasks/lookup",
+					headers: { "Content-Type": "application/json" },
+					data: JSON.stringify({ urls: batch })
+				});
+				const result = JSON.parse(response.responseText);
+				if (!Array.isArray(result.items)) throw new Error("Invalid queue lookup response");
+				if (requestGeneration !== generation) return;
+				const tasks = new Map(result.items.map((task) => [task.url, task]));
+				for (const url of batch) {
+					if (queueChecks.get(url) !== request) continue;
+					const task = tasks.get(url);
+					setQueueStatus(url, task?.status === "pending" ? "queued" : task?.status === "running" ? "downloading" : task?.status === "failed" && task.attempts < task.max_attempts ? "retrying" : task?.status === "failed" || task?.status === "dead" ? "queue-failed" : void 0);
+				}
+			} catch (error) {
+				if (requestGeneration !== generation) return;
+				batch.forEach((url) => {
+					if (queueChecks.get(url) === request) setQueueStatus(url, "queue-unknown");
+				});
+				warn("Queue lookup failed", error);
+			}
+		}
+	}
 	function collectGalleriesFromDom() {
 		collect();
+		const queueUrls = [];
 		document.querySelectorAll(".itg .gl1t a[href*=\"/g/\"]").forEach(function(linkElement) {
 			const galleryUrl = linkElement.href;
 			const titleElement = linkElement.querySelector(".glink");
 			if (!galleryUrl || !titleElement) return;
 			if (seenGalleryUrls.has(galleryUrl)) return;
 			seenGalleryUrls.add(galleryUrl);
+			queueUrls.push(galleryUrl);
 			if (hasLrrMarker(titleElement)) return;
 			const cacheKey = "lrr-checker-" + galleryUrl;
 			const cachedData = getCache(cacheKey);
@@ -979,6 +1027,7 @@
 				generation
 			});
 		});
+		if (queueUrls.length) checkQueue(queueUrls);
 	}
 	function flushPendingRequests() {
 		const batch = galleriesToCheck.splice(0, galleriesToCheck.length);
@@ -1190,9 +1239,20 @@
 				});
 				const result = JSON.parse(response.responseText);
 				if (!result.ok || !Number.isInteger(result.added) || !Number.isInteger(result.duplicates)) throw new Error(result.error || "服务器响应异常");
+				checkQueue(urls);
 				return result;
 			}
 		});
+		let pollingQueue = false;
+		setInterval(async () => {
+			if (document.hidden || pollingQueue) return;
+			pollingQueue = true;
+			try {
+				await checkQueue([...galleries.keys()]);
+			} finally {
+				pollingQueue = false;
+			}
+		}, 3e4);
 		setupChecker();
 		setupSearchSuggest();
 	}

@@ -60,3 +60,26 @@ def test_retry_failed(client):
     Task.update(status=Status.DEAD.value).execute()
     assert client.post("/api/tasks/retry-failed").json()["affected"] == 2
     assert client.get("/api/tasks", params={"status": "pending"}).json()["total"] == 2
+
+
+def test_lookup_queue_tasks(client):
+    from lrr_queue.models import Task
+
+    statuses = ["pending", "running", "failed", "dead", "done", "cancelled"]
+    urls = [f"https://e/g/{index}" for index in range(len(statuses))]
+    for url, status in zip(urls, statuses, strict=True):
+        Task.create(url=url, status=status)
+    Task.create(url="https://e/g/100", status="pending")
+
+    response = client.post("/api/tasks/lookup", json={"urls": urls})
+    assert response.status_code == 200
+    result = response.json()
+    assert result["total"] == 4
+    assert {item["url"] for item in result["items"]} == set(urls[:4])
+    assert client.post("/api/tasks/lookup", json={"urls": []}).json() == {"items": [], "total": 0}
+    assert client.post("/api/tasks/lookup", json={"urls": ["https://e/g/999"]}).json()["total"] == 0
+
+
+def test_lookup_limits_batch_size(client):
+    response = client.post("/api/tasks/lookup", json={"urls": ["https://e/g/1"] * 501})
+    assert response.status_code == 422

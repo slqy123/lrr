@@ -55,7 +55,8 @@ uv pip install -e .
 用 Tampermonkey 安装 [用户脚本](https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js)，在 ExHentai / E-Hentai 点击右下角 **LRR** 打开工具面板。在设置中填写 LANraragi 地址、API Key 和队列服务器地址（默认 `http://localhost:29481`）。
 
 - 选择未入库或疑似重复的画廊，也可以逐项勾选，再发送到队列或复制链接。
-- 检查中与检查失败不算“未入库”；关闭标题搜索后，“未入库”仅表示 URL 未命中。
+- 未入库但在下载队列中的作品显示“待下载 / 下载中 / 等待重试 / 下载失败”，不参与“选择未入库”；已入库标记优先。队列状态每 30 秒刷新，发送成功后立即刷新。
+- 检查中、检查失败和队列查询失败不算“未入库”；关闭标题搜索后，“未入库”仅表示 URL 未命中。
 - 发送成功后清空本次发送的选择，失败时保留；结果分别显示新增与重复数量。
 - 设置保存后自动重新检查当前页，不清空选择；支持随站点、浅色和深色外观。
 - 面板不支持拖动；点击关闭按钮或按 Esc 收起，点击网页不会关闭。
@@ -66,6 +67,7 @@ uv pip install -e .
 
 - `POST /add` — `{"urls": [...]}` → `{"ok": true, "added": n, "duplicates": m}`
 - `GET /status` — 各状态计数
+- `POST /api/tasks/lookup` — `{"urls": [...]}`，批量查询待下载、下载中及失败任务，每次最多 500 个 URL；返回 `{"items": [...], "total": n}`。
 
 完整接口见 `/docs`（OpenAPI）。
 

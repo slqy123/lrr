@@ -34,6 +34,14 @@ def add_tasks(payload: AddRequest, request: Request):
     return AddResult(added=added, duplicates=duplicates)
 
 
+@router.post("/tasks/lookup", response_model=TaskList)
+def lookup_tasks(payload: AddRequest):
+    if len(payload.urls) > 500:
+        raise HTTPException(status_code=422, detail="at most 500 URLs per lookup")
+    items = service.lookup_tasks(payload.urls)
+    return TaskList(items=[TaskOut.model_validate(task) for task in items], total=len(items))
+
+
 @router.post("/tasks/retry-failed", response_model=MutationResult)
 def retry_failed():
     return MutationResult(affected=service.retry_failed())

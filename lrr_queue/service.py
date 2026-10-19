@@ -37,6 +37,11 @@ def list_tasks(status: str | None = None, q: str | None = None, limit: int = 50,
     return items, total
 
 
+def lookup_tasks(urls: list[str]) -> list[Task]:
+    statuses = [Status.PENDING.value, Status.RUNNING.value, Status.FAILED.value, Status.DEAD.value]
+    return list(Task.select().where(Task.url.in_(urls), Task.status.in_(statuses)))
+
+
 def get_task(task_id: int) -> Task | None:
     return Task.get_or_none(Task.id == task_id)
 

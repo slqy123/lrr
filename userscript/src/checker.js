@@ -2,7 +2,7 @@ import { CONFIG, DEFAULT_CONFIG, gmGet, gmSet } from './config'
 import galleryStyles from './gallery.css?inline'
 import themeStyles from './theme.css?inline'
 import { mountPanel } from './panel'
-import { collect, setStatus as setGalleryStatus, galleries } from './state'
+import { collect, setStatus as setGalleryStatus, setQueueStatus, galleries } from './state'
 
 let generation = 0
 function cacheNamespace() { return 'lrr-checker-v2-' + simpleHash(CONFIG.lrrServerUrl + CONFIG.lrrApiKey) + '-' }
@@ -558,14 +558,50 @@ function handleResponse(result, titleElement, galleryUrl) {
     performAlternativeSearch(author + ',' + title, titleElement);
 }
 
+const queueChecks = new Map();
+async function checkQueue(urls, requestGeneration = generation) {
+    const request = {};
+    const queueUrl = CONFIG.queueServerUrl.replace(/\/$/, '');
+    for (let offset = 0; offset < urls.length; offset += 500) {
+        if (requestGeneration !== generation) return;
+        const batch = urls.slice(offset, offset + 500);
+        batch.forEach(url => queueChecks.set(url, request));
+        try {
+            const response = await makeRequest({ method: 'POST', url: queueUrl + '/api/tasks/lookup',
+                headers: { 'Content-Type': 'application/json' }, data: JSON.stringify({ urls: batch }) });
+            const result = JSON.parse(response.responseText);
+            if (!Array.isArray(result.items)) throw new Error('Invalid queue lookup response');
+            if (requestGeneration !== generation) return;
+            const tasks = new Map(result.items.map(task => [task.url, task]));
+            for (const url of batch) {
+                if (queueChecks.get(url) !== request) continue;
+                const task = tasks.get(url);
+                const status = task?.status === 'pending' ? 'queued'
+                    : task?.status === 'running' ? 'downloading'
+                    : task?.status === 'failed' && task.attempts < task.max_attempts ? 'retrying'
+                    : task?.status === 'failed' || task?.status === 'dead' ? 'queue-failed' : undefined;
+                setQueueStatus(url, status);
+            }
+        } catch (error) {
+            if (requestGeneration !== generation) return;
+            batch.forEach(url => {
+                if (queueChecks.get(url) === request) setQueueStatus(url, 'queue-unknown');
+            });
+            warn('Queue lookup failed', error);
+        }
+    }
+}
+
 function collectGalleriesFromDom() {
     collect();
+    const queueUrls = [];
     document.querySelectorAll('.itg .gl1t a[href*="/g/"]').forEach(function (linkElement) {
         const galleryUrl = linkElement.href;
         const titleElement = linkElement.querySelector('.glink');
         if (!galleryUrl || !titleElement) return;
         if (seenGalleryUrls.has(galleryUrl)) return;
         seenGalleryUrls.add(galleryUrl);
+        queueUrls.push(galleryUrl);
         if (hasLrrMarker(titleElement)) return;
 
         const cacheKey = 'lrr-checker-' + galleryUrl;
@@ -573,6 +609,7 @@ function collectGalleriesFromDom() {
         if (cachedData) { handleResponse(cachedData, titleElement, galleryUrl); return; }
         galleriesToCheck.push({ galleryUrl: galleryUrl, titleElement: titleElement, cacheKey: cacheKey, generation: generation });
     });
+    if (queueUrls.length) checkQueue(queueUrls);
 }
 
 function flushPendingRequests() {
@@ -765,9 +802,17 @@ function init() {
                 headers: { 'Content-Type': 'application/json' }, data: JSON.stringify({ urls }), timeout: 10000 });
             const result = JSON.parse(response.responseText);
             if (!result.ok || !Number.isInteger(result.added) || !Number.isInteger(result.duplicates)) throw new Error(result.error || '服务器响应异常');
+            checkQueue(urls);
             return result;
         }
     });
+    let pollingQueue = false;
+    setInterval(async () => {
+        if (document.hidden || pollingQueue) return;
+        pollingQueue = true;
+        try { await checkQueue([...galleries.keys()]); }
+        finally { pollingQueue = false; }
+    }, 30000);
     setupChecker();
     setupSearchSuggest();
 }
