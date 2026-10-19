@@ -1,60 +1,88 @@
+.lrr-gallery-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 22px;
+  margin: 0 8px;
+  color: var(--lrr-muted);
+  font: var(--lrr-font);
+  line-height: 18px;
+}
 .lrr-item-checkbox {
-  appearance: auto !important;
+  appearance: none !important;
   position: static !important;
   opacity: 1 !important;
-  width: 16px !important;
-  height: 16px !important;
-  margin: 0 8px 0 0 !important;
-  accent-color: var(--lrr-accent);
+  margin: 0 !important;
+  background: transparent;
+  color: var(--lrr-text);
   cursor: pointer;
 }
+.lrr-item-checkbox:checked {
+  background: var(--lrr-selection);
+  border-color: var(--lrr-selection);
+  color: var(--lrr-on-selection);
+}
+.lrr-item-checkbox:checked::after { content: '✓'; }
+.itg .gl1t.lrr-selected .glink { color: var(--lrr-selection); }
 .lrr-item-checkbox:focus-visible, .lrr-marker-span:focus-visible,
 .lrr-hc-btn:focus-visible, .lrr-hc-searchall:focus-visible,
 .lrr-suggest-item:focus-visible {
   outline: 2px solid var(--lrr-accent);
   outline-offset: 3px;
 }
+.lrr-item-checkbox:focus-visible { outline-color: var(--lrr-selection); }
 .lrr-check-state {
   color: var(--lrr-muted);
-  background: var(--lrr-surface);
 }
-[data-lrr-status=missing] > .lrr-check-state,
-[data-lrr-status=checking] > .lrr-check-state,
-[data-lrr-status=downloaded]:has(> .lrr-marker-span) > .lrr-check-state,
-[data-lrr-status=duplicate]:has(> .lrr-marker-span) > .lrr-check-state,
-[data-lrr-status=error]:has(> .lrr-marker-span) > .lrr-check-state {
+[data-lrr-state=downloaded]:has(> .lrr-marker-span) > .lrr-check-state,
+[data-lrr-state=duplicate]:has(> .lrr-marker-span) > .lrr-check-state,
+[data-lrr-state=error]:has(> .lrr-marker-span) > .lrr-check-state {
   display: none;
 }
-:is([data-lrr-status=queued], [data-lrr-status=downloading], [data-lrr-status=retrying],
-[data-lrr-status=queue-failed], [data-lrr-status=queue-unknown]) > .lrr-marker-span {
+:is([data-lrr-state=queued], [data-lrr-state=downloading], [data-lrr-state=retrying],
+[data-lrr-state=queue-failed], [data-lrr-state=queue-unknown]) > .lrr-marker-span {
   display: none;
 }
-[data-lrr-status=downloaded] .lrr-check-state { color: var(--lrr-accent); }
-[data-lrr-status=duplicate] .lrr-check-state { color: var(--lrr-duplicate); }
-.lrr-marker-span, .lrr-check-state {
+:is([data-lrr-state=missing], [data-lrr-state=checking]) .lrr-check-state { color: var(--lrr-muted); }
+[data-lrr-state=downloaded] .lrr-check-state { color: var(--lrr-library); }
+[data-lrr-state=duplicate] .lrr-check-state { color: var(--lrr-duplicate); }
+:is([data-lrr-state=queued], [data-lrr-state=downloading]) .lrr-check-state { color: var(--lrr-queue); }
+[data-lrr-state=retrying] .lrr-check-state { color: var(--lrr-warning); }
+[data-lrr-state=queue-failed] .lrr-check-state { color: var(--lrr-error); }
+:is([data-lrr-state=error], [data-lrr-state=queue-unknown]) .lrr-check-state { color: var(--lrr-warning); }
+.lrr-item-checkbox {
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
-  margin-right: 6px;
+  width: 18px;
+  height: 18px;
   padding: 0;
   flex-shrink: 0;
-  border: 1px solid currentColor;
-  border-radius: 6px;
-  font: 600 12px/1 system-ui, sans-serif;
-  vertical-align: middle;
-  cursor: pointer;
-}
-.lrr-marker-downloaded { color: var(--lrr-accent); background: var(--lrr-accent-soft); }
-.lrr-marker-file { color: var(--lrr-duplicate); background: var(--lrr-duplicate-soft); }
-.lrr-marker-error { color: var(--lrr-muted); background: var(--lrr-surface); }
-.lrr-title-selected {
-  outline: 2px solid var(--lrr-accent);
-  outline-offset: 3px;
+  border: 1px solid var(--lrr-muted);
   border-radius: 4px;
+  font: 600 12px/1 system-ui, sans-serif;
 }
+.lrr-marker-span, .lrr-check-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font: 12px/18px system-ui, sans-serif;
+  white-space: nowrap;
+  cursor: help;
+}
+.lrr-marker-span { cursor: pointer; }
+.lrr-marker-span, .lrr-check-state { background: transparent; border: 0; padding: 0; }
+.lrr-state-dialog { width: min(440px, calc(100% - 32px)); max-height: 80vh; overflow: auto; margin: auto; padding: 24px; border: 1px solid var(--lrr-line); border-radius: 10px; background: var(--lrr-surface); color: var(--lrr-text); font: var(--lrr-font); text-align: left; }
+.lrr-state-dialog::backdrop { background: #0008; }
+.lrr-state-dialog header { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.lrr-state-dialog button { padding: 6px 10px; border: 1px solid var(--lrr-line); border-radius: 6px; background: transparent; color: inherit; cursor: pointer; }
+.lrr-state-dialog p { white-space: pre-line; overflow-wrap: anywhere; margin: 16px 0 0; color: var(--lrr-muted); }
+.lrr-marker-span svg, .lrr-check-state svg { width: 16px; height: 16px; }
+.lrr-marker-downloaded { color: var(--lrr-library); }
+.lrr-marker-file { color: var(--lrr-duplicate); }
+.lrr-marker-error { color: var(--lrr-warning); }
 /* Fixed to body: avoids both overflow clipping and inheriting the selected-title color. */
 .lrr-hover-card {
   position: fixed;
@@ -92,8 +120,8 @@
   font-weight: 600;
   padding: 3px 8px;
   border-radius: 6px;
-  background: var(--lrr-accent-soft);
-  color: var(--lrr-accent);
+  background: var(--lrr-library-soft);
+  color: var(--lrr-library);
 }
 .lrr-hover-card[data-match=alt] .lrr-hc-badge {
   background: var(--lrr-duplicate-soft);

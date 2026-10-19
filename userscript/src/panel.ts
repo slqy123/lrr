@@ -1,4 +1,4 @@
-import { collect, galleries, labels, notify, select, type GalleryStatus } from './state'
+import { collect, galleries, labels, notify, queueStatuses, select, type GalleryStatus } from './state'
 import styles from './ui.css?inline'
 import themeStyles from './theme.css?inline'
 
@@ -10,6 +10,7 @@ interface Options {
   recheck: () => void
   send: (urls: string[]) => Promise<{ added: number; duplicates: number }>
   copy: (text: string) => void
+  integrated?: boolean
 }
 const paths: Record<string, string> = {
   menu: 'M4 6h16M4 12h16M4 18h16', close: 'm6 6 12 12M6 18 18 6',
@@ -30,7 +31,7 @@ export function mountPanel(options: Options) {
     <aside class="panel" aria-label="LRR 画廊工具" hidden>
       <header><strong>LRR <small>画廊工具</small></strong><button data-action="close" aria-label="关闭面板">${icon('close')}</button></header>
       <section><div class="summary" aria-live="polite"></div><p class="hint">按状态替换选择，也可在画廊上逐项勾选。</p>
-        <div class="choices"><button data-select="missing">选择未入库</button><button data-select="duplicate">选择疑似重复</button><button data-select="all">全选</button><button data-select="none">清空</button></div>
+        <div class="choices"><button data-select="missing">选择未收录</button><button data-select="duplicate">选择疑似重复</button><button data-select="all">全选</button><button data-select="none">清空</button></div>
         <p class="scope hint"></p><div class="counts"></div>
       </section>
       <section class="actions"><button class="primary" data-action="send">${icon('send')}发送到队列</button><button data-action="copy">${icon('copy')}复制链接</button></section>
@@ -47,6 +48,7 @@ export function mountPanel(options: Options) {
   const feedback = (message: string, error = false) => {
     get('.feedback').textContent = message
     get('.feedback').classList.toggle('error', error)
+    document.dispatchEvent(new CustomEvent('lrr:feedback', { detail: { message, error, sending } }))
   }
   function theme() {
     const mode = String(config.theme || 'auto')
@@ -54,6 +56,7 @@ export function mountPanel(options: Options) {
     document.documentElement.dataset.lrrTheme = host.dataset.theme
   }
   function expanded(open: boolean) {
+    if (options.integrated) { panel.hidden = true; launcher.hidden = true; return }
     const wasOpen = !panel.hidden
     panel.hidden = !open
     launcher.setAttribute('aria-expanded', String(open))
@@ -61,13 +64,12 @@ export function mountPanel(options: Options) {
     persist('panelCollapsed', !open)
     if (!open && wasOpen) launcher.focus()
   }
-  const queueStatuses = new Set<GalleryStatus>(['queued', 'downloading', 'retrying', 'queue-failed'])
   function render() {
     const items = [...galleries.values()]
     const count = items.filter(item => item.selected).length
     get('.summary').textContent = `已选 ${count} / ${items.length} 个画廊`
     get('#launcher-count').textContent = count ? String(count) : ''
-    get('.scope').textContent = config.enableAltSearch ? '未入库：URL 与可提取标题均无匹配；未知与失败不计入。' : '未入库仅表示 URL 未命中；标题搜索已关闭。'
+    get('.scope').textContent = config.enableAltSearch ? '未收录：URL 与可提取标题均无匹配；未知与失败不计入。' : '未收录仅表示 URL 未命中；标题搜索已关闭。'
     const counts = Object.entries(labels).filter(([status]) => !queueStatuses.has(status as GalleryStatus))
     counts.push(['queue', '在队列中'])
     get('.counts').replaceChildren(...counts.map(([status, label]) => {
@@ -77,11 +79,12 @@ export function mountPanel(options: Options) {
     }))
     get<HTMLButtonElement>('[data-action="send"]').disabled = sending || count === 0
     get<HTMLButtonElement>('[data-action="copy"]').disabled = count === 0
+    document.dispatchEvent(new CustomEvent('lrr:sending', { detail: sending }))
   }
   const groups: [string, [string, string, string][]][] = [
     ['连接', [['lrrServerUrl', 'LANraragi 地址', 'url'], ['lrrApiKey', 'API Key', 'password'], ['queueServerUrl', '队列服务器地址', 'url']]],
     ['检查行为', [['enableAltSearch', '备用标题搜索', 'checkbox'], ['lrrConcurrency', 'URL 检查并发数', 'number'], ['altSearchConcurrency', '标题搜索并发数', 'number']]],
-    ['高级', [['requestTimeoutMs', 'URL 请求超时（毫秒）', 'number'], ['searchTimeoutMs', '标题搜索超时（毫秒）', 'number'], ['enableLogging', '控制台日志', 'checkbox']]],
+    ['高级', [['requestTimeoutMs', 'URL 请求超时（毫秒）', 'number'], ['searchTimeoutMs', '标题搜索超时（毫秒）', 'number'], ['enableLogging', '控制台日志', 'checkbox'], ['redesigned', '新版列表界面', 'checkbox']]],
   ]
   function fill(values: Config) {
     const fields = get('.fields')
@@ -159,6 +162,7 @@ export function mountPanel(options: Options) {
     event.preventDefault()
     const form = get<HTMLFormElement>('form')
     if (!form.reportValidity()) return
+    const wasRedesigned = config.redesigned
     for (const [, entries] of groups) for (const [key, , type] of entries) {
       const input = form.elements.namedItem(key) as HTMLInputElement
       config[key] = type === 'checkbox' ? input.checked : type === 'number' ? Number(input.value) : input.value.trim().replace(type === 'url' ? /\/+$/ : /$^/, '')
@@ -168,6 +172,7 @@ export function mountPanel(options: Options) {
     persist('theme', config.theme)
     theme()
     dialog.close()
+    if (wasRedesigned !== config.redesigned) { location.reload(); return }
     options.recheck()
     feedback('设置已保存，正在重新检查；检查失败可点击重新检查重试')
   })
@@ -180,4 +185,5 @@ export function mountPanel(options: Options) {
   theme()
   expanded(!config.panelCollapsed)
   notify()
+  return { root }
 }

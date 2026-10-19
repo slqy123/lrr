@@ -26,8 +26,9 @@ Three parts, one repo:
 | `web/` | Frontend source; `web/dist` is generated. |
 | `install.sh` | Builds frontend, installs/restarts the systemd user unit. |
 | `lrr-queue.service.in` | Unit template; `@PYTHON@` / `@DIR@` placeholders. |
-| `userscript/src/` | Userscript source: typed config, state and panel; existing checker in JavaScript; isolated panel CSS. |
+| `userscript/src/` | Userscript config/state, native-list layout, shared actions/settings panel and JavaScript checker. |
 | `userscript/test.mjs` | Headless Chromium integration tests against the generated userscript. |
+| `userscript/test-offline.mjs` | Layout regression tests using a supplied saved gallery HTML file. |
 | `lanraragi-checker.user.js` | Generated installable userscript; keep tracked for update URLs. |
 | `.env` | Runtime config. **Gitignored.** |
 | `.env.example` | Config template. Tracked. |
@@ -105,12 +106,17 @@ Already-downloaded URLs never enter the download path: dispatch pre-checks `urlf
 - Frontend: Svelte 5 runes only (no stores/`on:click` legacy syntax), no router, 2s polling. Design tokens live in `web/src/app.css` (`@theme`).
 - Edit userscript source in `userscript/src/`, then run `pnpm --dir web build:userscript`. Keep the generated `lanraragi-checker.user.js` tracked and keep `@namespace` / `@updateURL` / `@downloadURL` on `slqy123/lrr` (raw `main`).
 - Bump `@version` in `userscript/header.txt` before rebuilding changed userscript source.
-- Panel positioning uses CSS only: fixed launcher and overlay panel with internal scrolling, no drag coordinates or JavaScript viewport clamping. Selection state lives in `state.ts`; unknown/error results must never count as missing. Rechecks invalidate older responses without clearing selection.
+- `layout.ts` replaces standard thumbnail search-list presentation while preserving native form controls, navigation, pagination and gallery links. Other views or pages without the standard search form retain their native layout. The integrated UI reuses `panel.ts` for settings, send/copy/recheck actions and feedback; the launcher/panel remain available in native mode. Selection state lives in `state.ts`; unknown/error results must never count as missing. Rechecks invalidate older responses without clearing selection.
+- Missing status is gray, queue statuses share teal, downloaded is green, duplicates purple and lookup errors amber. Selected titles/checkboxes are blue. Keep covers uncropped and controls outside images; do not force equal title heights.
 - Comments only where the *why* is non-obvious, in English.
+
+## Offline UI prototype
+
+`userscript/prototype.html` is a standalone design preview, separate from the installed userscript. Generate a self-contained page with `python userscript/build_prototype.py <saved-gallery.html> [output.html]`; images are embedded, source-page scripts are discarded, and requests are blocked by CSP. Run `node userscript/test-prototype.mjs <generated-prototype.html>` for interaction/layout tests and screenshots. States and actions are simulated; this does not rebuild the installed userscript.
 
 ## Verify
 
-Userscript integration tests require Chromium; set `CHROMIUM` to override its executable.
+Userscript integration tests require Chromium; set `CHROMIUM` to override its executable. Run `node userscript/test-offline.mjs <saved-gallery.html>` to verify native search controls and links, uncropped portrait covers, natural-height titles, live queue actions, responsive layout and native-mode fallback against a locally saved page. The saved page is not a test dependency or a tracked fixture.
 
 ```bash
 .venv/bin/ruff check lrr_queue tests

@@ -8,12 +8,12 @@ export const statusLabels: Record<string, string> = {
 }
 
 export const statusTone: Record<string, string> = {
-  pending: 'bg-line text-muted',
-  running: 'bg-accent/15 text-accent',
+  pending: 'bg-surface-2 text-muted',
+  running: 'bg-queue/15 text-queue',
   done: 'bg-ok/15 text-ok',
   failed: 'bg-warn/15 text-warn',
   dead: 'bg-err/15 text-err',
-  cancelled: 'bg-line text-muted',
+  cancelled: 'bg-surface-2 text-muted',
 }
 
 export function relativeTime(timestamp: number | null | undefined): string {

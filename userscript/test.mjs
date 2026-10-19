@@ -51,7 +51,7 @@ const assert=(condition,message)=>{if(!condition)throw new Error(message)};
   assert(getComputedStyle(suggestion).backgroundColor===surface(),'light suggestions match panel');
   const primary=getComputedStyle(button('send')).backgroundColor;
   const channels=primary.match(/\\d+/g).map(Number);
-  assert(channels[1]>channels[0]&&channels[1]>channels[2],'green primary accent');
+  assert(channels[2]>channels[1]&&channels[1]>channels[0],'blue primary action accent');
   document.querySelector('#f_search').focus();
   assert(suggestion.classList.contains('open'),'suggestions open on focus');
   root.querySelector('[data-select="duplicate"]').click();
@@ -76,8 +76,13 @@ const assert=(condition,message)=>{if(!condition)throw new Error(message)};
   assert(getComputedStyle(suggestion).backgroundColor===surface(),'dark suggestions match panel');
   assert(getComputedStyle(card).color===getComputedStyle(root.querySelector('.panel')).color,'shared dark text');
   assert(checks[2].checked,'save keeps manual selection');
+  const selectedTitle=checks[2].closest('.gl1t').querySelector('.glink');
+  const selection=getComputedStyle(selectedTitle).color.match(/\\d+/g).map(Number);
+  assert(selection[2]>selection[1]&&selection[1]>selection[0],'selected title is blue');
+  assert(!getComputedStyle(checks[2].closest('.gl1t'),'::after').content.includes('""'),'no selection frame');
   hold=true;button('recheck').click();await pause(30);
   assert(document.querySelectorAll('[data-lrr-status="checking"]').length===6,'recheck starts');
+  assert([...document.querySelectorAll('.lrr-check-state')].every(badge=>getComputedStyle(badge).display!=='none'&&badge.textContent.includes('检查中')),'checking label is visible');
   hold=false;button('recheck').click();await pause(100);
   for(const reply of held)reply();await pause(50);
   assert(document.querySelectorAll('[data-lrr-status="missing"]').length===3,'stale responses ignored');
@@ -94,30 +99,37 @@ const assert=(condition,message)=>{if(!condition)throw new Error(message)};
   assert(document.querySelectorAll('[data-lrr-status="retrying"]').length===1,'scheduled retry badge');
   assert(document.querySelectorAll('[data-lrr-status="queue-failed"]').length===2,'dead and exhausted failure badges');
   for(const title of document.querySelectorAll('.glink')) {
-    const markers=[...title.querySelectorAll('.lrr-marker-span,.lrr-check-state')].filter(marker=>getComputedStyle(marker).display!=='none');
+    const controls=title.closest('.gl1t').querySelector('.lrr-gallery-tools');
+    const markers=[...controls.querySelectorAll('.lrr-marker-span,.lrr-check-state')].filter(marker=>getComputedStyle(marker).display!=='none');
     assert(markers.length===1,'one visible status icon per title');
     const marker=markers[0];
-    assert(marker.textContent.length===1,'status uses a single symbol');
-    assert(marker.getBoundingClientRect().width===20,'fixed status width');
-    assert(title.firstElementChild===marker||title.firstElementChild.classList.contains('lrr-marker-span'),'status before title text');
+    assert(/已入库|在队列中|查询异常/.test(marker.textContent),'status uses icon and text');
+    assert(marker.getBoundingClientRect().width>18,'status is distinct from checkbox');
+    const checkbox=controls.querySelector('.lrr-item-checkbox');
+    assert(checkbox.getBoundingClientRect().width===18&&checkbox.getBoundingClientRect().height===18,'matching checkbox size');
+    assert(!title.querySelector('.lrr-marker-span,.lrr-check-state,.lrr-item-checkbox'),'title contains only original content');
     assert(marker.title,'hover description');
   }
   const panelCounts=root.querySelector('.counts').textContent;
   assert(panelCounts.includes('在队列中 5'),'panel aggregates queue states');
   assert(!/待下载|下载中|等待重试|下载失败/.test(panelCounts),'panel hides queue state breakdown');
-  const queueColors=[...document.querySelectorAll(':is([data-lrr-status="queued"],[data-lrr-status="downloading"],[data-lrr-status="retrying"],[data-lrr-status="queue-failed"]) .lrr-check-state')].map(badge=>getComputedStyle(badge).color);
-  assert(new Set(queueColors).size===1,'all queue icons share gray color');
-  const retryBadge=document.querySelector('[data-lrr-status="retrying"] .lrr-check-state');
+  const queueColors=[...document.querySelectorAll(':is([data-lrr-state="queued"],[data-lrr-state="downloading"],[data-lrr-state="retrying"],[data-lrr-state="queue-failed"]) .lrr-check-state')].map(badge=>getComputedStyle(badge).color);
+  assert(new Set(queueColors).size===3,'processing, retry and failure use distinct semantic colors');
+  const stateColor=status=>getComputedStyle(document.querySelector('[data-lrr-state="'+status+'"] .lrr-check-state')).color;
+  assert(stateColor('queued')===stateColor('downloading'),'queued and running share processing color');
+  assert(stateColor('retrying')===stateColor('error'),'retry and query issues share warning color');
+  assert(stateColor('queue-failed')!==stateColor('error'),'download failure differs from query issues');
+  const retryBadge=document.querySelector('[data-lrr-state="retrying"] .lrr-check-state');
   assert(retryBadge.title.includes('等待重试')&&retryBadge.title.includes('1 / 3'),'retry hover details');
   root.querySelector('[data-select="missing"]').click();
   assert(document.querySelectorAll('.lrr-item-checkbox:checked').length===0,'queue entries excluded from select missing');
   queueOffline=true;button('recheck').click();await pause(150);
   assert(document.querySelectorAll('[data-lrr-status="queue-unknown"]').length===6,'queue failure is not missing');
-  const unknownBadge=document.querySelector('[data-lrr-status="queue-unknown"] .lrr-check-state');
-  assert(unknownBadge.textContent==='?'&&unknownBadge.title.includes('不代表下载失败'),'queue lookup failure tooltip');
+  const unknownBadge=document.querySelector('[data-lrr-state="queue-unknown"] .lrr-check-state');
+  assert(unknownBadge.textContent.includes('查询异常')&&unknownBadge.title.includes('不代表下载失败'),'queue lookup failure tooltip');
   queueOffline=false;queueTasks=[];button('recheck').click();await pause(150);
   assert(document.querySelectorAll('[data-lrr-status="missing"]').length===4,'removed queue entries restore library status');
-  assert([...document.querySelectorAll('[data-lrr-status="missing"] .lrr-check-state')].every(badge=>getComputedStyle(badge).display==='none'),'undownloaded galleries have no icon');
+  assert([...document.querySelectorAll('[data-lrr-state="missing"] .lrr-check-state')].every(badge=>getComputedStyle(badge).display!=='none'&&badge.textContent==='未收录'&&badge.querySelector('svg')),'missing galleries have a book icon and label');
   const purple=getComputedStyle(document.querySelector('.lrr-marker-file')).color.match(/\\d+/g).map(Number);
   assert(purple[0]>purple[1]&&purple[2]>purple[0],'duplicate icon is purple');
   const rect=root.querySelector('.panel').getBoundingClientRect();
@@ -130,7 +142,7 @@ const assert=(condition,message)=>{if(!condition)throw new Error(message)};
 try {
   const file = join(dir, 'test.html')
   writeFileSync(file, fixture)
-  for (const [width, height] of [[1200, 900], [420, 380]]) {
+  for (const [width, height] of [[1200, 900], [420, 380]].filter(([width])=>!process.env.LRR_TEST_DESKTOP_ONLY||width>=900)) {
     const result = spawnSync(process.env.CHROMIUM || 'chromium', ['--headless', '--no-sandbox', '--disable-gpu', `--user-data-dir=${join(dir, `profile-${width}`)}`, '--no-proxy-server', '--allow-file-access-from-files', '--virtual-time-budget=4000', `--window-size=${width},${height}`, '--dump-dom', `file://${file}`], { encoding: 'utf8', timeout: 30000, maxBuffer: 1024 * 1024 })
     const status = result.stdout?.match(/data-result="([^"]*)"/)?.[1]
     if (status !== 'PASS') throw new Error(`${width}×${height}: ${status || result.error || result.stderr}`)

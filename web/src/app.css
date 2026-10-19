@@ -1,23 +1,26 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-ink: #0e1114;
-  --color-surface: #171b20;
-  --color-surface-2: #1f242b;
-  --color-line: #272d35;
-  --color-text: #dfe4ea;
-  --color-muted: #8a929c;
-  --color-accent: #4fb0a5;
-  --color-ok: #5aa96a;
-  --color-warn: #d8a13a;
-  --color-err: #cf5f57;
+  --color-ink: #15181e;
+  --color-surface: #1d222b;
+  --color-surface-2: #2a313d;
+  --color-line: #394251;
+  --color-text: #e6e9ef;
+  --color-muted: #a0aaba;
+  --color-accent: #8ab4ff;
+  --color-accent-hover: #accaff;
+  --color-on-accent: #15233d;
+  --color-queue: #67c9df;
+  --color-ok: #73c99b;
+  --color-warn: #e4be70;
+  --color-err: #f39da7;
   --font-sans: ui-sans-serif, system-ui, 'Noto Sans SC', 'Segoe UI', sans-serif;
-  --font-mono: ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Menlo, monospace;
 }
 
 html,
 body {
   height: 100%;
+  color-scheme: dark;
 }
 
 body {
@@ -30,8 +33,29 @@ body {
 }
 
 .tnum {
-  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
+}
+
+button {
+  cursor: pointer;
+  transition: background-color 120ms, border-color 120ms, color 120ms;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+button:not(:disabled):hover {
+  background-color: var(--color-surface-2);
+}
+
+button.bg-accent:not(:disabled):hover {
+  background-color: var(--color-accent-hover);
+}
+
+textarea::placeholder,
+input::placeholder {
+  color: var(--color-muted);
 }
 
 :focus-visible {

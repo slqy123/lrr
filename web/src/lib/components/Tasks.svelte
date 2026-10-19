@@ -58,7 +58,7 @@
       class="tnum w-full resize-y rounded border border-line bg-ink px-3 py-2 text-xs outline-none focus:border-accent"
     ></textarea>
     <div class="mt-2 flex items-center gap-3">
-      <button class="rounded bg-accent px-3 py-1 text-sm text-ink hover:opacity-90" onclick={addUrls}>
+      <button class="rounded bg-accent px-3 py-1 text-sm font-semibold text-on-accent" onclick={addUrls}>
         加入队列
       </button>
       <button
@@ -138,12 +138,12 @@
             <td class="px-3 py-2">
               <div class="flex flex-wrap gap-1 text-xs">
                 {#if ['failed', 'dead', 'cancelled', 'done'].includes(task.status)}
-                  <button class="rounded border border-line px-2 py-0.5 hover:border-accent hover:text-accent" onclick={() => store.mutate(() => api.retry(task.id))}>重试</button>
+                  <button class="rounded border border-line px-2 py-0.5 hover:border-muted" onclick={() => store.mutate(() => api.retry(task.id))}>重试</button>
                 {/if}
                 {#if ['pending', 'running', 'failed'].includes(task.status)}
                   <button class="rounded border border-line px-2 py-0.5 hover:border-warn hover:text-warn" onclick={() => store.mutate(() => api.cancel(task.id))}>取消</button>
                 {/if}
-                <button class="rounded border border-line px-2 py-0.5 hover:border-accent hover:text-accent" onclick={() => copy(task.url)}>复制</button>
+                <button class="rounded border border-line px-2 py-0.5 hover:border-muted" onclick={() => copy(task.url)}>复制</button>
                 <button class="rounded border border-line px-2 py-0.5 hover:border-err hover:text-err" onclick={() => store.mutate(() => api.remove(task.id))}>删除</button>
               </div>
             </td>

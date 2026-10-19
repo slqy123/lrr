@@ -2,7 +2,8 @@ import { CONFIG, DEFAULT_CONFIG, gmGet, gmSet } from './config'
 import galleryStyles from './gallery.css?inline'
 import themeStyles from './theme.css?inline'
 import { mountPanel } from './panel'
-import { collect, setStatus as setGalleryStatus, setQueueStatus, galleries } from './state'
+import { mountLayout } from './layout'
+import { collect, setStatus as setGalleryStatus, setQueueStatus, galleries, galleryControls, setStatusContent, showStatusDetail } from './state'
 
 let generation = 0
 function cacheNamespace() { return 'lrr-checker-v2-' + simpleHash(CONFIG.lrrServerUrl + CONFIG.lrrApiKey) + '-' }
@@ -174,7 +175,7 @@ function getGalleryTitlePlain(titleElement) {
 }
 
 function hasLrrMarker(titleElement) {
-    return !!(titleElement && titleElement.querySelector('.lrr-marker-span'));
+    return !!(titleElement && galleryControls(titleElement)?.querySelector('.lrr-marker-span'));
 }
 
 function pickArchive(data) {
@@ -350,10 +351,11 @@ function prependLrrMarker(titleElement, text, classNames, matchType, hits, searc
     setGalleryStatus(titleElement, matchType === 'urlfinder' ? 'downloaded' : matchType === 'alt' ? 'duplicate' : 'error');
     hits = hits || [];
 
-    const markerSpan = document.createElement('span');
+    const markerSpan = document.createElement('button');
+    markerSpan.type = 'button';
     markerSpan.classList.add('lrr-marker-span');
     classNames.forEach(function (c) { markerSpan.classList.add(c); });
-    markerSpan.textContent = matchType === 'urlfinder' ? '✓' : matchType === 'alt' ? '≃' : '!';
+    setStatusContent(markerSpan, matchType === 'urlfinder' ? 'downloaded' : matchType === 'alt' ? 'duplicate' : 'error');
     markerSpan.title = matchType === 'urlfinder' ? '已入库' : matchType === 'alt' ? '疑似重复' : '检查失败';
 
     markerSpan.addEventListener('click', function (e) {
@@ -363,16 +365,20 @@ function prependLrrMarker(titleElement, text, classNames, matchType, hits, searc
             window.open(CONFIG.lrrServerUrl + '/?sort=1&sortdir=desc&q=' + encodeURIComponent(searchQuery), '_blank');
         } else if (hits.length > 0 && hits[0].id) {
             window.open(CONFIG.lrrServerUrl + '/reader?id=' + encodeURIComponent(hits[0].id), '_blank');
+        } else {
+            showStatusDetail('查询异常', '书库查询失败，无法判断是否已收录。请检查连接设置后重新检查；这不代表下载失败。');
         }
     });
 
     const card = buildHoverCard(matchType, hits, searchQuery);
     markerSpan.addEventListener('mouseenter', function () { showHoverCard(markerSpan, card); });
     markerSpan.addEventListener('mouseleave', scheduleHide);
+    markerSpan.addEventListener('focus', function () { showHoverCard(markerSpan, card); });
+    markerSpan.addEventListener('blur', scheduleHide);
     card.addEventListener('mouseenter', cancelHide);
     card.addEventListener('mouseleave', scheduleHide);
 
-    titleElement.prepend(markerSpan);
+    galleryControls(titleElement)?.append(markerSpan);
 }
 
 function getAuthorizationHeaderValue(apiKey) {
@@ -708,6 +714,7 @@ function setupSearchSuggest() {
     }
 
     function updateActive() {
+        document.dispatchEvent(new Event('lrr:filters'));
         box.querySelectorAll('[data-lang]').forEach(function (btn) {
             btn.classList.toggle('active', tokens().some(function (t) { return t.toLowerCase() === btn.dataset.lang; }));
         });
@@ -794,14 +801,15 @@ function recheck() {
     altSearchInflight.clear();
     runAltSearchLimited = createPool(CONFIG.altSearchConcurrency);
     for (const gallery of galleries.values()) {
-        gallery.title.querySelectorAll('.lrr-marker-span').forEach(marker => marker.remove());
+        gallery.controls.querySelectorAll('.lrr-marker-span').forEach(marker => marker.remove());
         setGalleryStatus(gallery.title, 'checking');
     }
     collectGalleriesFromDom();
     flushPendingRequests();
 }
 function init() {
-    mountPanel({ config: CONFIG, defaults: DEFAULT_CONFIG, persist: gmSet, recheck,
+    const layout = mountLayout(CONFIG, gmSet);
+    const tools = mountPanel({ integrated: !!layout, config: CONFIG, defaults: DEFAULT_CONFIG, persist: gmSet, recheck,
         copy: text => GM_setClipboard(text),
         send: async urls => {
             const response = await makeRequest({ method: 'POST', url: CONFIG.queueServerUrl + '/add',
@@ -812,6 +820,7 @@ function init() {
             return result;
         }
     });
+    layout?.connect(tools.root);
     let pollingQueue = false;
     setInterval(async () => {
         if (document.hidden || pollingQueue) return;

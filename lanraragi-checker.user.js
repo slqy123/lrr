@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      MIT
-// @version      1.3.5
+// @version      1.5.2
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -30,7 +30,9 @@
 		enableLogging: false,
 		queueServerUrl: "http://localhost:29481",
 		panelCollapsed: true,
-		theme: "auto"
+		theme: "auto",
+		redesigned: true,
+		density: "standard"
 	};
 	function gmGet(key, fallback) {
 		try {
@@ -47,18 +49,24 @@
 	var CONFIG = Object.fromEntries(Object.entries(DEFAULT_CONFIG).map(([key, fallback]) => [key, gmGet(key, fallback)]));
 	//#endregion
 	//#region ../userscript/src/gallery.css?inline
-	var gallery_default = ".lrr-item-checkbox {\n  appearance: auto !important;\n  position: static !important;\n  opacity: 1 !important;\n  width: 16px !important;\n  height: 16px !important;\n  margin: 0 8px 0 0 !important;\n  accent-color: var(--lrr-accent);\n  cursor: pointer;\n}\n.lrr-item-checkbox:focus-visible, .lrr-marker-span:focus-visible,\n.lrr-hc-btn:focus-visible, .lrr-hc-searchall:focus-visible,\n.lrr-suggest-item:focus-visible {\n  outline: 2px solid var(--lrr-accent);\n  outline-offset: 3px;\n}\n.lrr-check-state {\n  color: var(--lrr-muted);\n  background: var(--lrr-surface);\n}\n[data-lrr-status=missing] > .lrr-check-state,\n[data-lrr-status=checking] > .lrr-check-state,\n[data-lrr-status=downloaded]:has(> .lrr-marker-span) > .lrr-check-state,\n[data-lrr-status=duplicate]:has(> .lrr-marker-span) > .lrr-check-state,\n[data-lrr-status=error]:has(> .lrr-marker-span) > .lrr-check-state {\n  display: none;\n}\n:is([data-lrr-status=queued], [data-lrr-status=downloading], [data-lrr-status=retrying],\n[data-lrr-status=queue-failed], [data-lrr-status=queue-unknown]) > .lrr-marker-span {\n  display: none;\n}\n[data-lrr-status=downloaded] .lrr-check-state { color: var(--lrr-accent); }\n[data-lrr-status=duplicate] .lrr-check-state { color: var(--lrr-duplicate); }\n.lrr-marker-span, .lrr-check-state {\n  box-sizing: border-box;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  width: 20px;\n  height: 20px;\n  margin-right: 6px;\n  padding: 0;\n  flex-shrink: 0;\n  border: 1px solid currentColor;\n  border-radius: 6px;\n  font: 600 12px/1 system-ui, sans-serif;\n  vertical-align: middle;\n  cursor: pointer;\n}\n.lrr-marker-downloaded { color: var(--lrr-accent); background: var(--lrr-accent-soft); }\n.lrr-marker-file { color: var(--lrr-duplicate); background: var(--lrr-duplicate-soft); }\n.lrr-marker-error { color: var(--lrr-muted); background: var(--lrr-surface); }\n.lrr-title-selected {\n  outline: 2px solid var(--lrr-accent);\n  outline-offset: 3px;\n  border-radius: 4px;\n}\n/* Fixed to body: avoids both overflow clipping and inheriting the selected-title color. */\n.lrr-hover-card {\n  position: fixed;\n  z-index: 1000000;\n  min-width: min(320px, calc(100vw - 24px));\n  max-width: min(440px, calc(100vw - 24px));\n  max-height: min(480px, calc(100dvh - 24px));\n  overflow-y: auto;\n  background: var(--lrr-bg);\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius-lg);\n  box-shadow: var(--lrr-shadow);\n  font: var(--lrr-font);\n  color: var(--lrr-text);\n  text-align: left;\n  opacity: 0;\n  visibility: hidden;\n  transform: translateY(-4px);\n  transition: opacity .12s ease, transform .12s ease, visibility .12s;\n}\n.lrr-hover-card.show { opacity: 1; visibility: visible; transform: none; }\n.lrr-hc-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 12px;\n  padding: 12px 14px;\n  border-bottom: 1px solid var(--lrr-line);\n  position: sticky;\n  top: 0;\n  background: var(--lrr-bg);\n}\n.lrr-hc-badge {\n  font-size: 11px;\n  font-weight: 600;\n  padding: 3px 8px;\n  border-radius: 6px;\n  background: var(--lrr-accent-soft);\n  color: var(--lrr-accent);\n}\n.lrr-hover-card[data-match=alt] .lrr-hc-badge {\n  background: var(--lrr-duplicate-soft);\n  color: var(--lrr-duplicate);\n}\n.lrr-hover-card[data-match=error] .lrr-hc-badge {\n  background: var(--lrr-error-soft);\n  color: var(--lrr-error);\n}\n.lrr-hc-count, .lrr-hc-meta { font-size: 11px; color: var(--lrr-muted); }\n.lrr-hc-meta { margin-top: 4px; }\n.lrr-hc-item { display: flex; gap: 12px; padding: 14px; border-bottom: 1px solid var(--lrr-line); }\n.lrr-hc-item:last-child { border-bottom: none; }\n.lrr-hc-thumb {\n  width: 56px;\n  height: 80px;\n  flex-shrink: 0;\n  overflow: hidden;\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius);\n  background: var(--lrr-surface);\n}\n.lrr-hc-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }\n.lrr-hc-info { flex: 1; min-width: 0; }\n.lrr-hc-title {\n  font-size: 13px;\n  font-weight: 600;\n  color: var(--lrr-text);\n  display: -webkit-box;\n  -webkit-line-clamp: 2;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  overflow-wrap: anywhere;\n}\n.lrr-hc-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }\n.lrr-hc-tag {\n  font-size: 11px;\n  padding: 2px 6px;\n  border: 1px solid var(--lrr-line);\n  border-radius: 6px;\n  background: var(--lrr-surface);\n  color: var(--lrr-muted);\n}\n.lrr-hc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }\n.lrr-hc-btn {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  padding: 6px 10px;\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius);\n  font-size: 12px;\n  font-weight: 500;\n  text-decoration: none !important;\n}\n.lrr-hc-btn-read { background: var(--lrr-accent); border-color: var(--lrr-accent); color: var(--lrr-on-accent) !important; }\n.lrr-hc-btn-read:hover { background: var(--lrr-accent-hover); border-color: var(--lrr-accent-hover); }\n.lrr-hc-btn-edit { background: var(--lrr-bg); color: var(--lrr-text) !important; }\n.lrr-hc-btn-edit:hover { background: var(--lrr-surface); }\n.lrr-hc-footer { padding: 12px 14px; border-top: 1px solid var(--lrr-line); }\n.lrr-hc-searchall { font-size: 12px; color: var(--lrr-accent) !important; text-decoration: none; }\n.lrr-hc-searchall:hover { text-decoration: underline; }\n#lrr-search-suggest {\n  position: absolute;\n  top: 100%;\n  left: 0;\n  z-index: 100000;\n  min-width: min(240px, calc(100vw - 24px));\n  max-width: calc(100vw - 24px);\n  box-sizing: border-box;\n  margin-top: 8px;\n  padding: 14px;\n  background: var(--lrr-bg);\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius-lg);\n  box-shadow: var(--lrr-shadow);\n  color: var(--lrr-text);\n  font: var(--lrr-font);\n  opacity: 0;\n  visibility: hidden;\n  transform: translateY(-4px);\n  transition: opacity .12s ease, transform .12s ease, visibility .12s;\n}\n#lrr-search-suggest.open { opacity: 1; visibility: visible; transform: none; }\n.lrr-suggest-group { margin-bottom: 14px; }\n.lrr-suggest-group:last-child { margin-bottom: 0; }\n.lrr-suggest-label { margin-bottom: 8px; color: var(--lrr-muted); font-size: 11px; font-weight: 600; }\n.lrr-suggest-items { display: flex; flex-wrap: wrap; gap: 8px; }\n.lrr-suggest-item {\n  padding: 6px 10px;\n  background: var(--lrr-bg);\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius);\n  color: var(--lrr-text);\n  font: inherit;\n  font-size: 12px;\n  cursor: pointer;\n  transition: background .12s ease, border-color .12s ease, color .12s ease;\n}\n.lrr-suggest-item:hover { border-color: var(--lrr-accent); background: var(--lrr-accent-soft); color: var(--lrr-accent); }\n.lrr-suggest-item.active { background: var(--lrr-accent); border-color: var(--lrr-accent); color: var(--lrr-on-accent); }\n@media (prefers-reduced-motion: reduce) {\n  .lrr-hover-card, #lrr-search-suggest, .lrr-suggest-item { transition: none; transform: none; }\n}\n";
+	var gallery_default = ".lrr-gallery-tools {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  min-height: 22px;\n  margin: 0 8px;\n  color: var(--lrr-muted);\n  font: var(--lrr-font);\n  line-height: 18px;\n}\n.lrr-item-checkbox {\n  appearance: none !important;\n  position: static !important;\n  opacity: 1 !important;\n  margin: 0 !important;\n  background: transparent;\n  color: var(--lrr-text);\n  cursor: pointer;\n}\n.lrr-item-checkbox:checked {\n  background: var(--lrr-selection);\n  border-color: var(--lrr-selection);\n  color: var(--lrr-on-selection);\n}\n.lrr-item-checkbox:checked::after { content: '✓'; }\n.itg .gl1t.lrr-selected .glink { color: var(--lrr-selection); }\n.lrr-item-checkbox:focus-visible, .lrr-marker-span:focus-visible,\n.lrr-hc-btn:focus-visible, .lrr-hc-searchall:focus-visible,\n.lrr-suggest-item:focus-visible {\n  outline: 2px solid var(--lrr-accent);\n  outline-offset: 3px;\n}\n.lrr-item-checkbox:focus-visible { outline-color: var(--lrr-selection); }\n.lrr-check-state {\n  color: var(--lrr-muted);\n}\n[data-lrr-state=downloaded]:has(> .lrr-marker-span) > .lrr-check-state,\n[data-lrr-state=duplicate]:has(> .lrr-marker-span) > .lrr-check-state,\n[data-lrr-state=error]:has(> .lrr-marker-span) > .lrr-check-state {\n  display: none;\n}\n:is([data-lrr-state=queued], [data-lrr-state=downloading], [data-lrr-state=retrying],\n[data-lrr-state=queue-failed], [data-lrr-state=queue-unknown]) > .lrr-marker-span {\n  display: none;\n}\n:is([data-lrr-state=missing], [data-lrr-state=checking]) .lrr-check-state { color: var(--lrr-muted); }\n[data-lrr-state=downloaded] .lrr-check-state { color: var(--lrr-library); }\n[data-lrr-state=duplicate] .lrr-check-state { color: var(--lrr-duplicate); }\n:is([data-lrr-state=queued], [data-lrr-state=downloading]) .lrr-check-state { color: var(--lrr-queue); }\n[data-lrr-state=retrying] .lrr-check-state { color: var(--lrr-warning); }\n[data-lrr-state=queue-failed] .lrr-check-state { color: var(--lrr-error); }\n:is([data-lrr-state=error], [data-lrr-state=queue-unknown]) .lrr-check-state { color: var(--lrr-warning); }\n.lrr-item-checkbox {\n  box-sizing: border-box;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  width: 18px;\n  height: 18px;\n  padding: 0;\n  flex-shrink: 0;\n  border: 1px solid var(--lrr-muted);\n  border-radius: 4px;\n  font: 600 12px/1 system-ui, sans-serif;\n}\n.lrr-marker-span, .lrr-check-state {\n  display: inline-flex;\n  align-items: center;\n  gap: 4px;\n  margin-left: auto;\n  font: 12px/18px system-ui, sans-serif;\n  white-space: nowrap;\n  cursor: help;\n}\n.lrr-marker-span { cursor: pointer; }\n.lrr-marker-span, .lrr-check-state { background: transparent; border: 0; padding: 0; }\n.lrr-state-dialog { width: min(440px, calc(100% - 32px)); max-height: 80vh; overflow: auto; margin: auto; padding: 24px; border: 1px solid var(--lrr-line); border-radius: 10px; background: var(--lrr-surface); color: var(--lrr-text); font: var(--lrr-font); text-align: left; }\n.lrr-state-dialog::backdrop { background: #0008; }\n.lrr-state-dialog header { display: flex; justify-content: space-between; align-items: center; gap: 16px; }\n.lrr-state-dialog button { padding: 6px 10px; border: 1px solid var(--lrr-line); border-radius: 6px; background: transparent; color: inherit; cursor: pointer; }\n.lrr-state-dialog p { white-space: pre-line; overflow-wrap: anywhere; margin: 16px 0 0; color: var(--lrr-muted); }\n.lrr-marker-span svg, .lrr-check-state svg { width: 16px; height: 16px; }\n.lrr-marker-downloaded { color: var(--lrr-library); }\n.lrr-marker-file { color: var(--lrr-duplicate); }\n.lrr-marker-error { color: var(--lrr-warning); }\n/* Fixed to body: avoids both overflow clipping and inheriting the selected-title color. */\n.lrr-hover-card {\n  position: fixed;\n  z-index: 1000000;\n  min-width: min(320px, calc(100vw - 24px));\n  max-width: min(440px, calc(100vw - 24px));\n  max-height: min(480px, calc(100dvh - 24px));\n  overflow-y: auto;\n  background: var(--lrr-bg);\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius-lg);\n  box-shadow: var(--lrr-shadow);\n  font: var(--lrr-font);\n  color: var(--lrr-text);\n  text-align: left;\n  opacity: 0;\n  visibility: hidden;\n  transform: translateY(-4px);\n  transition: opacity .12s ease, transform .12s ease, visibility .12s;\n}\n.lrr-hover-card.show { opacity: 1; visibility: visible; transform: none; }\n.lrr-hc-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 12px;\n  padding: 12px 14px;\n  border-bottom: 1px solid var(--lrr-line);\n  position: sticky;\n  top: 0;\n  background: var(--lrr-bg);\n}\n.lrr-hc-badge {\n  font-size: 11px;\n  font-weight: 600;\n  padding: 3px 8px;\n  border-radius: 6px;\n  background: var(--lrr-library-soft);\n  color: var(--lrr-library);\n}\n.lrr-hover-card[data-match=alt] .lrr-hc-badge {\n  background: var(--lrr-duplicate-soft);\n  color: var(--lrr-duplicate);\n}\n.lrr-hover-card[data-match=error] .lrr-hc-badge {\n  background: var(--lrr-error-soft);\n  color: var(--lrr-error);\n}\n.lrr-hc-count, .lrr-hc-meta { font-size: 11px; color: var(--lrr-muted); }\n.lrr-hc-meta { margin-top: 4px; }\n.lrr-hc-item { display: flex; gap: 12px; padding: 14px; border-bottom: 1px solid var(--lrr-line); }\n.lrr-hc-item:last-child { border-bottom: none; }\n.lrr-hc-thumb {\n  width: 56px;\n  height: 80px;\n  flex-shrink: 0;\n  overflow: hidden;\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius);\n  background: var(--lrr-surface);\n}\n.lrr-hc-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }\n.lrr-hc-info { flex: 1; min-width: 0; }\n.lrr-hc-title {\n  font-size: 13px;\n  font-weight: 600;\n  color: var(--lrr-text);\n  display: -webkit-box;\n  -webkit-line-clamp: 2;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  overflow-wrap: anywhere;\n}\n.lrr-hc-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }\n.lrr-hc-tag {\n  font-size: 11px;\n  padding: 2px 6px;\n  border: 1px solid var(--lrr-line);\n  border-radius: 6px;\n  background: var(--lrr-surface);\n  color: var(--lrr-muted);\n}\n.lrr-hc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }\n.lrr-hc-btn {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  padding: 6px 10px;\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius);\n  font-size: 12px;\n  font-weight: 500;\n  text-decoration: none !important;\n}\n.lrr-hc-btn-read { background: var(--lrr-accent); border-color: var(--lrr-accent); color: var(--lrr-on-accent) !important; }\n.lrr-hc-btn-read:hover { background: var(--lrr-accent-hover); border-color: var(--lrr-accent-hover); }\n.lrr-hc-btn-edit { background: var(--lrr-bg); color: var(--lrr-text) !important; }\n.lrr-hc-btn-edit:hover { background: var(--lrr-surface); }\n.lrr-hc-footer { padding: 12px 14px; border-top: 1px solid var(--lrr-line); }\n.lrr-hc-searchall { font-size: 12px; color: var(--lrr-accent) !important; text-decoration: none; }\n.lrr-hc-searchall:hover { text-decoration: underline; }\n#lrr-search-suggest {\n  position: absolute;\n  top: 100%;\n  left: 0;\n  z-index: 100000;\n  min-width: min(240px, calc(100vw - 24px));\n  max-width: calc(100vw - 24px);\n  box-sizing: border-box;\n  margin-top: 8px;\n  padding: 14px;\n  background: var(--lrr-bg);\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius-lg);\n  box-shadow: var(--lrr-shadow);\n  color: var(--lrr-text);\n  font: var(--lrr-font);\n  opacity: 0;\n  visibility: hidden;\n  transform: translateY(-4px);\n  transition: opacity .12s ease, transform .12s ease, visibility .12s;\n}\n#lrr-search-suggest.open { opacity: 1; visibility: visible; transform: none; }\n.lrr-suggest-group { margin-bottom: 14px; }\n.lrr-suggest-group:last-child { margin-bottom: 0; }\n.lrr-suggest-label { margin-bottom: 8px; color: var(--lrr-muted); font-size: 11px; font-weight: 600; }\n.lrr-suggest-items { display: flex; flex-wrap: wrap; gap: 8px; }\n.lrr-suggest-item {\n  padding: 6px 10px;\n  background: var(--lrr-bg);\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius);\n  color: var(--lrr-text);\n  font: inherit;\n  font-size: 12px;\n  cursor: pointer;\n  transition: background .12s ease, border-color .12s ease, color .12s ease;\n}\n.lrr-suggest-item:hover { border-color: var(--lrr-accent); background: var(--lrr-accent-soft); color: var(--lrr-accent); }\n.lrr-suggest-item.active { background: var(--lrr-accent); border-color: var(--lrr-accent); color: var(--lrr-on-accent); }\n@media (prefers-reduced-motion: reduce) {\n  .lrr-hover-card, #lrr-search-suggest, .lrr-suggest-item { transition: none; transform: none; }\n}\n";
 	//#endregion
 	//#region ../userscript/src/theme.css?inline
-	var theme_default = "html, :host {\n  --lrr-bg: #ffffff;\n  --lrr-surface: #f3f5f3;\n  --lrr-text: #252925;\n  --lrr-muted: #616961;\n  --lrr-line: #d7ded7;\n  --lrr-accent: #287a42;\n  --lrr-accent-hover: #206535;\n  --lrr-on-accent: #ffffff;\n  --lrr-accent-soft: #e8f3eb;\n  --lrr-duplicate: #7851aa;\n  --lrr-duplicate-soft: #f1eafa;\n  --lrr-warning: #825d15;\n  --lrr-warning-soft: #fbf2dd;\n  --lrr-error: #b52d3d;\n  --lrr-error-soft: #fbecef;\n  --lrr-radius: 8px;\n  --lrr-radius-lg: 14px;\n  --lrr-shadow: 0 8px 28px #0000001f;\n  --lrr-font: 13px/1.5 system-ui, sans-serif;\n}\nhtml[data-lrr-theme=dark], :host([data-theme=dark]) {\n  --lrr-bg: #242624;\n  --lrr-surface: #2d302d;\n  --lrr-text: #ecefec;\n  --lrr-muted: #adb5ad;\n  --lrr-line: #454c45;\n  --lrr-accent: #82cc95;\n  --lrr-accent-hover: #a0ddb0;\n  --lrr-on-accent: #142d1b;\n  --lrr-accent-soft: #293d2e;\n  --lrr-duplicate: #c5a3ee;\n  --lrr-duplicate-soft: #382e44;\n  --lrr-warning: #e4be70;\n  --lrr-warning-soft: #413823;\n  --lrr-error: #f39da7;\n  --lrr-error-soft: #442d32;\n  --lrr-shadow: 0 8px 28px #0000004d;\n}\n";
+	var theme_default = "html, :host {\n  --lrr-bg: #f6f7f9;\n  --lrr-surface: #ffffff;\n  --lrr-surface-hover: #edf0f4;\n  --lrr-text: #242b36;\n  --lrr-muted: #596575;\n  --lrr-line: #d5dbe3;\n  --lrr-library: #217448;\n  --lrr-library-soft: #e8f3ec;\n  --lrr-queue: #0e7490;\n  --lrr-selection: #245ac4;\n  --lrr-selection-soft: #eaf1ff;\n  --lrr-on-selection: #ffffff;\n  --lrr-accent: #2563eb;\n  --lrr-accent-hover: #1d4ed8;\n  --lrr-on-accent: #ffffff;\n  --lrr-accent-soft: #eaf1ff;\n  --lrr-duplicate: #7851aa;\n  --lrr-duplicate-soft: #f1eafa;\n  --lrr-warning: #825d15;\n  --lrr-warning-soft: #fbf2dd;\n  --lrr-error: #b52d3d;\n  --lrr-error-soft: #fbecef;\n  --lrr-radius: 6px;\n  --lrr-radius-lg: 12px;\n  --lrr-shadow: 0 8px 28px #1824381a;\n  --lrr-font: 13px/1.5 system-ui, sans-serif;\n}\nhtml[data-lrr-theme=dark], :host([data-theme=dark]) {\n  --lrr-bg: #15181e;\n  --lrr-surface: #1d222b;\n  --lrr-surface-hover: #2a313d;\n  --lrr-text: #e6e9ef;\n  --lrr-muted: #a0aaba;\n  --lrr-line: #394251;\n  --lrr-library: #73c99b;\n  --lrr-library-soft: #223b30;\n  --lrr-queue: #67c9df;\n  --lrr-selection: #a8c7ff;\n  --lrr-selection-soft: #243755;\n  --lrr-on-selection: #17243a;\n  --lrr-accent: #8ab4ff;\n  --lrr-accent-hover: #accaff;\n  --lrr-on-accent: #15233d;\n  --lrr-accent-soft: #243755;\n  --lrr-duplicate: #c5a3ee;\n  --lrr-duplicate-soft: #382e44;\n  --lrr-warning: #e4be70;\n  --lrr-warning-soft: #413823;\n  --lrr-error: #f39da7;\n  --lrr-error-soft: #442d32;\n  --lrr-shadow: 0 8px 28px #00000040;\n}\n";
 	//#endregion
 	//#region ../userscript/src/state.ts
+	var queueStatuses = /* @__PURE__ */ new Set([
+		"queued",
+		"downloading",
+		"retrying",
+		"queue-failed"
+	]);
 	var galleries = /* @__PURE__ */ new Map();
 	var labels = {
 		checking: "检查中",
 		downloaded: "已入库",
 		duplicate: "疑似重复",
-		missing: "未入库",
+		missing: "未收录",
 		error: "检查失败",
 		queued: "待下载",
 		downloading: "下载中",
@@ -68,18 +76,46 @@
 	};
 	var symbols = {
 		checking: "…",
-		downloaded: "✓",
+		downloaded: "",
 		duplicate: "≃",
-		missing: "−",
+		missing: "",
 		error: "!",
 		queued: "◷",
-		downloading: "↓",
-		retrying: "↻",
-		"queue-failed": "!",
-		"queue-unknown": "?"
+		downloading: "◷",
+		retrying: "◷",
+		"queue-failed": "◷",
+		"queue-unknown": "!"
 	};
+	function setStatusContent(element, status) {
+		const text = status === "error" || status === "queue-unknown" ? "查询异常" : queueStatuses.has(status) ? "在队列中" : labels[status];
+		element.replaceChildren();
+		if (status === "downloaded" || status === "missing") element.innerHTML = `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="${status === "downloaded" ? "M3 3h5v17H3zm5 0h5v17H8zm6 2 4-1 4 15-4 1zM2 21h21" : "M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1zm0 0v15"}"/></svg>`;
+		else {
+			const icon = document.createElement("span");
+			icon.setAttribute("aria-hidden", "true");
+			icon.textContent = symbols[status];
+			element.append(icon);
+		}
+		element.append(document.createTextNode(text));
+	}
+	function galleryControls(title) {
+		return title.closest(".gl1t")?.querySelector(".lrr-gallery-tools");
+	}
 	function notify() {
 		document.dispatchEvent(new Event("lrr:state"));
+	}
+	function showStatusDetail(heading, detail) {
+		let dialog = document.querySelector(".lrr-state-dialog");
+		if (!dialog) {
+			dialog = document.createElement("dialog");
+			dialog.className = "lrr-state-dialog";
+			dialog.innerHTML = "<header><strong></strong><button type=\"button\" aria-label=\"关闭状态详情\">✕</button></header><p></p>";
+			dialog.querySelector("button").addEventListener("click", () => dialog.close());
+			document.body.append(dialog);
+		}
+		dialog.querySelector("strong").textContent = heading;
+		dialog.querySelector("p").textContent = detail;
+		dialog.showModal();
 	}
 	function setStatus(title, status) {
 		const gallery = [...galleries.values()].find((item) => item.title === title);
@@ -88,13 +124,17 @@
 		if (status !== "downloaded" && status !== "checking") status = gallery.queueStatus ?? status;
 		gallery.status = status;
 		title.dataset.lrrStatus = status;
-		let badge = title.querySelector(".lrr-check-state");
+		gallery.controls.dataset.lrrState = status;
+		let badge = gallery.controls.querySelector(".lrr-check-state");
 		if (!badge) {
-			badge = document.createElement("span");
-			badge.className = "lrr-check-state";
-			title.prepend(badge);
+			const button = document.createElement("button");
+			button.type = "button";
+			button.className = "lrr-check-state";
+			button.addEventListener("click", () => showStatusDetail(labels[gallery.status], button.title));
+			badge = button;
+			gallery.controls.append(badge);
 		}
-		badge.textContent = symbols[status];
+		setStatusContent(badge, status);
 		badge.title = labels[status] + (gallery.queueStatus === status && gallery.queueDetail ? "\n" + gallery.queueDetail : "");
 		badge.setAttribute("aria-label", badge.title);
 		notify();
@@ -110,9 +150,18 @@
 		document.querySelectorAll(".itg .gl1t a[href*=\"/g/\"]").forEach((link) => {
 			const title = link.querySelector(".glink");
 			if (!title || galleries.has(link.href)) return;
+			const card = title.closest(".gl1t");
+			const controls = document.createElement("div");
+			controls.className = "lrr-gallery-tools";
+			controls.setAttribute("role", "group");
+			controls.setAttribute("aria-label", "画廊选择与状态");
+			card.prepend(controls);
+			title.title = title.textContent?.trim() ?? "";
 			const gallery = {
 				url: link.href,
 				title,
+				card,
+				controls,
 				selected: false,
 				status: "checking"
 			};
@@ -120,29 +169,32 @@
 			const checkbox = document.createElement("input");
 			checkbox.type = "checkbox";
 			checkbox.className = "lrr-item-checkbox";
-			checkbox.setAttribute("aria-label", "选择画廊");
+			checkbox.setAttribute("aria-label", "选择 " + title.title);
 			checkbox.addEventListener("click", (event) => event.stopPropagation());
 			checkbox.addEventListener("change", () => {
 				gallery.selected = checkbox.checked;
-				title.classList.toggle("lrr-title-selected", checkbox.checked);
+				card.classList.toggle("lrr-selected", checkbox.checked);
 				notify();
 			});
-			title.prepend(checkbox);
+			const selectionTarget = document.createElement("label");
+			selectionTarget.className = "lrr-checkbox-target";
+			selectionTarget.append(checkbox);
+			controls.append(selectionTarget);
 			setStatus(title, "checking");
 		});
 	}
 	function select(predicate) {
 		for (const gallery of galleries.values()) {
 			gallery.selected = predicate(gallery);
-			const checkbox = gallery.title.querySelector(".lrr-item-checkbox");
+			const checkbox = gallery.controls.querySelector(".lrr-item-checkbox");
 			if (checkbox) checkbox.checked = gallery.selected;
-			gallery.title.classList.toggle("lrr-title-selected", gallery.selected);
+			gallery.card.classList.toggle("lrr-selected", gallery.selected);
 		}
 		notify();
 	}
 	//#endregion
 	//#region ../userscript/src/ui.css?inline
-	var ui_default = ":host {\n  --bg:var(--lrr-bg);\n  --surface:var(--lrr-surface);\n  --text:var(--lrr-text);\n  --muted:var(--lrr-muted);\n  --line:var(--lrr-line);\n  --accent:var(--lrr-accent);\n  --on-accent:var(--lrr-on-accent);\n  --error:var(--lrr-error);\n  color-scheme:light;\n  font:var(--lrr-font);\n  color:var(--text)\n}\n:host([data-theme=dark]) {\n  color-scheme:dark\n}\n* {\n  box-sizing:border-box\n}\nbutton,input,select {\n  font:inherit\n}\nbutton {\n  display:inline-flex;\n  align-items:center;\n  justify-content:center;\n  gap:8px;\n  border:1px solid var(--line);\n  border-radius:8px;\n  background:var(--bg);\n  color:var(--text);\n  padding:9px 12px;\n  cursor:pointer\n}\nbutton:hover {\n  background:var(--surface)\n}\nbutton.primary:hover:not(:disabled) {\n  background:var(--lrr-accent-hover);\n  border-color:var(--lrr-accent-hover)\n}\nbutton:disabled {\n  opacity:.45;\n  cursor:default\n}\nbutton:focus-visible,input:focus-visible,select:focus-visible {\n  outline:2px solid var(--accent);\n  outline-offset:3px\n}\nbutton.primary {\n  background:var(--accent);\n  color:var(--on-accent);\n  border-color:var(--accent)\n}\nsvg {\n  flex:none\n}\nsmall,.hint {\n  color:var(--muted)\n}\nsmall {\n  font-size:12px;\n  font-weight:400;\n  margin-left:8px\n}\n[hidden] {\n  display:none!important\n}\n.launcher {\n  position:fixed;\n  right:16px;\n  bottom:16px;\n  z-index:2147483000;\n  box-shadow:var(--lrr-shadow)\n}\n.panel {\n  position:fixed;\n  right:16px;\n  bottom:72px;\n  width:340px;\n  max-width:calc(100vw - 32px);\n  max-height:calc(100dvh - 96px);\n  overflow:auto;\n  background:var(--bg);\n  border:1px solid var(--line);\n  border-radius:14px;\n  box-shadow:var(--lrr-shadow);\n  z-index:2147483000;\n  animation:appear .14s ease-out\n}\nheader,footer {\n  display:flex;\n  align-items:center;\n  justify-content:space-between;\n  gap:8px;\n  padding:14px 16px\n}\nheader {\n  border-bottom:1px solid var(--line)\n}\nheader button {\n  border:0;\n  padding:6px\n}\nsection {\n  padding:16px\n}\n.summary {\n  font-size:18px;\n  font-weight:650;\n  font-variant-numeric:tabular-nums\n}\n.hint {\n  font-size:12px;\n  margin:8px 0 12px\n}\n.choices {\n  display:grid;\n  grid-template-columns:1fr 1fr;\n  gap:8px\n}\n.counts {\n  display:flex;\n  flex-wrap:wrap;\n  gap:6px 12px;\n  color:var(--muted);\n  font-size:12px\n}\n.actions {\n  display:grid;\n  gap:8px;\n  border-top:1px solid var(--line)\n}\n.feedback {\n  margin:0;\n  padding:0 16px 12px;\n  overflow-wrap:anywhere\n}\n.feedback:empty {\n  display:none\n}\n.error,.settings-error {\n  color:var(--error)\n}\nfooter {\n  border-top:1px solid var(--line);\n  flex-wrap:wrap\n}\nfooter button {\n  font-size:12px;\n  padding:7px 9px\n}\ndialog {\n  color:var(--text);\n  background:var(--bg);\n  border:1px solid var(--line);\n  border-radius:14px;\n  padding:0;\n  width:520px;\n  max-width:calc(100vw - 32px);\n  max-height:calc(100dvh - 32px);\n  box-shadow:var(--lrr-shadow)\n}\ndialog::backdrop {\n  background:#0007\n}\n.fields {\n  padding:16px;\n  display:grid;\n  gap:20px\n}\nfieldset {\n  border:0;\n  padding:0;\n  margin:0;\n  display:grid;\n  gap:12px\n}\nlegend {\n  font-weight:650;\n  margin-bottom:12px\n}\nlabel {\n  display:grid;\n  gap:6px;\n  font-size:13px\n}\nlabel:has(input[type=checkbox]) {\n  display:flex;\n  align-items:center;\n  justify-content:space-between\n}\ninput:not([type=checkbox]),select {\n  width:100%;\n  min-width:0;\n  border:1px solid var(--line);\n  border-radius:7px;\n  padding:9px;\n  background:var(--surface);\n  color:var(--text)\n}\ninput[type=checkbox] {\n  accent-color:var(--accent);\n  width:17px;\n  height:17px\n}\n.settings-error {\n  padding:0 16px\n}\ndialog footer {\n  justify-content:flex-end\n}\n@keyframes appear {\n  from {\n    opacity:0;\n    transform:translateY(4px)\n  }\n  to {\n    opacity:1;\n    transform:none\n  }\n}\n@media(prefers-reduced-motion:reduce) {\n  * {\n    animation:none!important;\n    transition:none!important\n  }\n}\n";
+	var ui_default = ":host {\n  --bg:var(--lrr-bg);\n  --surface:var(--lrr-surface);\n  --text:var(--lrr-text);\n  --muted:var(--lrr-muted);\n  --line:var(--lrr-line);\n  --accent:var(--lrr-accent);\n  --on-accent:var(--lrr-on-accent);\n  --error:var(--lrr-error);\n  color-scheme:light;\n  font:var(--lrr-font);\n  color:var(--text)\n}\n:host([data-theme=dark]) {\n  color-scheme:dark\n}\n* {\n  box-sizing:border-box\n}\nbutton,input,select {\n  font:inherit\n}\nbutton {\n  display:inline-flex;\n  align-items:center;\n  justify-content:center;\n  gap:8px;\n  border:1px solid var(--line);\n  border-radius:8px;\n  background:var(--bg);\n  color:var(--text);\n  padding:9px 12px;\n  cursor:pointer\n}\nbutton:hover:not(:disabled) {\n  background:var(--lrr-surface-hover)\n}\nbutton.primary:hover:not(:disabled) {\n  background:var(--lrr-accent-hover);\n  border-color:var(--lrr-accent-hover)\n}\nbutton:disabled {\n  opacity:.45;\n  cursor:default\n}\nbutton:focus-visible,input:focus-visible,select:focus-visible {\n  outline:2px solid var(--accent);\n  outline-offset:3px\n}\nbutton.primary {\n  background:var(--accent);\n  color:var(--on-accent);\n  border-color:var(--accent)\n}\nsvg {\n  flex:none\n}\nsmall,.hint {\n  color:var(--muted)\n}\nsmall {\n  font-size:12px;\n  font-weight:400;\n  margin-left:8px\n}\n[hidden] {\n  display:none!important\n}\n.launcher {\n  position:fixed;\n  right:16px;\n  bottom:16px;\n  z-index:2147483000;\n  box-shadow:var(--lrr-shadow)\n}\n.panel {\n  position:fixed;\n  right:16px;\n  bottom:72px;\n  width:340px;\n  max-width:calc(100vw - 32px);\n  max-height:calc(100dvh - 96px);\n  overflow:auto;\n  background:var(--bg);\n  border:1px solid var(--line);\n  border-radius:14px;\n  box-shadow:var(--lrr-shadow);\n  z-index:2147483000;\n  animation:appear .14s ease-out\n}\nheader,footer {\n  display:flex;\n  align-items:center;\n  justify-content:space-between;\n  gap:8px;\n  padding:14px 16px\n}\nheader {\n  border-bottom:1px solid var(--line)\n}\nheader button {\n  border:0;\n  padding:6px\n}\nsection {\n  padding:16px\n}\n.summary {\n  font-size:18px;\n  font-weight:650;\n  font-variant-numeric:tabular-nums\n}\n.hint {\n  font-size:12px;\n  margin:8px 0 12px\n}\n.choices {\n  display:grid;\n  grid-template-columns:1fr 1fr;\n  gap:8px\n}\n.counts {\n  display:flex;\n  flex-wrap:wrap;\n  gap:6px 12px;\n  color:var(--muted);\n  font-size:12px\n}\n.actions {\n  display:grid;\n  gap:8px;\n  border-top:1px solid var(--line)\n}\n.feedback {\n  margin:0;\n  padding:0 16px 12px;\n  overflow-wrap:anywhere\n}\n.feedback:empty {\n  display:none\n}\n.error,.settings-error {\n  color:var(--error)\n}\nfooter {\n  border-top:1px solid var(--line);\n  flex-wrap:wrap\n}\nfooter button {\n  font-size:12px;\n  padding:7px 9px\n}\ndialog {\n  color:var(--text);\n  background:var(--bg);\n  border:1px solid var(--line);\n  border-radius:14px;\n  padding:0;\n  width:520px;\n  max-width:calc(100vw - 32px);\n  max-height:calc(100dvh - 32px);\n  box-shadow:var(--lrr-shadow)\n}\ndialog::backdrop {\n  background:#0007\n}\n.fields {\n  padding:16px;\n  display:grid;\n  gap:20px\n}\nfieldset {\n  border:0;\n  padding:0;\n  margin:0;\n  display:grid;\n  gap:12px\n}\nlegend {\n  font-weight:650;\n  margin-bottom:12px\n}\nlabel {\n  display:grid;\n  gap:6px;\n  font-size:13px\n}\nlabel:has(input[type=checkbox]) {\n  display:flex;\n  align-items:center;\n  justify-content:space-between\n}\ninput:not([type=checkbox]),select {\n  width:100%;\n  min-width:0;\n  border:1px solid var(--line);\n  border-radius:7px;\n  padding:9px;\n  background:var(--surface);\n  color:var(--text)\n}\ninput[type=checkbox] {\n  accent-color:var(--accent);\n  width:17px;\n  height:17px\n}\n.settings-error {\n  padding:0 16px\n}\ndialog footer {\n  justify-content:flex-end\n}\n@keyframes appear {\n  from {\n    opacity:0;\n    transform:translateY(4px)\n  }\n  to {\n    opacity:1;\n    transform:none\n  }\n}\n@media(prefers-reduced-motion:reduce) {\n  * {\n    animation:none!important;\n    transition:none!important\n  }\n}\n";
 	//#endregion
 	//#region ../userscript/src/panel.ts
 	var paths = {
@@ -168,7 +220,7 @@
     <aside class="panel" aria-label="LRR 画廊工具" hidden>
       <header><strong>LRR <small>画廊工具</small></strong><button data-action="close" aria-label="关闭面板">${icon("close")}</button></header>
       <section><div class="summary" aria-live="polite"></div><p class="hint">按状态替换选择，也可在画廊上逐项勾选。</p>
-        <div class="choices"><button data-select="missing">选择未入库</button><button data-select="duplicate">选择疑似重复</button><button data-select="all">全选</button><button data-select="none">清空</button></div>
+        <div class="choices"><button data-select="missing">选择未收录</button><button data-select="duplicate">选择疑似重复</button><button data-select="all">全选</button><button data-select="none">清空</button></div>
         <p class="scope hint"></p><div class="counts"></div>
       </section>
       <section class="actions"><button class="primary" data-action="send">${icon("send")}发送到队列</button><button data-action="copy">${icon("copy")}复制链接</button></section>
@@ -185,6 +237,11 @@
 		const feedback = (message, error = false) => {
 			get(".feedback").textContent = message;
 			get(".feedback").classList.toggle("error", error);
+			document.dispatchEvent(new CustomEvent("lrr:feedback", { detail: {
+				message,
+				error,
+				sending
+			} }));
 		};
 		function theme() {
 			const mode = String(config.theme || "auto");
@@ -192,6 +249,11 @@
 			document.documentElement.dataset.lrrTheme = host.dataset.theme;
 		}
 		function expanded(open) {
+			if (options.integrated) {
+				panel.hidden = true;
+				launcher.hidden = true;
+				return;
+			}
 			const wasOpen = !panel.hidden;
 			panel.hidden = !open;
 			launcher.setAttribute("aria-expanded", String(open));
@@ -199,18 +261,12 @@
 			persist("panelCollapsed", !open);
 			if (!open && wasOpen) launcher.focus();
 		}
-		const queueStatuses = /* @__PURE__ */ new Set([
-			"queued",
-			"downloading",
-			"retrying",
-			"queue-failed"
-		]);
 		function render() {
 			const items = [...galleries.values()];
 			const count = items.filter((item) => item.selected).length;
 			get(".summary").textContent = `已选 ${count} / ${items.length} 个画廊`;
 			get("#launcher-count").textContent = count ? String(count) : "";
-			get(".scope").textContent = config.enableAltSearch ? "未入库：URL 与可提取标题均无匹配；未知与失败不计入。" : "未入库仅表示 URL 未命中；标题搜索已关闭。";
+			get(".scope").textContent = config.enableAltSearch ? "未收录：URL 与可提取标题均无匹配；未知与失败不计入。" : "未收录仅表示 URL 未命中；标题搜索已关闭。";
 			const counts = Object.entries(labels).filter(([status]) => !queueStatuses.has(status));
 			counts.push(["queue", "在队列中"]);
 			get(".counts").replaceChildren(...counts.map(([status, label]) => {
@@ -220,6 +276,7 @@
 			}));
 			get("[data-action=\"send\"]").disabled = sending || count === 0;
 			get("[data-action=\"copy\"]").disabled = count === 0;
+			document.dispatchEvent(new CustomEvent("lrr:sending", { detail: sending }));
 		}
 		const groups = [
 			["连接", [
@@ -270,6 +327,11 @@
 				[
 					"enableLogging",
 					"控制台日志",
+					"checkbox"
+				],
+				[
+					"redesigned",
+					"新版列表界面",
 					"checkbox"
 				]
 			]]
@@ -375,6 +437,7 @@
 			event.preventDefault();
 			const form = get("form");
 			if (!form.reportValidity()) return;
+			const wasRedesigned = config.redesigned;
 			for (const [, entries] of groups) for (const [key, , type] of entries) {
 				const input = form.elements.namedItem(key);
 				config[key] = type === "checkbox" ? input.checked : type === "number" ? Number(input.value) : input.value.trim().replace(type === "url" ? /\/+$/ : /$^/, "");
@@ -384,6 +447,10 @@
 			persist("theme", config.theme);
 			theme();
 			dialog.close();
+			if (wasRedesigned !== config.redesigned) {
+				location.reload();
+				return;
+			}
 			options.recheck();
 			feedback("设置已保存，正在重新检查；检查失败可点击重新检查重试");
 		});
@@ -399,6 +466,395 @@
 		theme();
 		expanded(!config.panelCollapsed);
 		notify();
+		return { root };
+	}
+	//#endregion
+	//#region ../userscript/src/layout.css?inline
+	var layout_default = ".lrr-native-shell, .lrr-native-form-part { display: none !important; }\nhtml.lrr-redesigned { font-size: 14px; color-scheme: dark; }\nhtml.lrr-redesigned[data-lrr-theme=light] { color-scheme: light; }\n.lrr-redesigned body { margin: 0; padding: 0; min-width: 0; width: auto; background: var(--lrr-bg); color: var(--lrr-text); text-align: left; font: var(--lrr-font); }\n.lrr-page {\n  font: 14px/1.5 ui-sans-serif, system-ui, 'Noto Sans SC', 'Segoe UI', sans-serif;\n  *, *::before, *::after { box-sizing: border-box; }\n  a { color: inherit; text-decoration: none; }\n  a:hover { color: var(--lrr-accent); }\n  button, input, select, summary { font: inherit; }\n  button, select, summary { cursor: pointer; }\n  button, select, input[type=submit], input[type=button] { min-height: 36px; padding: 7px 12px; margin: 0; border: 1px solid var(--lrr-line); border-radius: 6px; color: var(--lrr-text); background: var(--lrr-surface); font-size: 13px; font-weight: 500; white-space: nowrap; }\n  button:hover:not(:disabled), summary:hover { background: var(--lrr-surface-hover); }\n  button:active:not(:disabled) { transform: translateY(1px); }\n  .lrr-top-actions .lrr-backend { border-color: var(--lrr-line); font-weight: 600; }\n  .lrr-native-view { background: transparent; border-color: transparent; color: var(--lrr-muted); }\n  .lrr-result-section { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 14px 20px; margin-top: 24px; }\n  .lrr-results, .lrr-list-toolbar { display: contents; }\n  .lrr-statistics { grid-area: 1 / 1; }\n  .lrr-result-actions { grid-area: 1 / 2; }\n  .lrr-bulk { grid-area: 2 / 1; display: flex; align-items: center; gap: 12px; min-width: 0; }\n  .lrr-top-pagination { grid-area: 2 / 2; }\n  .lrr-grid-slot, .lrr-bottom-pagination { grid-column: 1 / -1; min-width: 0; }\n  .lrr-selection-groups { position: relative; }\n  .lrr-selection-groups > summary { display: none; }\n  .lrr-selection-groups > div { display: flex; gap: 6px; }\n  .lrr-bulk button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 44px; }\n  .lrr-bulk svg { width: 16px; height: 16px; flex: none; }\n  .lrr-choice-count { color: var(--lrr-muted); font-size: 12px; font-variant-numeric: tabular-nums; min-width: 2ch; }\n  .lrr-choice-state { width: 12px; flex: none; }\n  .lrr-all-state { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border: 1px solid var(--lrr-muted); border-radius: 3px; line-height: 1; }\n  .lrr-bulk [data-choice][aria-pressed=mixed], .lrr-bulk [data-choice][aria-pressed=true] { color: var(--lrr-selection); background: var(--lrr-selection-soft); }\n  .lrr-bulk [aria-pressed=true] { border-color: var(--lrr-selection); }\n  .lrr-bulk [aria-pressed=true] .lrr-all-state { background: var(--lrr-selection); color: var(--lrr-on-selection); border-color: var(--lrr-selection); }\n  button:disabled { opacity: .4; cursor: default; }\n  select { background: var(--lrr-surface); }\n  input { accent-color: var(--lrr-selection); }\n  input[type=text], input[type=number] { background: var(--lrr-surface); color: var(--lrr-text); border: 1px solid var(--lrr-line); border-radius: 6px; padding: 8px 10px; margin: 0; }\n  input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-visible, a:focus-visible { outline: 2px solid var(--lrr-accent); outline-offset: 3px; }\n  h1, p { margin: 0; padding: 0; }\n  .lrr-shell { max-width: 1760px; padding: 0 32px; margin: auto; }\n  main.lrr-shell { padding-bottom: 100px; }\n  .lrr-topbar { border-bottom: 1px solid var(--lrr-line); background: var(--lrr-surface); }\n  .lrr-topbar > div { min-height: 64px; display: flex; align-items: center; gap: 28px; }\n  .lrr-brand { font-size: 18px; font-weight: 650; color: var(--lrr-text); white-space: nowrap; }\n  .lrr-navigation { display: flex; gap: 20px; color: var(--lrr-muted); font-size: 12px; }\n  .lrr-top-actions { margin-left: auto; display: flex; align-items: center; gap: 6px; }\n  .lrr-top-actions > button { border-color: transparent; }\n  .lrr-more-nav { display: none; position: relative; }\n  .lrr-more-nav > div { position: absolute; right: 0; top: 40px; z-index: 30; padding: 12px; background: var(--lrr-surface); border: 1px solid var(--lrr-line); border-radius: 8px; min-width: 150px; }\n  .lrr-more-nav a { display: block; padding: 6px; }\n  .lrr-more-nav button { display: block; width: 100%; text-align: left; }\n  .lrr-search { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; width: 100%; max-width: 920px; margin: 32px auto 24px; padding-bottom: 20px; border-bottom: 1px solid var(--lrr-line); }\n  .lrr-search-form { display: contents; margin: 0 !important; padding: 0 !important; }\n  .lrr-search-row { display: flex; flex-basis: 100%; gap: 8px; }\n  .lrr-search-box { flex: 1; min-width: 0; }\n  #f_search { width: 100%; height: 42px; max-width: none; font-size: 13px; }\n  .lrr-search-row input[type=submit], .lrr-primary { background: var(--lrr-accent); color: var(--lrr-on-accent); border-color: var(--lrr-accent); font-weight: 600; }\n  .lrr-search-row input[type=submit] { padding: 8px 22px; }\n  .lrr-search-row input[type=submit]:hover, .lrr-primary:hover:not(:disabled) { background: var(--lrr-accent-hover); border-color: var(--lrr-accent-hover); }\n  #f_search::placeholder { color: var(--lrr-muted); opacity: 1; }\n  .lrr-filter-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 4px; width: 100%; min-width: 0; }\n  .lrr-filter-bar > details { max-width: 100%; }\n  summary { list-style: none; width: fit-content; padding: 4px 10px; border: 1px solid var(--lrr-line); border-radius: 6px; color: var(--lrr-muted); font-size: 12px; }\n  summary::-webkit-details-marker { display: none; }\n  .lrr-filter-bar > details[open] { width: 100%; }\n  .lrr-filter-bar > details > summary, .lrr-native-tools > summary { margin-inline: auto; }\n  .lrr-filter-bar .lrr-categories { width: 100%; order: -1; }\n  .lrr-filter-bar > details[open] > summary { color: var(--lrr-text); border-color: var(--lrr-line); margin-bottom: 12px; }\n  .lrr-filter-bar .itc { margin: 0 auto; width: min(100%, 560px); table-layout: fixed; border-spacing: 4px; }\n  .lrr-filter-bar .itc td { padding: 0; }\n  .lrr-filter-bar [id^=cat_] { display: block; box-shadow: none; text-shadow: none; letter-spacing: normal; width: auto; min-width: 0; max-width: none; height: auto; padding: 6px 8px; background: var(--lrr-category-color); color: var(--lrr-category-ink); border: 1px solid var(--lrr-category-color); border-radius: 5px; font: 600 11px/1.5 system-ui, sans-serif; text-align: center; opacity: 1; }\n  .lrr-filter-bar [id^=cat_][data-disabled] { opacity: .75; color: var(--lrr-muted); background: color-mix(in srgb, var(--lrr-category-color) 28%, var(--lrr-surface)); border-color: color-mix(in srgb, var(--lrr-category-color) 55%, var(--lrr-line)); text-decoration: line-through; }\n  #advdiv { padding: 12px; background: var(--lrr-surface); border: 1px solid var(--lrr-line); border-radius: 8px; }\n  .searchadv { text-align: left; }\n  .searchadv > div { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 12px; }\n  .searchadv > div > div { margin: 0; padding: 0; }\n  .searchadv input[type=text] { max-width: 70px; }\n  .lc, .lr { color: var(--lrr-text); font-size: 12px; }\n  .lc > span, .lr > span { background: var(--lrr-bg); border-color: var(--lrr-line); }\n  .lrr-native-tools { margin-top: 4px; max-width: 100%; flex-basis: 100%; }\n  .lrr-native-tools[open] { flex-basis: 100%; min-width: 0; }\n  #fsdiv { max-width: 100%; }\n  #fsdiv input[type=file] { max-width: 100%; }\n  .lrr-native-tools > a { display: inline-block; padding: 8px; }\n  .lrr-native-tools #rangebar { width: min(720px, calc(100vw - 64px)); overflow: hidden; background: var(--lrr-line); }\n  .lrr-filter-chips { display: contents; }\n  .lrr-filter-chip { min-height: 26px; padding: 3px 8px; font-size: 11px; background: var(--lrr-surface); color: var(--lrr-muted); border: 0; }\n  .lrr-statistics { font-size: 13px; color: var(--lrr-muted); font-variant-numeric: tabular-nums; }\n  .lrr-result-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; }\n  .lrr-density { display: flex; height: 36px; padding: 3px; border: 1px solid var(--lrr-line); border-radius: 6px; }\n  .lrr-density button { border: 0; min-height: 28px; padding: 3px 9px; color: var(--lrr-muted); }\n  .lrr-density button[aria-pressed=true] { background: var(--lrr-surface-hover); color: var(--lrr-text); font-weight: 600; }\n  .searchnav { width: auto; margin: 0; padding: 0; display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 12px; }\n  .searchnav > div { width: auto; height: auto; margin: 0; padding: 0; min-width: 0; flex: none; }\n  .searchnav > div:empty { display: none; }\n  .searchnav { border: 1px solid var(--lrr-line); border-radius: 8px; padding: 4px; gap: 3px; background: var(--lrr-surface); }\n  .searchnav a, .searchnav span { display: inline-flex; align-items: center; justify-content: center; min-height: 34px; padding: 6px 10px; border-radius: 5px; white-space: nowrap; }\n  .searchnav a:hover { background: var(--lrr-surface-hover); }\n  .searchnav a[data-page-action=next], .searchnav a[data-page-action=prev] { color: var(--lrr-text); font-weight: 650; }\n  .searchnav span { color: var(--lrr-muted); opacity: .4; cursor: not-allowed; }\n  .searchnav .jumppop { z-index: 40; background: var(--lrr-surface); color: var(--lrr-text); border: 1px solid var(--lrr-line); border-radius: 8px; box-shadow: var(--lrr-shadow); padding: 12px; }\n  .jumpbox > input { width: 110px; }\n  .searchnav .jumpbox { width: auto !important; padding: 0 !important; min-width: 80px; }\n  .jumpbox { background: none; border: 0; }\n  .lrr-bottom-pagination { padding: 32px 0 24px; }\n  .lrr-bottom-pagination .searchnav { justify-content: center; }\n  .itg.gld { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 26px 18px; align-items: start; border: 0; background: transparent; padding: 0 !important; margin: 0; width: 100%; }\n  &[data-density=compact] .itg.gld { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 22px 14px; }\n  .itg.gld > .gl1t { display: flex; flex-direction: column; min-width: 0; max-width: none; width: auto; min-height: 0; padding: 0; border: 0; background: transparent; gap: 0; }\n  .gld > div:last-of-type::after { content: none; }\n  .gl1t > .gl3t { width: 100% !important; height: auto !important; aspect-ratio: 3 / 4; margin: 0; border: 0; border-radius: 6px; background: var(--lrr-surface); overflow: hidden; flex: none; }\n  .gl3t > a { display: block; width: 100%; height: 100%; }\n  .gl3t > a > img { position: static !important; width: 100% !important; height: 100% !important; top: auto !important; object-fit: contain; display: block; }\n  .gl1t > a { display: block; }\n  .gl1t .glink { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; height: auto; min-height: 0; max-height: 60px; margin: 0; padding: 0; overflow: hidden; font: 13px/20px system-ui, sans-serif; text-align: left; color: var(--lrr-text); }\n  .gl1t.lrr-selected .glink { color: var(--lrr-selection); }\n  .gl1t.lrr-selected > .gl3t { outline: 2px solid var(--lrr-selection); outline-offset: 3px; }\n  .lrr-gallery-tools { margin: 0; min-height: 34px; padding: 7px 0 4px; gap: 9px; }\n  .lrr-marker-span, .lrr-check-state { margin: 0; border: 0; padding: 0; min-height: 20px; background: none; font-size: 12px; line-height: 20px; }\n  .lrr-marker-span svg, .lrr-check-state svg { width: 14px; height: 14px; }\n  .lrr-marker-downloaded { color: var(--lrr-library); }\n  .lrr-marker-file { color: var(--lrr-duplicate); }\n  .lrr-marker-error { color: var(--lrr-warning); }\n  .lrr-item-checkbox { min-height: 18px; }\n  .lrr-checkbox-target { display: inline-flex; align-items: center; min-height: 26px; min-width: 20px; cursor: pointer; }\n  .lrr-card-meta { display: flex; align-items: center; gap: 8px; margin-top: 6px; color: var(--lrr-muted); font-size: 12px; }\n  .lrr-category { box-shadow: none; text-shadow: none; letter-spacing: normal; display: inline-block; width: auto; min-width: 0; max-width: none; height: auto; padding: 1px 6px; background: var(--lrr-category-color); color: var(--lrr-category-ink); border: 0; border-radius: 3px; font: 10px/17px system-ui, sans-serif; }\n  .lrr-card-details { position: relative; }\n  .lrr-card-details > summary { padding: 0 5px; min-height: 20px; line-height: 20px; border: 0; }\n  .lrr-card-details .gl5t { position: absolute; top: 25px; left: 0; z-index: 10; display: flex; gap: 16px; height: auto; width: max-content; max-width: 220px; padding: 10px; background: var(--lrr-surface); border: 1px solid var(--lrr-line); border-radius: 6px; margin: 0; }\n  .gl5t > div, .gl5t > div > div { position: static !important; height: auto !important; width: auto !important; min-width: 0 !important; max-width: none !important; padding: 0 !important; margin: 0 !important; }\n  .gl5t > div { display: flex; flex-direction: column; gap: 6px; }\n  .gl5t .ir { display: none; }\n  .lrr-card-details .gldown { display: block; }\n  .lrr-page-footer { border-top: 1px solid var(--lrr-line); padding: 15px 0 28px; display: flex; justify-content: space-between; align-items: center; gap: 16px; color: var(--lrr-muted); font-size: 11px; }\n  .searchtext { margin: 0; padding: 0; font: inherit; }\n  .lrr-selection-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; align-items: center; gap: 16px; max-width: calc(100% - 32px); padding: 10px 12px; background: var(--lrr-surface); border: 1px solid var(--lrr-line); border-radius: 10px; box-shadow: var(--lrr-shadow); font-size: 12px; white-space: nowrap; }\n  .lrr-selection-bar > div { display: flex; gap: 6px; align-items: center; }\n  .lrr-selection-bar strong { color: var(--lrr-selection); font-size: 16px; font-variant-numeric: tabular-nums; }\n  .lrr-feedback { position: fixed; z-index: 200; bottom: 100px; left: 50%; transform: translateX(-50%); max-width: calc(100% - 32px); padding: 10px 16px; background: var(--lrr-text); color: var(--lrr-bg); border-radius: 6px; font-size: 12px; box-shadow: var(--lrr-shadow); }\n  .lrr-feedback.error { background: var(--lrr-error-soft); color: var(--lrr-error); border: 1px solid var(--lrr-error); }\n  [hidden] { display: none !important; }\n}\n@media (max-width: 1100px) {\n  .lrr-page {\n    .lrr-selection-groups > summary { display: flex; align-items: center; min-height: 44px; padding: 7px 12px; font-size: 13px; color: var(--lrr-text); background: var(--lrr-surface); }\n    .lrr-selection-groups > summary::after { content: '⌄'; margin-left: 8px; }\n    .lrr-selection-groups > div { position: absolute; top: calc(100% + 8px); left: 0; z-index: 30; min-width: 220px; padding: 8px; flex-direction: column; background: var(--lrr-surface); border: 1px solid var(--lrr-line); border-radius: 8px; box-shadow: var(--lrr-shadow); }\n    .lrr-selection-groups button { justify-content: flex-start; }\n    .lrr-choice-count { margin-left: auto; }\n  }\n}\n@media (max-width: 1300px) {\n  .lrr-page .lrr-navigation { display: none; }\n  .lrr-page .lrr-more-nav { display: block; }\n  .lrr-page .lrr-shell { padding-left: 24px; padding-right: 24px; }\n  .lrr-page .lrr-view-select { max-width: 120px; }\n}\n@media (max-width: 620px) {\n  .lrr-page {\n    .lrr-shell { padding-left: 16px; padding-right: 16px; }\n    .lrr-topbar > div { min-height: 56px; gap: 10px; }\n    .lrr-top-actions > [data-tool=recheck] { display: none; }\n    .lrr-brand { font-size: 16px; }\n    .lrr-search-row input[type=submit] { padding: 8px 14px; }\n    .lrr-result-section { grid-template-columns: minmax(0, 1fr); }\n    .lrr-statistics, .lrr-result-actions, .lrr-bulk, .lrr-top-pagination { grid-area: auto; }\n    .lrr-result-actions { margin-top: 12px; justify-content: flex-start; gap: 6px; }\n    .lrr-result-actions .searchnav { margin-left: auto; }\n    .lrr-result-actions .searchnav > div:has(#ufirst, #ulast) { display: none; }\n    .lrr-more-nav select { width: 100%; margin-top: 8px; }\n    .lrr-native-view { margin-left: auto; }\n    .lrr-view-select { max-width: 105px; }\n    .lrr-density button { padding: 3px 7px; }\n    .searchnav { gap: 0; flex-wrap: wrap; }\n    .searchnav a, .searchnav span { padding: 5px; font-size: 11px; }\n    .itg.gld, &[data-density=compact] .itg.gld { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 12px; }\n    .gl1t .glink { font-size: 11px; line-height: 18px; max-height: 54px; }\n    .lrr-gallery-tools { min-height: 42px; gap: 8px; }\n    .lrr-marker-span, .lrr-check-state { font-size: 10px; min-height: 28px; }\n    .lrr-checkbox-target { min-height: 40px; min-width: 28px; }\n    .lrr-item-checkbox { width: 18px; height: 18px; }\n    .lrr-card-meta { gap: 5px; font-size: 10px; }\n    .lrr-card-details .gl5t { left: auto; right: 0; max-width: 175px; flex-wrap: wrap; }\n    .lrr-selection-bar { bottom: 12px; width: calc(100% - 24px); max-width: none; gap: 6px; justify-content: space-between; }\n    .lrr-selection-bar button { min-height: 40px; }\n    .lrr-page-footer { display: block; }\n    .lrr-page-footer button { margin-top: 12px; }\n    .lrr-filter-bar .itc, .lrr-filter-bar .itc tbody { display: block; }\n    .lrr-filter-bar .itc tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 6px; }\n  }\n}\n@media (max-width: 340px) {\n  .lrr-page .itg.gld, .lrr-page[data-density=compact] .itg.gld { grid-template-columns: 1fr; }\n}\n";
+	//#endregion
+	//#region ../userscript/src/layout.ts
+	var categoryColors = {
+		ct0: "rgb(0, 0, 0)",
+		ct1: "rgb(128, 132, 141)",
+		ct2: "rgb(164, 76, 74)",
+		ct3: "rgb(184, 119, 75)",
+		ct4: "rgb(185, 147, 70)",
+		ct5: "rgb(117, 148, 119)",
+		ct6: "rgb(90, 125, 171)",
+		ct7: "rgb(137, 105, 167)",
+		ct8: "rgb(166, 104, 146)",
+		ct9: "rgb(99, 151, 178)",
+		cta: "rgb(157, 150, 103)"
+	};
+	var selectionGroups = [
+		{
+			id: "missing",
+			label: "未收录",
+			icon: "<path d=\"M4 19V5a2 2 0 0 1 2-2h14v18H6a2 2 0 0 1 0-4h14\"/>"
+		},
+		{
+			id: "duplicate",
+			label: "疑似重复",
+			icon: "<rect x=\"8\" y=\"8\" width=\"12\" height=\"13\" rx=\"2\"/><path d=\"M16 8V3H4v13h4\"/>"
+		},
+		{
+			id: "queue",
+			label: "队列中",
+			icon: "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 2\"/>"
+		},
+		{
+			id: "downloaded",
+			label: "已入库",
+			icon: "<path d=\"M4 3v18M9 3v18M14 3v18M18 3l3 18M2 21h20\"/>"
+		}
+	];
+	var matchesGroup = (item, choice) => choice === "all" || (choice === "queue" ? queueStatuses.has(item.status) : item.status === choice);
+	function mountLayout(config, persist) {
+		const grid = document.querySelector(".itg.gld");
+		if (!grid) return null;
+		const switchView = (enabled) => {
+			persist("redesigned", enabled);
+			location.reload();
+		};
+		if (config.redesigned === false) {
+			const button = document.createElement("button");
+			button.type = "button";
+			button.className = "lrr-redesigned-view";
+			button.textContent = "美化界面";
+			button.onclick = () => switchView(true);
+			const toolbar = document.querySelector(".searchnav");
+			if (toolbar) toolbar.append(button);
+			else grid.before(button);
+			return null;
+		}
+		const form = document.querySelector("#searchbox form");
+		const nav = document.querySelector("#nb");
+		const pagers = [...document.querySelectorAll(".searchnav")];
+		const resultText = document.querySelector(".searchtext");
+		const input = document.querySelector("#f_search");
+		const view = document.querySelector(".searchnav select");
+		if (!form || !input) return null;
+		for (const category of document.querySelectorAll(".cs")) {
+			const nativeStyle = getComputedStyle(category);
+			const categoryClass = [...category.classList].find((name) => name in categoryColors);
+			const color = categoryClass ? categoryColors[categoryClass] : nativeStyle.backgroundImage === "none" ? nativeStyle.backgroundColor : nativeStyle.borderTopColor;
+			category.style.setProperty("--lrr-category-color", color);
+			const [red, green, blue] = color.match(/[\d.]+/g).slice(0, 3).map((value) => {
+				const channel = Number(value) / 255;
+				return channel <= .04045 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4;
+			});
+			const luminance = .2126 * red + .7152 * green + .0722 * blue;
+			const blackContrast = (luminance + .05) / .05;
+			const whiteContrast = 1.05 / (luminance + .05);
+			category.style.setProperty("--lrr-category-ink", blackContrast >= whiteContrast ? "#000" : "#fff");
+		}
+		GM_addStyle(layout_default);
+		for (const child of document.body.children) if (![
+			"SCRIPT",
+			"STYLE",
+			"LINK"
+		].includes(child.tagName)) child.classList.add("lrr-native-shell");
+		document.documentElement.classList.add("lrr-redesigned");
+		const page = document.createElement("div");
+		page.className = "lrr-page";
+		page.innerHTML = `<header class="lrr-topbar"><div class="lrr-shell"><a class="lrr-brand" href="/">▥ Gallery</a><nav class="lrr-navigation" aria-label="站点导航"></nav><div class="lrr-top-actions"><button data-tool="backend" class="lrr-backend">▣ 队列后台 ↗</button><button data-tool="recheck">↻ 重新检查</button><button data-tool="settings">设置</button><details class="lrr-more-nav"><summary>更多</summary><div><button data-tool="recheck">重新检查</button></div></details></div></div></header>
+    <main class="lrr-shell"><section class="lrr-search" aria-label="搜索与筛选"></section>
+    <section class="lrr-result-section" aria-label="作品结果"><div class="lrr-results"><div class="lrr-statistics" aria-live="polite"></div><div class="lrr-result-actions"><div class="lrr-density" role="group" aria-label="网格密度"><button data-density="compact">紧凑</button><button data-density="standard">标准</button></div><button class="lrr-native-view">原站界面</button></div></div><div class="lrr-list-toolbar"><div class="lrr-bulk" role="group" aria-label="批量选择"><details class="lrr-selection-groups"><summary>按状态选择</summary><div>${selectionGroups.map((group) => `<button data-choice="${group.id}"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${group.icon}</svg><span>${group.label}</span><span class="lrr-choice-count">0</span><span class="lrr-choice-state" aria-hidden="true"></span></button>`).join("")}</div></details><button data-choice="all"><span class="lrr-all-state" aria-hidden="true"></span>全选</button></div><div class="lrr-top-pagination"></div></div><div class="lrr-grid-slot"></div><div class="lrr-bottom-pagination"></div></section>
+    <footer class="lrr-page-footer"><span class="lrr-native-results"></span><button data-tool="backend">打开队列面板 ↗</button></footer></main>
+    <aside class="lrr-selection-bar" aria-label="批量操作" hidden><span>已选择 <strong>0</strong> 部</span><div><button data-tool="copy">复制链接</button><button data-tool="send" class="lrr-primary">发送队列 →</button></div></aside><p class="lrr-feedback" role="status" hidden></p>`;
+		document.body.append(page);
+		const get = (selector) => page.querySelector(selector);
+		if (nav) {
+			const links = [...nav.querySelectorAll("a")];
+			get(".lrr-navigation").append(...links);
+			get(".lrr-more-nav > div").append(...links.map((link) => link.cloneNode(true)));
+		}
+		const nativeButton = get(".lrr-native-view");
+		nativeButton.onclick = () => switchView(false);
+		if (view) {
+			view.classList.add("lrr-view-select");
+			const mobile = matchMedia("(max-width: 620px)");
+			const placeView = () => get(mobile.matches ? ".lrr-more-nav > div" : ".lrr-result-actions").append(view);
+			mobile.addEventListener("change", placeView);
+			placeView();
+		}
+		if (resultText) {
+			resultText.classList.remove("lrr-native-shell");
+			get(".lrr-native-results").append(resultText);
+		}
+		for (const [index, pager] of pagers.entries()) {
+			pager.classList.remove("lrr-native-shell");
+			pager.setAttribute("aria-label", index === 0 ? "顶部分页" : "底部分页");
+			const translatePager = () => {
+				const labels = {
+					"<< First": "« 首页",
+					"< Prev": "‹ 上一页",
+					"Jump/Seek": "跳转 ⌄",
+					"Next >": "下一页 ›",
+					"Last >>": "末页 »",
+					"< Jump": "‹ 向前跳转",
+					"Jump >": "向后跳转 ›",
+					"< Seek": "‹ 向前定位",
+					"Seek >": "向后定位 ›",
+					"Use Date Selector": "按日期选择",
+					Close: "收起",
+					Cancel: "取消"
+				};
+				for (const control of pager.querySelectorAll("a, span, button")) {
+					const label = labels[control.textContent?.trim() || ""];
+					if (label) control.textContent = label;
+					if (control.id) control.dataset.pageAction = control.id.slice(1);
+					if (control.tagName === "SPAN") control.setAttribute("aria-disabled", "true");
+				}
+			};
+			translatePager();
+			new MutationObserver(translatePager).observe(pager, {
+				childList: true,
+				subtree: true
+			});
+			get(index === 0 ? ".lrr-top-pagination" : ".lrr-bottom-pagination").append(pager);
+		}
+		grid.classList.remove("lrr-native-shell");
+		get(".lrr-grid-slot").append(grid);
+		if (form && input) {
+			const categoryTable = form.querySelector(".itc");
+			const advanced = form.querySelector("#advdiv");
+			const submit = form.querySelector("input[type=submit]");
+			const clear = form.querySelector("input[type=button]");
+			const fileSearch = document.querySelector("#fsdiv");
+			const rangeBar = document.querySelector("#rangebar");
+			const advancedToggle = form.querySelector("a[onclick*=\"toggle_advsearch_pane\"]");
+			const tools = [...form.querySelectorAll("a[onclick]")].filter((link) => link !== advancedToggle);
+			let nativeTools;
+			for (const child of form.children) if (!child.matches("input[type=hidden]")) child.classList.add("lrr-native-form-part");
+			form.classList.add("lrr-search-form");
+			const row = document.createElement("div");
+			row.className = "lrr-search-row";
+			const searchBox = document.createElement("div");
+			searchBox.className = "lrr-search-box";
+			input.classList.remove("lrr-native-form-part");
+			input.placeholder = "搜索标题、作者或标签…";
+			input.setAttribute("aria-label", "搜索作品");
+			searchBox.append(input);
+			row.append(searchBox);
+			if (submit) {
+				submit.classList.remove("lrr-native-form-part");
+				submit.value = "搜索";
+				row.append(submit);
+			}
+			if (clear) {
+				clear.classList.remove("lrr-native-form-part");
+				clear.value = "清空";
+				row.append(clear);
+			}
+			const filters = document.createElement("div");
+			filters.className = "lrr-filter-bar";
+			for (const content of [categoryTable, advanced]) {
+				if (!content) continue;
+				content.classList.remove("lrr-native-form-part");
+				if (content === categoryTable) {
+					const categories = document.createElement("div");
+					categories.className = "lrr-categories";
+					categories.append(content);
+					filters.append(categories);
+					continue;
+				}
+				const details = document.createElement("details");
+				const summary = document.createElement("summary");
+				summary.textContent = "高级筛选";
+				if (content instanceof HTMLElement) content.style.display = "";
+				details.append(summary, content);
+				if (content === advanced) details.addEventListener("toggle", () => {
+					if (details.open && !advanced.querySelector("input")) {
+						advancedToggle?.click();
+						form.dispatchEvent(new Event("change"));
+					}
+				});
+				filters.append(details);
+			}
+			if (tools.length || fileSearch || rangeBar) {
+				const details = document.createElement("details");
+				const summary = document.createElement("summary");
+				summary.textContent = "原站工具";
+				details.append(summary, ...tools);
+				if (fileSearch) {
+					fileSearch.classList.remove("lrr-native-shell");
+					details.append(fileSearch);
+				}
+				if (rangeBar) {
+					rangeBar.classList.remove("lrr-native-shell");
+					details.append(rangeBar);
+				}
+				details.className = "lrr-native-tools";
+				nativeTools = details;
+			}
+			const chips = document.createElement("div");
+			chips.className = "lrr-filter-chips";
+			filters.append(chips);
+			form.append(row, filters);
+			get(".lrr-search").append(form);
+			if (nativeTools) get(".lrr-search").append(nativeTools);
+			const renderFilters = () => {
+				chips.replaceChildren();
+				const add = (text, remove) => {
+					const chip = document.createElement("button");
+					chip.type = "button";
+					chip.className = "lrr-filter-chip";
+					chip.textContent = text + " ×";
+					chip.setAttribute("aria-label", "移除条件 " + text);
+					chip.onclick = () => {
+						remove();
+						renderFilters();
+					};
+					chips.append(chip);
+				};
+				for (const field of form.elements) {
+					if (!(field instanceof HTMLInputElement || field instanceof HTMLSelectElement)) continue;
+					if (field instanceof HTMLInputElement && field.type === "checkbox" && field.checked) add(field.labels?.[0]?.textContent?.trim() || field.name, () => {
+						field.checked = false;
+						field.dispatchEvent(new Event("change", { bubbles: true }));
+					});
+					else if ([
+						"f_srdd",
+						"f_spf",
+						"f_spt"
+					].includes(field.name) && field.value && field.value !== "0") add((field.name === "f_srdd" ? "评分 ≥ " : field.name === "f_spf" ? "至少页数 " : "最多页数 ") + field.value, () => {
+						field.value = field instanceof HTMLSelectElement ? "0" : "";
+						field.dispatchEvent(new Event("change", { bubbles: true }));
+					});
+				}
+			};
+			form.addEventListener("change", renderFilters);
+			document.addEventListener("lrr:filters", renderFilters);
+			renderFilters();
+		}
+		let toolsRoot;
+		let sending = false;
+		function density(value) {
+			page.dataset.density = value;
+			page.querySelectorAll("[data-density]").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.density === value)));
+			config.density = value;
+			persist("density", value);
+		}
+		function choiceState(choice) {
+			const matching = [...galleries.values()].filter((item) => matchesGroup(item, choice));
+			const selected = matching.filter((item) => item.selected).length;
+			return {
+				count: matching.length,
+				pressed: selected === 0 ? "false" : selected === matching.length ? "true" : "mixed"
+			};
+		}
+		const groupMenu = get(".lrr-selection-groups");
+		const narrowToolbar = matchMedia("(max-width: 1100px)");
+		const placeGroups = () => {
+			groupMenu.open = !narrowToolbar.matches;
+		};
+		narrowToolbar.addEventListener("change", placeGroups);
+		placeGroups();
+		groupMenu.addEventListener("keydown", (event) => {
+			if (event.key === "Escape" && narrowToolbar.matches) {
+				groupMenu.open = false;
+				groupMenu.querySelector("summary").focus();
+			}
+		});
+		document.addEventListener("click", (event) => {
+			if (narrowToolbar.matches && !groupMenu.contains(event.target)) groupMenu.open = false;
+		});
+		density(String(config.density || "standard"));
+		page.addEventListener("click", (event) => {
+			const target = event.target.closest("[data-tool], [data-density], [data-choice]");
+			if (!target) return;
+			if (target.dataset.tool) toolsRoot?.querySelector(`[data-action="${target.dataset.tool}"]`)?.click();
+			if (target.dataset.density) density(target.dataset.density);
+			if (target.dataset.choice) {
+				const choice = target.dataset.choice;
+				const active = choiceState(choice).pressed === "true";
+				select((item) => matchesGroup(item, choice) ? !active : item.selected);
+			}
+			const details = target.closest("details");
+			if (details !== groupMenu) details?.removeAttribute("open");
+		});
+		document.addEventListener("lrr:sending", (event) => {
+			sending = event.detail;
+			render();
+		});
+		let feedbackTimer;
+		document.addEventListener("lrr:feedback", (event) => {
+			const detail = event.detail;
+			sending = detail.sending;
+			const feedback = get(".lrr-feedback");
+			feedback.textContent = detail.message;
+			feedback.classList.toggle("error", detail.error);
+			feedback.hidden = false;
+			clearTimeout(feedbackTimer);
+			feedbackTimer = setTimeout(() => {
+				feedback.hidden = true;
+			}, 6e3);
+			render();
+		});
+		function decorate(gallery) {
+			const { card, title, controls } = gallery;
+			if (card.dataset.lrrCard) return;
+			card.dataset.lrrCard = "true";
+			const cover = card.querySelector(".gl3t");
+			const titleLink = title.closest("a");
+			const nativeMeta = card.querySelector(".gl5t");
+			const category = nativeMeta?.querySelector(".cs");
+			const pageText = [...nativeMeta?.querySelectorAll("div") || []].find((node) => /^\d+ pages$/.test(node.textContent?.trim() || ""));
+			if (cover) card.prepend(cover);
+			if (cover) cover.after(controls);
+			else card.prepend(controls);
+			controls.after(titleLink);
+			const meta = document.createElement("div");
+			meta.className = "lrr-card-meta";
+			if (category) {
+				category.classList.add("lrr-category");
+				meta.append(category);
+			}
+			if (pageText) {
+				const pages = document.createElement("span");
+				pages.textContent = (pageText.textContent || "").replace("pages", "页");
+				meta.append(pages);
+			}
+			if (nativeMeta) {
+				const details = document.createElement("details");
+				details.className = "lrr-card-details";
+				const summary = document.createElement("summary");
+				summary.textContent = "···";
+				summary.setAttribute("aria-label", "发布时间、收藏与下载入口");
+				details.append(summary, nativeMeta);
+				meta.append(details);
+			}
+			titleLink.after(meta);
+		}
+		function render() {
+			const items = [...galleries.values()];
+			items.forEach(decorate);
+			page.querySelectorAll(".lrr-bulk [data-choice]").forEach((button) => {
+				const { count, pressed } = choiceState(button.dataset.choice);
+				button.setAttribute("aria-pressed", pressed);
+				button.disabled = count === 0;
+				const countLabel = button.querySelector(".lrr-choice-count");
+				if (countLabel) countLabel.textContent = String(count);
+				const indicator = button.querySelector(".lrr-choice-state, .lrr-all-state");
+				indicator.textContent = pressed === "true" ? "✓" : pressed === "mixed" ? "−" : "";
+			});
+			const count = items.filter((item) => item.selected).length;
+			const queued = items.filter((item) => matchesGroup(item, "queue")).length;
+			const downloaded = items.filter((item) => item.status === "downloaded").length;
+			const checking = items.filter((item) => item.status === "checking").length;
+			const errors = items.filter((item) => item.status === "error" || item.status === "queue-unknown").length;
+			get(".lrr-statistics").textContent = `${items.length} 部作品 · 已入库 ${downloaded} · 队列中 ${queued}${checking ? ` · 查询中 ${checking}` : ""}${errors ? ` · 查询异常 ${errors}` : ""}`;
+			get(".lrr-selection-bar").hidden = count === 0;
+			get(".lrr-selection-bar strong").textContent = String(count);
+			get("[data-tool=send]").disabled = sending || count === 0;
+			get("[data-tool=send]").textContent = sending ? "正在发送…" : "发送队列 →";
+		}
+		document.addEventListener("lrr:state", render);
+		return { connect(root) {
+			toolsRoot = root;
+			render();
+		} };
 	}
 	//#endregion
 	//#region ../userscript/src/checker.js
@@ -587,7 +1043,7 @@
 		return clone.textContent.replace(/\s+/g, " ").trim();
 	}
 	function hasLrrMarker(titleElement) {
-		return !!(titleElement && titleElement.querySelector(".lrr-marker-span"));
+		return !!(titleElement && galleryControls(titleElement)?.querySelector(".lrr-marker-span"));
 	}
 	function pickArchive(data) {
 		return {
@@ -744,27 +1200,33 @@
 		if (!titleElement || hasLrrMarker(titleElement)) return;
 		setStatus(titleElement, matchType === "urlfinder" ? "downloaded" : matchType === "alt" ? "duplicate" : "error");
 		hits = hits || [];
-		const markerSpan = document.createElement("span");
+		const markerSpan = document.createElement("button");
+		markerSpan.type = "button";
 		markerSpan.classList.add("lrr-marker-span");
 		classNames.forEach(function(c) {
 			markerSpan.classList.add(c);
 		});
-		markerSpan.textContent = matchType === "urlfinder" ? "✓" : matchType === "alt" ? "≃" : "!";
+		setStatusContent(markerSpan, matchType === "urlfinder" ? "downloaded" : matchType === "alt" ? "duplicate" : "error");
 		markerSpan.title = matchType === "urlfinder" ? "已入库" : matchType === "alt" ? "疑似重复" : "检查失败";
 		markerSpan.addEventListener("click", function(e) {
 			e.preventDefault();
 			e.stopPropagation();
 			if (matchType === "alt" && searchQuery) window.open(CONFIG.lrrServerUrl + "/?sort=1&sortdir=desc&q=" + encodeURIComponent(searchQuery), "_blank");
 			else if (hits.length > 0 && hits[0].id) window.open(CONFIG.lrrServerUrl + "/reader?id=" + encodeURIComponent(hits[0].id), "_blank");
+			else showStatusDetail("查询异常", "书库查询失败，无法判断是否已收录。请检查连接设置后重新检查；这不代表下载失败。");
 		});
 		const card = buildHoverCard(matchType, hits, searchQuery);
 		markerSpan.addEventListener("mouseenter", function() {
 			showHoverCard(markerSpan, card);
 		});
 		markerSpan.addEventListener("mouseleave", scheduleHide);
+		markerSpan.addEventListener("focus", function() {
+			showHoverCard(markerSpan, card);
+		});
+		markerSpan.addEventListener("blur", scheduleHide);
 		card.addEventListener("mouseenter", cancelHide);
 		card.addEventListener("mouseleave", scheduleHide);
-		titleElement.prepend(markerSpan);
+		galleryControls(titleElement)?.append(markerSpan);
 	}
 	function getAuthorizationHeaderValue(apiKey) {
 		if (!apiKey) return "";
@@ -1148,6 +1610,7 @@
 			applyingCats = false;
 		}
 		function updateActive() {
+			document.dispatchEvent(new Event("lrr:filters"));
 			box.querySelectorAll("[data-lang]").forEach(function(btn) {
 				btn.classList.toggle("active", tokens().some(function(t) {
 					return t.toLowerCase() === btn.dataset.lang;
@@ -1244,14 +1707,16 @@
 		altSearchInflight.clear();
 		runAltSearchLimited = createPool(CONFIG.altSearchConcurrency);
 		for (const gallery of galleries.values()) {
-			gallery.title.querySelectorAll(".lrr-marker-span").forEach((marker) => marker.remove());
+			gallery.controls.querySelectorAll(".lrr-marker-span").forEach((marker) => marker.remove());
 			setStatus(gallery.title, "checking");
 		}
 		collectGalleriesFromDom();
 		flushPendingRequests();
 	}
 	function init() {
-		mountPanel({
+		const layout = mountLayout(CONFIG, gmSet);
+		const tools = mountPanel({
+			integrated: !!layout,
 			config: CONFIG,
 			defaults: DEFAULT_CONFIG,
 			persist: gmSet,
@@ -1271,6 +1736,7 @@
 				return result;
 			}
 		});
+		layout?.connect(tools.root);
 		let pollingQueue = false;
 		setInterval(async () => {
 			if (document.hidden || pollingQueue) return;

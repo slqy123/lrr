@@ -10,6 +10,8 @@ export const DEFAULT_CONFIG = {
   queueServerUrl: 'http://localhost:29481',
   panelCollapsed: true,
   theme: 'auto',
+  redesigned: true,
+  density: 'standard',
 }
 export function gmGet<T>(key: string, fallback: T): T {
   try { return GM_getValue(key, fallback) ?? fallback }

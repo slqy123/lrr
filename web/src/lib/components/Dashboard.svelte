@@ -6,7 +6,7 @@
 
   const tone: Record<string, string> = {
     pending: 'text-muted',
-    running: 'text-accent',
+    running: 'text-queue',
     done: 'text-ok',
     failed: 'text-warn',
     dead: 'text-err',
@@ -14,7 +14,7 @@
 
   const bar: Record<string, string> = {
     pending: 'bg-muted',
-    running: 'bg-accent',
+    running: 'bg-queue',
     done: 'bg-ok',
     failed: 'bg-warn',
     dead: 'bg-err',
@@ -30,7 +30,7 @@
     {#each cards as status}
       <div class="rounded border border-line bg-surface p-4">
         <div class="text-xs text-muted">{statusLabels[status]}</div>
-        <div class="tnum mt-2 text-2xl {tone[status]}">{count(status)}</div>
+        <div class="tnum mt-2 text-2xl font-semibold {tone[status]}">{count(status)}</div>
       </div>
     {/each}
   </div>

@@ -42,8 +42,9 @@
         {#each tabs as tab}
           <button
             class="rounded px-3 py-1 text-sm transition-colors {view === tab.id
-              ? 'bg-surface-2 text-text'
+              ? 'bg-accent/10 text-accent'
               : 'text-muted hover:text-text'}"
+            aria-current={view === tab.id ? 'page' : undefined}
             onclick={() => (view = tab.id)}
           >
             {tab.label}
@@ -53,7 +54,7 @@
       <div class="ml-auto flex items-center gap-3 text-xs">
         <span class="text-muted">{store.online ? '实时 · 2s' : '离线'}</span>
         <button
-          class="rounded border border-line px-3 py-1 hover:border-accent hover:text-accent"
+          class="rounded border border-line px-3 py-1 hover:border-muted"
           onclick={togglePause}
         >
           {store.stats.paused ? '恢复队列' : '暂停队列'}

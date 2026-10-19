@@ -49,7 +49,7 @@
   </div>
 
   <div class="flex items-center gap-3">
-    <button class="rounded border border-line px-3 py-1 text-sm hover:border-accent hover:text-accent" onclick={recheck}>
+    <button class="rounded border border-line px-3 py-1 text-sm hover:border-muted" onclick={recheck}>
       用 urlfinder 核对已完成/失败任务
     </button>
     {#if message}<span class="text-xs text-muted">{message}</span>{/if}
