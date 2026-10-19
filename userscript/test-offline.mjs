@@ -83,6 +83,8 @@ function assertThemeContrast(page){
  window.prevurl='https://exhentai.org/?prev=1';window.nexturl=nextHref;
  page.querySelector('#ujump').click();await pause(20);
  assert(page.querySelector('#ujumpbox .jumpdate')?.textContent==='按日期选择','native jump controls styled and translated');
+ const jumpPopover=page.querySelector('#ujumpbox .jumppop').getBoundingClientRect();
+ assert(getComputedStyle(page.querySelector('#ujumpbox .jumppop')).position==='absolute'&&jumpPopover.left>=0&&jumpPopover.right<=innerWidth,'jump popover stays anchored within viewport');
  page.querySelector('#ujumpbox input[value="1d"]').click();await pause(20);
  assert(new URL(next.href).searchParams.get('jump')==='1d'&&next.textContent==='向后跳转 ›','native jump semantics preserved');
  page.querySelector('#ujumpbox .jumpcancel').click();await pause(20);
@@ -135,8 +137,12 @@ function assertThemeContrast(page){
  advanced.open=false;await pause(10);
  assert(JSON.stringify(categorySizes())===closedSizes,'closing advanced filters preserves category dimensions');
  const mainForm=sourceForm;const fileLink=page.querySelector('a[onclick*="toggle_filesearch"]');fileLink.click();
- const upload=page.querySelector('input[type=file]');assert(upload&&upload.form!==mainForm&&!mainForm.contains(upload),'file search keeps separate form');fileLink.click();
+ const upload=document.querySelector('#fsdiv input[type=file]');assert(upload&&upload.form!==mainForm&&!mainForm.contains(upload),'file search keeps separate form');fileLink.click();
  assert(!page.querySelector('.lrr-categories summary')&&getComputedStyle(page.querySelector('.lrr-categories .itc')).display!=='none','categories stay visible without a heading');
+ assert(page.querySelector('.lrr-search-options').parentElement.classList.contains('lrr-search-row'),'combined options disclosure sits beside search controls');
+ assert(getComputedStyle(page.querySelector('.lrr-extra-options #rangebar')).width!=='720px','native range selector adapts to the options panel width');
+ const options=page.querySelector('.lrr-search-options');options.open=true;await pause(10);
+ assert(getComputedStyle(options.querySelector('.lrr-extra-options')).position==='absolute','combined options open as an anchored dropdown');options.open=false;
  assert(!page.querySelector('.lrr-intro'),'search replaces generic introduction');
  assert(!page.querySelector('[data-choice=none]'),'no redundant clear selection controls');
  assert(page.querySelectorAll('.lrr-bulk [data-choice]').length===5,'four status groups and select all');
@@ -157,11 +163,16 @@ function assertThemeContrast(page){
   const shell=page.querySelector('main').getBoundingClientRect();
   assert(Math.abs((search.left+search.right)/2-(shell.left+shell.right)/2)<1,'search module is centered');
   const categoryTable=page.querySelector('.lrr-categories .itc').getBoundingClientRect();
-  const tools=page.querySelector('.lrr-native-tools > summary').getBoundingClientRect();
+  const searchRow=page.querySelector('.lrr-search-row').getBoundingClientRect();
+  const options=page.querySelector('.lrr-search-options > summary').getBoundingClientRect();
+  const searchButton=page.querySelector('.lrr-search-row input[type=submit]').getBoundingClientRect();
+  const clearButton=page.querySelector('.lrr-search-row input[type=button]').getBoundingClientRect();
+  assert(categoryTable.bottom<searchRow.top,'categories sit above the search field');
   assert(Math.abs((categoryTable.left+categoryTable.right)/2-(search.left+search.right)/2)<1,'category table is centered within search');
-  assert(Math.abs((tools.left+tools.right)/2-(search.left+search.right)/2)<1,'native tools are centered within search');
-  const filterControls=[...page.querySelectorAll('.lrr-filter-bar>details>summary,.lrr-filter-chip')].map(node=>node.getBoundingClientRect());
-  assert(Math.abs((Math.min(...filterControls.map(rect=>rect.left))+Math.max(...filterControls.map(rect=>rect.right)))/2-(search.left+search.right)/2)<1,'filter controls and chips are centered as a group');
+  assert(options.left>=clearButton.right,'filter and tools disclosure sits to the right of search buttons');
+  assert(Math.abs(searchButton.height-clearButton.height)<1&&Math.abs(searchButton.width-clearButton.width)<1,'search and clear buttons share dimensions');
+  assert(Math.abs(searchButton.height-options.height)<1&&Math.abs(searchButton.width-options.width)<1,'all search controls share dimensions');
+  assert(getComputedStyle(page.querySelector('.lrr-search-row input[type=submit]')).backgroundColor!==getComputedStyle(page.querySelector('.lrr-search-row input[type=button]')).backgroundColor,'primary search remains blue-tinted beside neutral controls');
  }
  assert(page.querySelector('.lrr-topbar [data-tool=backend]'),'backend is in the header');
  const categoryColors=[...page.querySelectorAll('[id^=cat_]')].map(node=>node.style.getPropertyValue('--lrr-category-color'));

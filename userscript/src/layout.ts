@@ -116,7 +116,7 @@ export function mountLayout(config: Config, persist: (key: string, value: unknow
     const rangeBar = document.querySelector<HTMLElement>('#rangebar')
     const advancedToggle = form.querySelector<HTMLAnchorElement>('a[onclick*="toggle_advsearch_pane"]')
     const tools = [...form.querySelectorAll<HTMLAnchorElement>('a[onclick]')].filter(link => link !== advancedToggle)
-    let nativeTools: HTMLDetailsElement | undefined
+    let categories: HTMLDivElement | undefined
     for (const child of form.children) if (!child.matches('input[type=hidden]')) child.classList.add('lrr-native-form-part')
     form.classList.add('lrr-search-form')
     const row = document.createElement('div')
@@ -132,42 +132,37 @@ export function mountLayout(config: Config, persist: (key: string, value: unknow
     if (clear) { clear.classList.remove('lrr-native-form-part'); clear.value = '清空'; row.append(clear) }
     const filters = document.createElement('div')
     filters.className = 'lrr-filter-bar'
-    for (const content of [categoryTable, advanced]) {
-      if (!content) continue
-      content.classList.remove('lrr-native-form-part')
-      if (content === categoryTable) {
-        const categories = document.createElement('div')
-        categories.className = 'lrr-categories'
-        categories.append(content)
-        filters.append(categories)
-        continue
-      }
-      const details = document.createElement('details')
-      const summary = document.createElement('summary')
-      summary.textContent = '高级筛选'
-      if (content instanceof HTMLElement) content.style.display = ''
-      details.append(summary, content)
-      if (content === advanced) details.addEventListener('toggle', () => {
-        if (details.open && !advanced.querySelector('input')) { advancedToggle?.click(); form.dispatchEvent(new Event('change')) }
-      })
-      filters.append(details)
+    if (categoryTable) {
+      categoryTable.classList.remove('lrr-native-form-part')
+      categories = document.createElement('div')
+      categories.className = 'lrr-categories'
+      categories.append(categoryTable)
     }
-    if (tools.length || fileSearch || rangeBar) {
-      const details = document.createElement('details')
-      const summary = document.createElement('summary')
-      summary.textContent = '原站工具'
-      details.append(summary, ...tools)
-      if (fileSearch) { fileSearch.classList.remove('lrr-native-shell'); details.append(fileSearch) }
-      if (rangeBar) { rangeBar.classList.remove('lrr-native-shell'); details.append(rangeBar) }
-      details.className = 'lrr-native-tools'
-      nativeTools = details
+    const options = document.createElement('details')
+    const optionsSummary = document.createElement('summary')
+    const optionsContent = document.createElement('div')
+    optionsSummary.textContent = '筛选与工具'
+    optionsContent.className = 'lrr-extra-options'
+    if (advanced) {
+      advanced.classList.remove('lrr-native-form-part')
+      advanced.style.display = ''
+      optionsContent.append(advanced)
     }
+    optionsContent.append(...tools)
+    if (fileSearch) fileSearch.classList.remove('lrr-native-shell')
+    if (rangeBar) { rangeBar.classList.remove('lrr-native-shell'); optionsContent.append(rangeBar) }
+    options.append(optionsSummary, optionsContent)
+    options.className = 'lrr-search-options'
+    options.addEventListener('toggle', () => {
+      if (options.open && advanced && !advanced.querySelector('input')) { advancedToggle?.click(); form.dispatchEvent(new Event('change')) }
+    })
+    row.append(options)
     const chips = document.createElement('div')
     chips.className = 'lrr-filter-chips'
     filters.append(chips)
     form.append(row, filters)
+    if (categories) get('.lrr-search').append(categories)
     get('.lrr-search').append(form)
-    if (nativeTools) get('.lrr-search').append(nativeTools)
     const renderFilters = () => {
       chips.replaceChildren()
       const add = (text: string, remove: () => void) => {
