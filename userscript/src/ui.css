@@ -1,25 +1,17 @@
 :host {
-  --bg:#fff;
-  --surface:#f4f6f8;
-  --text:#20252d;
-  --muted:#596576;
-  --line:#d9dfe7;
-  --accent:#315cce;
-  --on-accent:#fff;
-  --error:#b42335;
+  --bg:var(--lrr-bg);
+  --surface:var(--lrr-surface);
+  --text:var(--lrr-text);
+  --muted:var(--lrr-muted);
+  --line:var(--lrr-line);
+  --accent:var(--lrr-accent);
+  --on-accent:var(--lrr-on-accent);
+  --error:var(--lrr-error);
   color-scheme:light;
-  font:14px/1.5 system-ui,sans-serif;
+  font:var(--lrr-font);
   color:var(--text)
 }
 :host([data-theme=dark]) {
-  --bg:#1c2028;
-  --surface:#252c36;
-  --text:#edf0f5;
-  --muted:#a8b4c4;
-  --line:#3e4959;
-  --accent:#9bb7ff;
-  --on-accent:#132450;
-  --error:#ff9ca6;
   color-scheme:dark
 }
 * {
@@ -42,6 +34,10 @@ button {
 }
 button:hover {
   background:var(--surface)
+}
+button.primary:hover:not(:disabled) {
+  background:var(--lrr-accent-hover);
+  border-color:var(--lrr-accent-hover)
 }
 button:disabled {
   opacity:.45;
@@ -75,7 +71,7 @@ small {
   right:16px;
   bottom:16px;
   z-index:2147483000;
-  box-shadow:0 4px 20px #0003
+  box-shadow:var(--lrr-shadow)
 }
 .panel {
   position:fixed;
@@ -88,7 +84,7 @@ small {
   background:var(--bg);
   border:1px solid var(--line);
   border-radius:14px;
-  box-shadow:0 12px 40px #0004;
+  box-shadow:var(--lrr-shadow);
   z-index:2147483000;
   animation:appear .14s ease-out
 }
@@ -163,7 +159,7 @@ dialog {
   width:520px;
   max-width:calc(100vw - 32px);
   max-height:calc(100dvh - 32px);
-  box-shadow:0 16px 60px #0006
+  box-shadow:var(--lrr-shadow)
 }
 dialog::backdrop {
   background:#0007

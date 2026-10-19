@@ -1,5 +1,6 @@
 import { collect, galleries, labels, notify, select, type GalleryStatus } from './state'
 import styles from './ui.css?inline'
+import themeStyles from './theme.css?inline'
 
 type Config = Record<string, string | number | boolean>
 interface Options {
@@ -24,7 +25,7 @@ export function mountPanel(options: Options) {
   host.id = 'lrr-tools'
   document.body.append(host)
   const root = host.attachShadow({ mode: 'open' })
-  root.innerHTML = `<style>${styles}</style>
+  root.innerHTML = `<style>${themeStyles}\n${styles}</style>
     <button class="launcher" aria-label="打开 LRR 工具" aria-expanded="false">${icon('menu')} LRR <span id="launcher-count"></span></button>
     <aside class="panel" aria-label="LRR 画廊工具" hidden>
       <header><strong>LRR <small>画廊工具</small></strong><button data-action="close" aria-label="关闭面板">${icon('close')}</button></header>

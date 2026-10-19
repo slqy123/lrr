@@ -1,0 +1,35 @@
+html, :host {
+  --lrr-bg: #ffffff;
+  --lrr-surface: #f3f5f3;
+  --lrr-text: #252925;
+  --lrr-muted: #616961;
+  --lrr-line: #d7ded7;
+  --lrr-accent: #287a42;
+  --lrr-accent-hover: #206535;
+  --lrr-on-accent: #ffffff;
+  --lrr-accent-soft: #e8f3eb;
+  --lrr-warning: #825d15;
+  --lrr-warning-soft: #fbf2dd;
+  --lrr-error: #b52d3d;
+  --lrr-error-soft: #fbecef;
+  --lrr-radius: 8px;
+  --lrr-radius-lg: 14px;
+  --lrr-shadow: 0 8px 28px #0000001f;
+  --lrr-font: 13px/1.5 system-ui, sans-serif;
+}
+html[data-lrr-theme=dark], :host([data-theme=dark]) {
+  --lrr-bg: #242624;
+  --lrr-surface: #2d302d;
+  --lrr-text: #ecefec;
+  --lrr-muted: #adb5ad;
+  --lrr-line: #454c45;
+  --lrr-accent: #82cc95;
+  --lrr-accent-hover: #a0ddb0;
+  --lrr-on-accent: #142d1b;
+  --lrr-accent-soft: #293d2e;
+  --lrr-warning: #e4be70;
+  --lrr-warning-soft: #413823;
+  --lrr-error: #f39da7;
+  --lrr-error-soft: #442d32;
+  --lrr-shadow: 0 8px 28px #0000004d;
+}

@@ -5,7 +5,7 @@ import { spawnSync } from 'node:child_process'
 
 const dir = mkdtempSync(join(tmpdir(), 'lrr-ui-'))
 const script = readFileSync(new URL('../lanraragi-checker.user.js', import.meta.url), 'utf8')
-const fixture = `<!doctype html><meta charset="utf-8"><div class="itg">${[1, 2, 3, 4, 5, 6].map(id => `<div class="gl1t"><a href="https://exhentai.org/g/${id}/test/"><span class="glink">[Author] Gallery ${id}</span></a></div>`).join('')}</div>
+const fixture = `<!doctype html><meta charset="utf-8"><div><input id="f_search" aria-label="Search"></div><div class="itg">${[1, 2, 3, 4, 5, 6].map(id => `<div class="gl1t"><a href="https://exhentai.org/g/${id}/test/"><span class="glink">[Author] Gallery ${id}</span></a></div>`).join('')}</div>
 <script>
 const values = {panelCollapsed:false};
 window.GM_getValue=(key,fallback)=>key in values?values[key]:fallback;
@@ -37,6 +37,18 @@ const assert=(condition,message)=>{if(!condition)throw new Error(message)};
   assert(document.querySelectorAll('[data-lrr-status="downloaded"]').length===1,'downloaded status');
   assert(document.querySelectorAll('[data-lrr-status="error"]').length===1,'error status');
   assert(document.querySelectorAll('[data-lrr-status="duplicate"]').length===1,'duplicate status');
+  document.querySelector('.lrr-marker-downloaded').dispatchEvent(new MouseEvent('mouseenter'));
+  const card=document.querySelector('.lrr-hover-card.show');
+  const suggestion=document.querySelector('#lrr-search-suggest');
+  assert(card&&suggestion,'hover card and search suggestions available');
+  const surface=()=>getComputedStyle(root.querySelector('.panel')).backgroundColor;
+  assert(getComputedStyle(card).backgroundColor===surface(),'light card matches panel');
+  assert(getComputedStyle(suggestion).backgroundColor===surface(),'light suggestions match panel');
+  const primary=getComputedStyle(button('send')).backgroundColor;
+  const channels=primary.match(/\\d+/g).map(Number);
+  assert(channels[1]>channels[0]&&channels[1]>channels[2],'green primary accent');
+  document.querySelector('#f_search').focus();
+  assert(suggestion.classList.contains('open'),'suggestions open on focus');
   root.querySelector('[data-select="duplicate"]').click();
   assert(document.querySelectorAll('.lrr-item-checkbox:checked').length===1,'select duplicate');
   root.querySelector('[data-select="missing"]').click();
@@ -55,6 +67,9 @@ const assert=(condition,message)=>{if(!condition)throw new Error(message)};
   root.querySelector('form').requestSubmit();await pause(100);
   assert(values.theme==='dark','theme persisted');
   assert(document.querySelector('#lrr-tools').dataset.theme==='dark','theme applied');
+  assert(getComputedStyle(card).backgroundColor===surface(),'dark card matches panel');
+  assert(getComputedStyle(suggestion).backgroundColor===surface(),'dark suggestions match panel');
+  assert(getComputedStyle(card).color===getComputedStyle(root.querySelector('.panel')).color,'shared dark text');
   assert(checks[2].checked,'save keeps manual selection');
   hold=true;button('recheck').click();await pause(30);
   assert(document.querySelectorAll('[data-lrr-status="checking"]').length===6,'recheck starts');

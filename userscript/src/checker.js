@@ -1,5 +1,6 @@
 import { CONFIG, DEFAULT_CONFIG, gmGet, gmSet } from './config'
 import galleryStyles from './gallery.css?inline'
+import themeStyles from './theme.css?inline'
 import { mountPanel } from './panel'
 import { collect, setStatus as setGalleryStatus, galleries } from './state'
 
@@ -8,7 +9,7 @@ function cacheNamespace() { return 'lrr-checker-v2-' + simpleHash(CONFIG.lrrServ
 function log(...args) { if (CONFIG.enableLogging) console.log('[LRR]', ...args); }
 function warn(...args) { if (CONFIG.enableLogging) console.warn('[LRR]', ...args); }
 
-GM_addStyle(galleryStyles);
+GM_addStyle(themeStyles + '\n' + galleryStyles);
 
 
 const CACHE_DURATION = 3 * 24 * 60 * 60 * 1000;
@@ -197,6 +198,7 @@ function formatLrrSize(bytes) {
 function buildHoverCard(matchType, hits, searchQuery) {
     const card = document.createElement('div');
     card.className = 'lrr-hover-card';
+    card.dataset.match = matchType;
 
     const header = document.createElement('div');
     header.className = 'lrr-hc-header';
