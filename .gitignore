@@ -6,5 +6,6 @@ __pycache__/
 tasks.db*
 REFACTOR_PLAN.md
 web/dist/
+userscript/dist/
 node_modules/
 .firecrawl/

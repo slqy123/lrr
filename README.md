@@ -52,7 +52,13 @@ uv pip install -e .
 - **任务**：粘贴链接入队、按状态/链接筛选、单条重试/取消/删除、批量重试失败。
 - **设置**：服务与 LRR 连通状态、用 urlfinder 核对历史任务。
 
-在 ExHentai 用户脚本的设置里把“队列服务地址”填成同一地址（默认 `http://localhost:29481`）即可发送选中链接。
+用 Tampermonkey 安装 [用户脚本](https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js)，在 ExHentai / E-Hentai 点击右下角 **LRR** 打开工具面板。在设置中填写 LANraragi 地址、API Key 和队列服务器地址（默认 `http://localhost:29481`）。
+
+- 选择未入库或疑似重复的画廊，也可以逐项勾选，再发送到队列或复制链接。
+- 检查中与检查失败不算“未入库”；关闭标题搜索后，“未入库”仅表示 URL 未命中。
+- 发送成功后清空本次发送的选择，失败时保留；结果分别显示新增与重复数量。
+- 设置保存后自动重新检查当前页，不清空选择；支持随站点、浅色和深色外观。
+- 面板不支持拖动；点击关闭按钮或按 Esc 收起，点击网页不会关闭。
 
 ## HTTP API
 

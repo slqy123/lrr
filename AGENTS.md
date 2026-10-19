@@ -26,7 +26,9 @@ Three parts, one repo:
 | `web/` | Frontend source; `web/dist` is generated. |
 | `install.sh` | Builds frontend, installs/restarts the systemd user unit. |
 | `lrr-queue.service.in` | Unit template; `@PYTHON@` / `@DIR@` placeholders. |
-| `lanraragi-checker.user.js` | The userscript (no build step). |
+| `userscript/src/` | Userscript source: typed config, state and panel; existing checker in JavaScript; isolated panel CSS. |
+| `userscript/test.mjs` | Headless Chromium integration tests against the generated userscript. |
+| `lanraragi-checker.user.js` | Generated installable userscript; keep tracked for update URLs. |
 | `.env` | Runtime config. **Gitignored.** |
 | `.env.example` | Config template. Tracked. |
 | `SPEC.md`, `refs/` | Local notes/reference captures. **Gitignored.** |
@@ -101,15 +103,20 @@ Already-downloaded URLs never enter the download path: dispatch pre-checks `urlf
 - Keep the worker single-threaded; do not fan out per-task threads — LRR's minion owns execution concurrency.
 - Peewee is synchronous; API handlers are sync `def` (FastAPI threadpool). Do not introduce async DB access.
 - Frontend: Svelte 5 runes only (no stores/`on:click` legacy syntax), no router, 2s polling. Design tokens live in `web/src/app.css` (`@theme`).
-- Keep `lanraragi-checker.user.js` a single file with no build step, and keep `@namespace` / `@updateURL` / `@downloadURL` on `slqy123/lrr` (raw `main`).
-- After any change to `lanraragi-checker.user.js`, bump its `@version`.
+- Edit userscript source in `userscript/src/`, then run `pnpm --dir web build:userscript`. Keep the generated `lanraragi-checker.user.js` tracked and keep `@namespace` / `@updateURL` / `@downloadURL` on `slqy123/lrr` (raw `main`).
+- Bump `@version` in `userscript/header.txt` before rebuilding changed userscript source.
+- Panel positioning uses CSS only: fixed launcher and overlay panel with internal scrolling, no drag coordinates or JavaScript viewport clamping. Selection state lives in `state.ts`; unknown/error results must never count as missing. Rechecks invalidate older responses without clearing selection.
 - Comments only where the *why* is non-obvious, in English.
 
 ## Verify
+
+Userscript integration tests require Chromium; set `CHROMIUM` to override its executable.
 
 ```bash
 .venv/bin/ruff check lrr_queue tests
 .venv/bin/python -m pytest -q
 pnpm --dir web build
+pnpm --dir web build:userscript
 node --check lanraragi-checker.user.js
+node userscript/test.mjs
 ```
