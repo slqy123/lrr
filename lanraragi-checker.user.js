@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      MIT
-// @version      1.3.2
+// @version      1.3.5
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -47,10 +47,10 @@
 	var CONFIG = Object.fromEntries(Object.entries(DEFAULT_CONFIG).map(([key, fallback]) => [key, gmGet(key, fallback)]));
 	//#endregion
 	//#region ../userscript/src/gallery.css?inline
-	var gallery_default = ".lrr-item-checkbox {\n  appearance: auto !important;\n  position: static !important;\n  opacity: 1 !important;\n  width: 16px !important;\n  height: 16px !important;\n  margin: 0 8px 0 0 !important;\n  accent-color: var(--lrr-accent);\n  cursor: pointer;\n}\n.lrr-item-checkbox:focus-visible, .lrr-marker-span:focus-visible,\n.lrr-hc-btn:focus-visible, .lrr-hc-searchall:focus-visible,\n.lrr-suggest-item:focus-visible {\n  outline: 2px solid var(--lrr-accent);\n  outline-offset: 3px;\n}\n.lrr-check-state {\n  font: var(--lrr-font);\n  font-size: 11px;\n  margin-left: 8px;\n  color: var(--lrr-muted);\n}\n[data-lrr-status=error] .lrr-check-state { color: var(--lrr-error); }\n[data-lrr-status=downloaded] .lrr-check-state { color: var(--lrr-accent); }\n[data-lrr-status=duplicate] .lrr-check-state { color: var(--lrr-warning); }\n[data-lrr-status=queued] .lrr-check-state,\n[data-lrr-status=downloading] .lrr-check-state,\n[data-lrr-status=retrying] .lrr-check-state,\n[data-lrr-status=queue-failed] .lrr-check-state,\n[data-lrr-status=queue-unknown] .lrr-check-state {\n  display: inline-block;\n  padding: 2px 7px;\n  border: 1px solid currentColor;\n  border-radius: 6px;\n  font-weight: 600;\n  color: var(--lrr-muted);\n  background: var(--lrr-surface);\n}\n[data-lrr-status=downloading] .lrr-check-state {\n  color: var(--lrr-accent);\n  background: var(--lrr-accent-soft);\n}\n[data-lrr-status=retrying] .lrr-check-state {\n  color: var(--lrr-warning);\n  background: var(--lrr-warning-soft);\n}\n[data-lrr-status=queue-failed] .lrr-check-state,\n[data-lrr-status=queue-unknown] .lrr-check-state {\n  color: var(--lrr-error);\n  background: var(--lrr-error-soft);\n}\n.lrr-marker-span {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  min-width: 20px;\n  height: 20px;\n  margin-right: 6px;\n  padding: 0 5px;\n  border: 1px solid currentColor;\n  border-radius: 6px;\n  font: 600 12px/1 system-ui, sans-serif;\n  vertical-align: middle;\n  cursor: pointer;\n}\n.lrr-marker-downloaded { color: var(--lrr-accent); background: var(--lrr-accent-soft); }\n.lrr-marker-file { color: var(--lrr-warning); background: var(--lrr-warning-soft); }\n.lrr-marker-error { color: var(--lrr-error); background: var(--lrr-error-soft); }\n.lrr-title-selected {\n  outline: 2px solid var(--lrr-accent);\n  outline-offset: 3px;\n  border-radius: 4px;\n}\n/* Fixed to body: avoids both overflow clipping and inheriting the selected-title color. */\n.lrr-hover-card {\n  position: fixed;\n  z-index: 1000000;\n  min-width: min(320px, calc(100vw - 24px));\n  max-width: min(440px, calc(100vw - 24px));\n  max-height: min(480px, calc(100dvh - 24px));\n  overflow-y: auto;\n  background: var(--lrr-bg);\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius-lg);\n  box-shadow: var(--lrr-shadow);\n  font: var(--lrr-font);\n  color: var(--lrr-text);\n  text-align: left;\n  opacity: 0;\n  visibility: hidden;\n  transform: translateY(-4px);\n  transition: opacity .12s ease, transform .12s ease, visibility .12s;\n}\n.lrr-hover-card.show { opacity: 1; visibility: visible; transform: none; }\n.lrr-hc-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 12px;\n  padding: 12px 14px;\n  border-bottom: 1px solid var(--lrr-line);\n  position: sticky;\n  top: 0;\n  background: var(--lrr-bg);\n}\n.lrr-hc-badge {\n  font-size: 11px;\n  font-weight: 600;\n  padding: 3px 8px;\n  border-radius: 6px;\n  background: var(--lrr-accent-soft);\n  color: var(--lrr-accent);\n}\n.lrr-hover-card[data-match=alt] .lrr-hc-badge {\n  background: var(--lrr-warning-soft);\n  color: var(--lrr-warning);\n}\n.lrr-hover-card[data-match=error] .lrr-hc-badge {\n  background: var(--lrr-error-soft);\n  color: var(--lrr-error);\n}\n.lrr-hc-count, .lrr-hc-meta { font-size: 11px; color: var(--lrr-muted); }\n.lrr-hc-meta { margin-top: 4px; }\n.lrr-hc-item { display: flex; gap: 12px; padding: 14px; border-bottom: 1px solid var(--lrr-line); }\n.lrr-hc-item:last-child { border-bottom: none; }\n.lrr-hc-thumb {\n  width: 56px;\n  height: 80px;\n  flex-shrink: 0;\n  overflow: hidden;\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius);\n  background: var(--lrr-surface);\n}\n.lrr-hc-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }\n.lrr-hc-info { flex: 1; min-width: 0; }\n.lrr-hc-title {\n  font-size: 13px;\n  font-weight: 600;\n  color: var(--lrr-text);\n  display: -webkit-box;\n  -webkit-line-clamp: 2;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  overflow-wrap: anywhere;\n}\n.lrr-hc-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }\n.lrr-hc-tag {\n  font-size: 11px;\n  padding: 2px 6px;\n  border: 1px solid var(--lrr-line);\n  border-radius: 6px;\n  background: var(--lrr-surface);\n  color: var(--lrr-muted);\n}\n.lrr-hc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }\n.lrr-hc-btn {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  padding: 6px 10px;\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius);\n  font-size: 12px;\n  font-weight: 500;\n  text-decoration: none !important;\n}\n.lrr-hc-btn-read { background: var(--lrr-accent); border-color: var(--lrr-accent); color: var(--lrr-on-accent) !important; }\n.lrr-hc-btn-read:hover { background: var(--lrr-accent-hover); border-color: var(--lrr-accent-hover); }\n.lrr-hc-btn-edit { background: var(--lrr-bg); color: var(--lrr-text) !important; }\n.lrr-hc-btn-edit:hover { background: var(--lrr-surface); }\n.lrr-hc-footer { padding: 12px 14px; border-top: 1px solid var(--lrr-line); }\n.lrr-hc-searchall { font-size: 12px; color: var(--lrr-accent) !important; text-decoration: none; }\n.lrr-hc-searchall:hover { text-decoration: underline; }\n#lrr-search-suggest {\n  position: absolute;\n  top: 100%;\n  left: 0;\n  z-index: 100000;\n  min-width: min(240px, calc(100vw - 24px));\n  max-width: calc(100vw - 24px);\n  box-sizing: border-box;\n  margin-top: 8px;\n  padding: 14px;\n  background: var(--lrr-bg);\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius-lg);\n  box-shadow: var(--lrr-shadow);\n  color: var(--lrr-text);\n  font: var(--lrr-font);\n  opacity: 0;\n  visibility: hidden;\n  transform: translateY(-4px);\n  transition: opacity .12s ease, transform .12s ease, visibility .12s;\n}\n#lrr-search-suggest.open { opacity: 1; visibility: visible; transform: none; }\n.lrr-suggest-group { margin-bottom: 14px; }\n.lrr-suggest-group:last-child { margin-bottom: 0; }\n.lrr-suggest-label { margin-bottom: 8px; color: var(--lrr-muted); font-size: 11px; font-weight: 600; }\n.lrr-suggest-items { display: flex; flex-wrap: wrap; gap: 8px; }\n.lrr-suggest-item {\n  padding: 6px 10px;\n  background: var(--lrr-bg);\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius);\n  color: var(--lrr-text);\n  font: inherit;\n  font-size: 12px;\n  cursor: pointer;\n  transition: background .12s ease, border-color .12s ease, color .12s ease;\n}\n.lrr-suggest-item:hover { border-color: var(--lrr-accent); background: var(--lrr-accent-soft); color: var(--lrr-accent); }\n.lrr-suggest-item.active { background: var(--lrr-accent); border-color: var(--lrr-accent); color: var(--lrr-on-accent); }\n@media (prefers-reduced-motion: reduce) {\n  .lrr-hover-card, #lrr-search-suggest, .lrr-suggest-item { transition: none; transform: none; }\n}\n";
+	var gallery_default = ".lrr-item-checkbox {\n  appearance: auto !important;\n  position: static !important;\n  opacity: 1 !important;\n  width: 16px !important;\n  height: 16px !important;\n  margin: 0 8px 0 0 !important;\n  accent-color: var(--lrr-accent);\n  cursor: pointer;\n}\n.lrr-item-checkbox:focus-visible, .lrr-marker-span:focus-visible,\n.lrr-hc-btn:focus-visible, .lrr-hc-searchall:focus-visible,\n.lrr-suggest-item:focus-visible {\n  outline: 2px solid var(--lrr-accent);\n  outline-offset: 3px;\n}\n.lrr-check-state {\n  color: var(--lrr-muted);\n  background: var(--lrr-surface);\n}\n[data-lrr-status=missing] > .lrr-check-state,\n[data-lrr-status=checking] > .lrr-check-state,\n[data-lrr-status=downloaded]:has(> .lrr-marker-span) > .lrr-check-state,\n[data-lrr-status=duplicate]:has(> .lrr-marker-span) > .lrr-check-state,\n[data-lrr-status=error]:has(> .lrr-marker-span) > .lrr-check-state {\n  display: none;\n}\n:is([data-lrr-status=queued], [data-lrr-status=downloading], [data-lrr-status=retrying],\n[data-lrr-status=queue-failed], [data-lrr-status=queue-unknown]) > .lrr-marker-span {\n  display: none;\n}\n[data-lrr-status=downloaded] .lrr-check-state { color: var(--lrr-accent); }\n[data-lrr-status=duplicate] .lrr-check-state { color: var(--lrr-duplicate); }\n.lrr-marker-span, .lrr-check-state {\n  box-sizing: border-box;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  width: 20px;\n  height: 20px;\n  margin-right: 6px;\n  padding: 0;\n  flex-shrink: 0;\n  border: 1px solid currentColor;\n  border-radius: 6px;\n  font: 600 12px/1 system-ui, sans-serif;\n  vertical-align: middle;\n  cursor: pointer;\n}\n.lrr-marker-downloaded { color: var(--lrr-accent); background: var(--lrr-accent-soft); }\n.lrr-marker-file { color: var(--lrr-duplicate); background: var(--lrr-duplicate-soft); }\n.lrr-marker-error { color: var(--lrr-muted); background: var(--lrr-surface); }\n.lrr-title-selected {\n  outline: 2px solid var(--lrr-accent);\n  outline-offset: 3px;\n  border-radius: 4px;\n}\n/* Fixed to body: avoids both overflow clipping and inheriting the selected-title color. */\n.lrr-hover-card {\n  position: fixed;\n  z-index: 1000000;\n  min-width: min(320px, calc(100vw - 24px));\n  max-width: min(440px, calc(100vw - 24px));\n  max-height: min(480px, calc(100dvh - 24px));\n  overflow-y: auto;\n  background: var(--lrr-bg);\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius-lg);\n  box-shadow: var(--lrr-shadow);\n  font: var(--lrr-font);\n  color: var(--lrr-text);\n  text-align: left;\n  opacity: 0;\n  visibility: hidden;\n  transform: translateY(-4px);\n  transition: opacity .12s ease, transform .12s ease, visibility .12s;\n}\n.lrr-hover-card.show { opacity: 1; visibility: visible; transform: none; }\n.lrr-hc-header {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  gap: 12px;\n  padding: 12px 14px;\n  border-bottom: 1px solid var(--lrr-line);\n  position: sticky;\n  top: 0;\n  background: var(--lrr-bg);\n}\n.lrr-hc-badge {\n  font-size: 11px;\n  font-weight: 600;\n  padding: 3px 8px;\n  border-radius: 6px;\n  background: var(--lrr-accent-soft);\n  color: var(--lrr-accent);\n}\n.lrr-hover-card[data-match=alt] .lrr-hc-badge {\n  background: var(--lrr-duplicate-soft);\n  color: var(--lrr-duplicate);\n}\n.lrr-hover-card[data-match=error] .lrr-hc-badge {\n  background: var(--lrr-error-soft);\n  color: var(--lrr-error);\n}\n.lrr-hc-count, .lrr-hc-meta { font-size: 11px; color: var(--lrr-muted); }\n.lrr-hc-meta { margin-top: 4px; }\n.lrr-hc-item { display: flex; gap: 12px; padding: 14px; border-bottom: 1px solid var(--lrr-line); }\n.lrr-hc-item:last-child { border-bottom: none; }\n.lrr-hc-thumb {\n  width: 56px;\n  height: 80px;\n  flex-shrink: 0;\n  overflow: hidden;\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius);\n  background: var(--lrr-surface);\n}\n.lrr-hc-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }\n.lrr-hc-info { flex: 1; min-width: 0; }\n.lrr-hc-title {\n  font-size: 13px;\n  font-weight: 600;\n  color: var(--lrr-text);\n  display: -webkit-box;\n  -webkit-line-clamp: 2;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  overflow-wrap: anywhere;\n}\n.lrr-hc-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }\n.lrr-hc-tag {\n  font-size: 11px;\n  padding: 2px 6px;\n  border: 1px solid var(--lrr-line);\n  border-radius: 6px;\n  background: var(--lrr-surface);\n  color: var(--lrr-muted);\n}\n.lrr-hc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }\n.lrr-hc-btn {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  padding: 6px 10px;\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius);\n  font-size: 12px;\n  font-weight: 500;\n  text-decoration: none !important;\n}\n.lrr-hc-btn-read { background: var(--lrr-accent); border-color: var(--lrr-accent); color: var(--lrr-on-accent) !important; }\n.lrr-hc-btn-read:hover { background: var(--lrr-accent-hover); border-color: var(--lrr-accent-hover); }\n.lrr-hc-btn-edit { background: var(--lrr-bg); color: var(--lrr-text) !important; }\n.lrr-hc-btn-edit:hover { background: var(--lrr-surface); }\n.lrr-hc-footer { padding: 12px 14px; border-top: 1px solid var(--lrr-line); }\n.lrr-hc-searchall { font-size: 12px; color: var(--lrr-accent) !important; text-decoration: none; }\n.lrr-hc-searchall:hover { text-decoration: underline; }\n#lrr-search-suggest {\n  position: absolute;\n  top: 100%;\n  left: 0;\n  z-index: 100000;\n  min-width: min(240px, calc(100vw - 24px));\n  max-width: calc(100vw - 24px);\n  box-sizing: border-box;\n  margin-top: 8px;\n  padding: 14px;\n  background: var(--lrr-bg);\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius-lg);\n  box-shadow: var(--lrr-shadow);\n  color: var(--lrr-text);\n  font: var(--lrr-font);\n  opacity: 0;\n  visibility: hidden;\n  transform: translateY(-4px);\n  transition: opacity .12s ease, transform .12s ease, visibility .12s;\n}\n#lrr-search-suggest.open { opacity: 1; visibility: visible; transform: none; }\n.lrr-suggest-group { margin-bottom: 14px; }\n.lrr-suggest-group:last-child { margin-bottom: 0; }\n.lrr-suggest-label { margin-bottom: 8px; color: var(--lrr-muted); font-size: 11px; font-weight: 600; }\n.lrr-suggest-items { display: flex; flex-wrap: wrap; gap: 8px; }\n.lrr-suggest-item {\n  padding: 6px 10px;\n  background: var(--lrr-bg);\n  border: 1px solid var(--lrr-line);\n  border-radius: var(--lrr-radius);\n  color: var(--lrr-text);\n  font: inherit;\n  font-size: 12px;\n  cursor: pointer;\n  transition: background .12s ease, border-color .12s ease, color .12s ease;\n}\n.lrr-suggest-item:hover { border-color: var(--lrr-accent); background: var(--lrr-accent-soft); color: var(--lrr-accent); }\n.lrr-suggest-item.active { background: var(--lrr-accent); border-color: var(--lrr-accent); color: var(--lrr-on-accent); }\n@media (prefers-reduced-motion: reduce) {\n  .lrr-hover-card, #lrr-search-suggest, .lrr-suggest-item { transition: none; transform: none; }\n}\n";
 	//#endregion
 	//#region ../userscript/src/theme.css?inline
-	var theme_default = "html, :host {\n  --lrr-bg: #ffffff;\n  --lrr-surface: #f3f5f3;\n  --lrr-text: #252925;\n  --lrr-muted: #616961;\n  --lrr-line: #d7ded7;\n  --lrr-accent: #287a42;\n  --lrr-accent-hover: #206535;\n  --lrr-on-accent: #ffffff;\n  --lrr-accent-soft: #e8f3eb;\n  --lrr-warning: #825d15;\n  --lrr-warning-soft: #fbf2dd;\n  --lrr-error: #b52d3d;\n  --lrr-error-soft: #fbecef;\n  --lrr-radius: 8px;\n  --lrr-radius-lg: 14px;\n  --lrr-shadow: 0 8px 28px #0000001f;\n  --lrr-font: 13px/1.5 system-ui, sans-serif;\n}\nhtml[data-lrr-theme=dark], :host([data-theme=dark]) {\n  --lrr-bg: #242624;\n  --lrr-surface: #2d302d;\n  --lrr-text: #ecefec;\n  --lrr-muted: #adb5ad;\n  --lrr-line: #454c45;\n  --lrr-accent: #82cc95;\n  --lrr-accent-hover: #a0ddb0;\n  --lrr-on-accent: #142d1b;\n  --lrr-accent-soft: #293d2e;\n  --lrr-warning: #e4be70;\n  --lrr-warning-soft: #413823;\n  --lrr-error: #f39da7;\n  --lrr-error-soft: #442d32;\n  --lrr-shadow: 0 8px 28px #0000004d;\n}\n";
+	var theme_default = "html, :host {\n  --lrr-bg: #ffffff;\n  --lrr-surface: #f3f5f3;\n  --lrr-text: #252925;\n  --lrr-muted: #616961;\n  --lrr-line: #d7ded7;\n  --lrr-accent: #287a42;\n  --lrr-accent-hover: #206535;\n  --lrr-on-accent: #ffffff;\n  --lrr-accent-soft: #e8f3eb;\n  --lrr-duplicate: #7851aa;\n  --lrr-duplicate-soft: #f1eafa;\n  --lrr-warning: #825d15;\n  --lrr-warning-soft: #fbf2dd;\n  --lrr-error: #b52d3d;\n  --lrr-error-soft: #fbecef;\n  --lrr-radius: 8px;\n  --lrr-radius-lg: 14px;\n  --lrr-shadow: 0 8px 28px #0000001f;\n  --lrr-font: 13px/1.5 system-ui, sans-serif;\n}\nhtml[data-lrr-theme=dark], :host([data-theme=dark]) {\n  --lrr-bg: #242624;\n  --lrr-surface: #2d302d;\n  --lrr-text: #ecefec;\n  --lrr-muted: #adb5ad;\n  --lrr-line: #454c45;\n  --lrr-accent: #82cc95;\n  --lrr-accent-hover: #a0ddb0;\n  --lrr-on-accent: #142d1b;\n  --lrr-accent-soft: #293d2e;\n  --lrr-duplicate: #c5a3ee;\n  --lrr-duplicate-soft: #382e44;\n  --lrr-warning: #e4be70;\n  --lrr-warning-soft: #413823;\n  --lrr-error: #f39da7;\n  --lrr-error-soft: #442d32;\n  --lrr-shadow: 0 8px 28px #0000004d;\n}\n";
 	//#endregion
 	//#region ../userscript/src/state.ts
 	var galleries = /* @__PURE__ */ new Map();
@@ -66,6 +66,18 @@
 		"queue-failed": "下载失败",
 		"queue-unknown": "队列查询失败"
 	};
+	var symbols = {
+		checking: "…",
+		downloaded: "✓",
+		duplicate: "≃",
+		missing: "−",
+		error: "!",
+		queued: "◷",
+		downloading: "↓",
+		retrying: "↻",
+		"queue-failed": "!",
+		"queue-unknown": "?"
+	};
 	function notify() {
 		document.dispatchEvent(new Event("lrr:state"));
 	}
@@ -80,15 +92,18 @@
 		if (!badge) {
 			badge = document.createElement("span");
 			badge.className = "lrr-check-state";
-			title.append(badge);
+			title.prepend(badge);
 		}
-		badge.textContent = labels[status];
+		badge.textContent = symbols[status];
+		badge.title = labels[status] + (gallery.queueStatus === status && gallery.queueDetail ? "\n" + gallery.queueDetail : "");
+		badge.setAttribute("aria-label", badge.title);
 		notify();
 	}
-	function setQueueStatus(url, status) {
+	function setQueueStatus(url, status, detail) {
 		const gallery = galleries.get(url);
 		if (!gallery) return;
 		gallery.queueStatus = status;
+		gallery.queueDetail = detail;
 		setStatus(gallery.title, gallery.libraryStatus ?? "checking");
 	}
 	function collect() {
@@ -184,15 +199,23 @@
 			persist("panelCollapsed", !open);
 			if (!open && wasOpen) launcher.focus();
 		}
+		const queueStatuses = /* @__PURE__ */ new Set([
+			"queued",
+			"downloading",
+			"retrying",
+			"queue-failed"
+		]);
 		function render() {
 			const items = [...galleries.values()];
 			const count = items.filter((item) => item.selected).length;
 			get(".summary").textContent = `已选 ${count} / ${items.length} 个画廊`;
 			get("#launcher-count").textContent = count ? String(count) : "";
 			get(".scope").textContent = config.enableAltSearch ? "未入库：URL 与可提取标题均无匹配；未知与失败不计入。" : "未入库仅表示 URL 未命中；标题搜索已关闭。";
-			get(".counts").replaceChildren(...Object.entries(labels).map(([status, label]) => {
+			const counts = Object.entries(labels).filter(([status]) => !queueStatuses.has(status));
+			counts.push(["queue", "在队列中"]);
+			get(".counts").replaceChildren(...counts.map(([status, label]) => {
 				const span = document.createElement("span");
-				span.textContent = `${label} ${items.filter((item) => item.status === status).length}`;
+				span.textContent = `${label} ${items.filter((item) => status === "queue" ? queueStatuses.has(item.status) : item.status === status).length}`;
 				return span;
 			}));
 			get("[data-action=\"send\"]").disabled = sending || count === 0;
@@ -992,12 +1015,17 @@
 				for (const url of batch) {
 					if (queueChecks.get(url) !== request) continue;
 					const task = tasks.get(url);
-					setQueueStatus(url, task?.status === "pending" ? "queued" : task?.status === "running" ? "downloading" : task?.status === "failed" && task.attempts < task.max_attempts ? "retrying" : task?.status === "failed" || task?.status === "dead" ? "queue-failed" : void 0);
+					const status = task?.status === "pending" ? "queued" : task?.status === "running" ? "downloading" : task?.status === "failed" && task.attempts < task.max_attempts ? "retrying" : task?.status === "failed" || task?.status === "dead" ? "queue-failed" : void 0;
+					setQueueStatus(url, status, task ? [
+						"尝试次数：" + task.attempts + " / " + task.max_attempts,
+						status === "retrying" && task.next_attempt_at ? "计划重试：" + (/* @__PURE__ */ new Date(task.next_attempt_at * 1e3)).toLocaleString() : "",
+						task.error ? "最近错误：" + task.error : ""
+					].filter(Boolean).join("\n") : void 0);
 				}
 			} catch (error) {
 				if (requestGeneration !== generation) return;
 				batch.forEach((url) => {
-					if (queueChecks.get(url) === request) setQueueStatus(url, "queue-unknown");
+					if (queueChecks.get(url) === request) setQueueStatus(url, "queue-unknown", "无法查询队列，不代表下载失败。请确认队列服务已更新且地址可达。\n" + queueUrl + "\n" + (error?.message || "网络请求失败"));
 				});
 				warn("Queue lookup failed", error);
 			}

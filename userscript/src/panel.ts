@@ -61,15 +61,18 @@ export function mountPanel(options: Options) {
     persist('panelCollapsed', !open)
     if (!open && wasOpen) launcher.focus()
   }
+  const queueStatuses = new Set<GalleryStatus>(['queued', 'downloading', 'retrying', 'queue-failed'])
   function render() {
     const items = [...galleries.values()]
     const count = items.filter(item => item.selected).length
     get('.summary').textContent = `已选 ${count} / ${items.length} 个画廊`
     get('#launcher-count').textContent = count ? String(count) : ''
     get('.scope').textContent = config.enableAltSearch ? '未入库：URL 与可提取标题均无匹配；未知与失败不计入。' : '未入库仅表示 URL 未命中；标题搜索已关闭。'
-    get('.counts').replaceChildren(...Object.entries(labels).map(([status, label]) => {
+    const counts = Object.entries(labels).filter(([status]) => !queueStatuses.has(status as GalleryStatus))
+    counts.push(['queue', '在队列中'])
+    get('.counts').replaceChildren(...counts.map(([status, label]) => {
       const span = document.createElement('span')
-      span.textContent = `${label} ${items.filter(item => item.status === status).length}`
+      span.textContent = `${label} ${items.filter(item => status === 'queue' ? queueStatuses.has(item.status) : item.status === status).length}`
       return span
     }))
     get<HTMLButtonElement>('[data-action="send"]').disabled = sending || count === 0

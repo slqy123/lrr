@@ -580,12 +580,18 @@ async function checkQueue(urls, requestGeneration = generation) {
                     : task?.status === 'running' ? 'downloading'
                     : task?.status === 'failed' && task.attempts < task.max_attempts ? 'retrying'
                     : task?.status === 'failed' || task?.status === 'dead' ? 'queue-failed' : undefined;
-                setQueueStatus(url, status);
+                const detail = task ? [
+                    '尝试次数：' + task.attempts + ' / ' + task.max_attempts,
+                    status === 'retrying' && task.next_attempt_at ? '计划重试：' + new Date(task.next_attempt_at * 1000).toLocaleString() : '',
+                    task.error ? '最近错误：' + task.error : '',
+                ].filter(Boolean).join('\n') : undefined;
+                setQueueStatus(url, status, detail);
             }
         } catch (error) {
             if (requestGeneration !== generation) return;
             batch.forEach(url => {
-                if (queueChecks.get(url) === request) setQueueStatus(url, 'queue-unknown');
+                if (queueChecks.get(url) === request) setQueueStatus(url, 'queue-unknown',
+                    '无法查询队列，不代表下载失败。请确认队列服务已更新且地址可达。\n' + queueUrl + '\n' + (error?.message || '网络请求失败'));
             });
             warn('Queue lookup failed', error);
         }

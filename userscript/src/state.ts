@@ -7,11 +7,16 @@ export interface Gallery {
   status: GalleryStatus
   libraryStatus?: GalleryStatus
   queueStatus?: QueueStatus
+  queueDetail?: string
 }
 export const galleries = new Map<string, Gallery>()
 export const labels: Record<GalleryStatus, string> = {
   checking: '检查中', downloaded: '已入库', duplicate: '疑似重复', missing: '未入库', error: '检查失败',
   queued: '待下载', downloading: '下载中', retrying: '等待重试', 'queue-failed': '下载失败', 'queue-unknown': '队列查询失败',
+}
+const symbols: Record<GalleryStatus, string> = {
+  checking: '…', downloaded: '✓', duplicate: '≃', missing: '−', error: '!',
+  queued: '◷', downloading: '↓', retrying: '↻', 'queue-failed': '!', 'queue-unknown': '?',
 }
 export function notify() { document.dispatchEvent(new Event('lrr:state')) }
 export function setStatus(title: HTMLElement, status: GalleryStatus) {
@@ -25,15 +30,18 @@ export function setStatus(title: HTMLElement, status: GalleryStatus) {
   if (!badge) {
     badge = document.createElement('span')
     badge.className = 'lrr-check-state'
-    title.append(badge)
+    title.prepend(badge)
   }
-  badge.textContent = labels[status]
+  badge.textContent = symbols[status]
+  badge.title = labels[status] + (gallery.queueStatus === status && gallery.queueDetail ? '\n' + gallery.queueDetail : '')
+  badge.setAttribute('aria-label', badge.title)
   notify()
 }
-export function setQueueStatus(url: string, status?: QueueStatus) {
+export function setQueueStatus(url: string, status?: QueueStatus, detail?: string) {
   const gallery = galleries.get(url)
   if (!gallery) return
   gallery.queueStatus = status
+  gallery.queueDetail = detail
   setStatus(gallery.title, gallery.libraryStatus ?? 'checking')
 }
 export function collect() {
