@@ -81,6 +81,9 @@
 .file-label input { width: 100%; font-size: 12px; }
 .settings-fields { display: flex; flex-direction: column; gap: 20px; padding-block: 10px; }
 .settings-fields > label:not(.check-label) { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+.settings-advanced { padding: 12px 14px; }
+.settings-advanced > summary { font-size: 13px; font-weight: 600; cursor: pointer; }
+.settings-advanced > .settings-fields { padding-top: 16px; padding-bottom: 0; }
 .detail-body { display: grid; grid-template-columns: 180px 1fr; gap: 24px; padding-block: 12px; }
 .detail-body > img { width: 180px; border-radius: 10px; }
 .queue-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin: 28px 0; }
