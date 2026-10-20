@@ -44,7 +44,7 @@
 .status-queued { color: var(--anibt-time-ink); }
 .status-checking { color: var(--muted-foreground); }
 .status-error { color: var(--destructive); }
-.pager { display: flex; align-items: center; gap: 5px; border: 1px solid var(--border); padding: 3px; border-radius: 10px; background: var(--card); }
+.pager { display: flex; align-items: center; gap: 5px; padding: 3px; }
 .pager > span { min-width: 18px; text-align: center; color: var(--accent-foreground); font: 500 14px/1 var(--font-anibt-display); }
 .gallery-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 24px 18px; }
 .gallery-grid[data-compact=true] { grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 18px 12px; }

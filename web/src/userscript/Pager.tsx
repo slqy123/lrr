@@ -14,7 +14,7 @@ export function Pager({ page, portal }: { page: GalleryPage; portal: HTMLElement
   const [error, setError] = useState('')
   const previous = jumpURL(page.previous, applied)
   const next = jumpURL(page.next, applied)
-  return <div className="pager" aria-label="分页">
+  return <div className="pager anibt-well" aria-label="分页">
     {previous ? <Button asChild size="icon-sm" variant="ghost"><a href={previous} aria-label={applied ? '向前跳转' : '上一页'}><ChevronLeft /></a></Button> : <Button size="icon-sm" variant="ghost" aria-label="上一页" disabled><ChevronLeft /></Button>}
     <Popover open={open} onOpenChange={setOpen}><PopoverTrigger asChild><Button size="sm" variant="ghost">{applied || '跳转'}</Button></PopoverTrigger><PopoverContent container={portal} align="end"><PopoverTitle>跳到某个时间</PopoverTitle><label>日期或偏移量<Input aria-label="日期或偏移量" type={date ? 'date' : 'text'} value={value} placeholder="2026-01-01 或 1w" onChange={event => setValue(event.target.value)} /></label>
       <Button size="sm" variant="secondary" onClick={() => { setDate(!date); setValue('') }}>{date ? '输入偏移量' : '按日期选择'}</Button>
