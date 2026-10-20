@@ -41,7 +41,6 @@
 .detail-facts dt { color: var(--muted-foreground); }
 .detail-facts dd { margin: 0; }
 .detail-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.detail-tags a { border: 1px solid var(--input); border-radius: 5px; padding: 1px 7px; font-size: 10px; background: var(--muted); }
 .detail-description { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
 .detail-previews { display: flex; align-items: center; gap: 10px; padding-top: 10px; border-top: 1px dashed var(--input); overflow-x: auto; }
 .detail-preview-page { flex: 0 0 114px; padding: 4px; border: 1px solid var(--input); border-radius: 7px; background: var(--muted); }

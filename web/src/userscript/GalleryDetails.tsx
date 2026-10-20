@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { Copy, Download, ExternalLink, Link, RefreshCw, X } from 'lucide-react'
 import { Button } from '../ui/anibt/button'
+import { Badge } from '../ui/anibt/badge'
 import { Feedback, type FeedbackMessage } from './Feedback'
 import { copyLinks, type createClient } from './client'
 import { displayState, type Gallery } from './model'
@@ -101,7 +102,7 @@ export function GalleryDetails({ item, tab: requestedTab, changeTab, close, live
       {tab === 'detail' && <div className="detail-summary">
         {detailError ? <div className="detail-load-error"><p role="alert">{detailError}</p><Button variant="ghost" size="sm" onClick={() => setDetailRevision(value => value + 1)}><RefreshCw size={14} />重试详情</Button></div> : !summary ? <p className="muted" role="status">正在加载作品详情…</p> : <>
           <dl className="detail-facts">{(summary.author || item.author) && <div><dt>作者</dt><dd>{summary.author || item.author}</dd></div>}{summary.parody && <div><dt>原作</dt><dd>{summary.parody}</dd></div>}{summary.filesize && <div><dt>文件大小</dt><dd>{summary.filesize}</dd></div>}</dl>
-          {!!summary.tags.length && <nav className="detail-tags" aria-label="作品标签">{summary.tags.map(tag => <a key={tag.url} href={tag.url} target="_blank" rel="noopener noreferrer">{tag.title}</a>)}</nav>}
+          {!!summary.tags.length && <nav className="detail-tags" aria-label="作品标签">{summary.tags.map(tag => <Badge key={tag.url} asChild face="text"><a href={tag.url} target="_blank" rel="noopener noreferrer">{tag.title}</a></Badge>)}</nav>}
           {summary.description && <p className="detail-description muted" title={summary.description}>{summary.description}</p>}
           <div className="detail-previews" aria-label="前五页图片预览">{summary.previews.map(page => <PagePreview key={page.url} page={page} />)}<div className="detail-preview-more"><a className="library-link" href={item.url} target="_blank" rel="noopener noreferrer">查看全部{summary.pages !== undefined ? ` ${summary.pages} 页` : ''} <ExternalLink size={12} /></a><span className="muted">{summary.previews.length ? `按原站顺序预览前 ${summary.previews.length} 页` : '未能读取图片预览，请打开详情页查看'}</span></div></div>
         </>}
