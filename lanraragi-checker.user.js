@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      AGPL-3.0-only
-// @version      2.0.0-alpha.37
+// @version      2.0.0-alpha.38
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -24160,13 +24160,16 @@
 						align: "end",
 						children: [
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PopoverTitle, { children: "跳到某个时间" }),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: ["日期或偏移量", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-								"aria-label": "日期或偏移量",
-								type: date ? "date" : "text",
-								value,
-								placeholder: "2026-01-01 或 1w",
-								onChange: (event) => setValue(event.target.value)
-							})] }),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
+								className: "flex flex-col gap-2",
+								children: ["日期或偏移量", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
+									"aria-label": "日期或偏移量",
+									type: date ? "date" : "text",
+									value,
+									placeholder: "2026-01-01 或 1w",
+									onChange: (event) => setValue(event.target.value)
+								})]
+							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
 								size: "sm",
 								variant: "secondary",
@@ -24176,8 +24179,10 @@
 								},
 								children: date ? "输入偏移量" : "按日期选择"
 							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							!date && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 								className: "grid grid-cols-4 gap-2",
+								role: "group",
+								"aria-label": "快捷偏移量",
 								children: [
 									"1d",
 									"3d",
@@ -24187,10 +24192,10 @@
 									"6m",
 									"1y",
 									"2y"
-								].map((offset) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-									disabled: date,
-									size: "sm",
-									variant: "secondary",
+								].map((offset) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+									type: "button",
+									className: value === offset ? "anibt-chip anibt-chip-on" : "anibt-chip",
+									"aria-pressed": value === offset,
 									onClick: () => setValue(offset),
 									children: offset
 								}, offset))
@@ -24203,29 +24208,32 @@
 								className: "muted",
 								children: "应用后，使用左右箭头选择跳转方向。"
 							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-								onClick: () => {
-									try {
-										jumpURL(page.previous || page.next, value);
-										if (!value) throw new Error("请输入跳转位置");
-										setApplied(value);
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "anibt-stitch-over flex gap-2 pt-3",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+									variant: "ghost",
+									onClick: () => {
+										setValue("");
+										setApplied("");
 										setError("");
 										setOpen(false);
-									} catch (reason) {
-										setError(reason.message);
-									}
-								},
-								children: "应用跳转"
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
-								variant: "ghost",
-								onClick: () => {
-									setValue("");
-									setApplied("");
-									setError("");
-									setOpen(false);
-								},
-								children: "取消跳转"
+									},
+									children: "取消跳转"
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+									className: "flex-1",
+									onClick: () => {
+										try {
+											jumpURL(page.previous || page.next, value);
+											if (!value) throw new Error("请输入跳转位置");
+											setApplied(value);
+											setError("");
+											setOpen(false);
+										} catch (reason) {
+											setError(reason.message);
+										}
+									},
+									children: "应用跳转"
+								})]
 							})
 						]
 					})]
