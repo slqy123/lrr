@@ -1,0 +1,23 @@
+.live-app .category-row { flex-wrap: wrap; gap: 6px; }
+.live-app .main-content { padding-top: 28px; }
+.live-app .search-row > a { min-width: 76px; }
+.native-links { display: flex; flex-direction: column; gap: 12px; }
+.native-links a, .library-link { color: var(--accent-foreground); text-decoration: underline; text-underline-offset: 3px; }
+.connection-notice { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; margin-bottom: 24px; }
+.selection-scope { margin: 0 0 14px; font-size: 12px; }
+.bottom-pagination { display: flex; justify-content: center; margin-top: 28px; }
+.file-search { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 20px; padding-top: 20px; }
+.file-search > p, .file-search > input { width: 100%; }
+.card-more { position: absolute; top: 12px; right: 12px; z-index: 30; }
+.status-action { position: relative; z-index: 30; display: inline-flex; cursor: pointer; border-radius: 4px; }
+.status-action:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
+.library-details { width: min(400px, calc(100vw - 40px)); max-height: min(520px, 80vh); overflow: auto; }
+.library-details p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.archive-hit { border-top: 1px dashed var(--input); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.archive-hit-heading { display: flex; align-items: flex-start; gap: 12px; }
+.archive-hit-heading img { width: 64px; height: 88px; object-fit: contain; border-radius: 6px; flex-shrink: 0; }
+.native-rating { display: inline-block; width: 80px; height: 16px; margin-left: auto; background-repeat: no-repeat; flex-shrink: 0; }
+.archive-tags { color: var(--muted-foreground); font-size: 12px; }
+.queue-detail { display: flex; flex-direction: column; gap: 6px; }
+@container poster (max-width: 170px) { .native-rating { display: none; } }
+.cover-placeholder { position: absolute; inset: 0; display: grid; align-content: center; justify-items: center; gap: 10px; color: var(--muted-foreground); }

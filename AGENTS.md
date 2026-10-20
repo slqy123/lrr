@@ -26,7 +26,9 @@ Three parts, one repo:
 | `web/` | Frontend source; `web/dist` is generated. |
 | `install.sh` | Builds frontend, installs/restarts the systemd user unit. |
 | `lrr-queue.service.in` | Unit template; `@PYTHON@` / `@DIR@` placeholders. |
-| `userscript/src/` | Userscript config/state, native-list layout, shared actions/settings panel and JavaScript checker. |
+| `web/src/userscript/` | React userscript, native page adapter, GM API client, settings/cache and isolated AniBT UI; local showcase remains separate. |
+| `web/src/ui/anibt/` | Vendored AniBT UI components, theme, AGPL license and provenance. |
+| `userscript/src/` | Legacy userscript implementation, no longer the build entry. |
 | `userscript/test.mjs` | Headless Chromium integration tests against the generated userscript. |
 | `userscript/test-offline.mjs` | Layout regression tests using a supplied saved gallery HTML file. |
 | `lanraragi-checker.user.js` | Generated installable userscript; keep tracked for update URLs. |
@@ -103,11 +105,15 @@ Already-downloaded URLs never enter the download path: dispatch pre-checks `urlf
 - Store status as plain strings in SQLite; compare against `Status.*.value`.
 - Keep the worker single-threaded; do not fan out per-task threads — LRR's minion owns execution concurrency.
 - Peewee is synchronous; API handlers are sync `def` (FastAPI threadpool). Do not introduce async DB access.
-- Frontend: Svelte 5 runes only (no stores/`on:click` legacy syntax), no router, 2s polling. Design tokens live in `web/src/app.css` (`@theme`).
-- Edit userscript source in `userscript/src/`, then run `pnpm --dir web build:userscript`. Keep the generated `lanraragi-checker.user.js` tracked and keep `@namespace` / `@updateURL` / `@downloadURL` on `slqy123/lrr` (raw `main`).
+- Frontend rewrite: React + TypeScript + Vite + Tailwind v4 + AniBT UI. The dashboard remains Svelte until its rewrite stage. Keep the existing backend API and queue semantics.
+- New userscript UI owns its DOM inside Shadow DOM; portal containers must remain inside that boundary. Firefox desktop + Tampermonkey is the support target. Offline Chromium checks are not Firefox compatibility verification.
+- Edit the new userscript in `web/src/userscript/` and shared components in `web/src/ui/`, then run `pnpm --dir web build:userscript`. Keep the generated `lanraragi-checker.user.js` tracked and keep `@namespace` / `@updateURL` / `@downloadURL` on `slqy123/lrr` (raw `main`).
 - Bump `@version` in `userscript/header.txt` before rebuilding changed userscript source.
-- `layout.ts` replaces standard thumbnail search-list presentation while preserving native form controls, navigation, pagination and gallery links. Other views or pages without the standard search form retain their native layout. The integrated UI reuses `panel.ts` for settings, send/copy/recheck actions and feedback; the launcher/panel remain available in native mode. Selection state lives in `state.ts`; unknown/error results must never count as missing. Rechecks invalidate older responses without clearing selection.
-- Missing status is gray, queue statuses share teal, downloaded is green, duplicates purple and lookup errors amber. Selected titles/checkboxes are blue. Keep covers uncropped and controls outside images; do not force equal title heights.
+- Production list pages use `LiveApp.tsx`, `page.ts` and `client.ts`; never render mock galleries on supported site domains. The showcase uses local mock data only on the local preview page without a native search form; its operations remain simulated.
+- `page.ts` reads native DOM without moving nodes or executing inline handlers. Preserve successful search fields, excluded-category masks, original navigation/cursor URLs, and native file-search form semantics. Parse page counts from standalone metadata nodes, not concatenated card text.
+- GM requests are scoped to a disposable client. Settings changes/rechecks cancel old requests and reject stale updates. Library hits win over queue state; queue lookup errors are unknown, never missing. Only definitive library results are cached, for three days and at most 2000 entries, under a SHA-256 service/key/search-policy context. Explicit rechecks bypass cache. Never send the library authorization header to the queue.
+- Use the original AniBT sticker/scrapbook visual language with light and dark themes. Keep covers uncropped in 2:3 regions, reserve two title lines, and reuse status icons across cards and selection controls.
+- Unknown/error results must never count as missing. Sending failures retain selection; success clears only the submitted batch.
 - Comments only where the *why* is non-obvious, in English.
 
 ## Offline UI prototype
@@ -116,7 +122,11 @@ Already-downloaded URLs never enter the download path: dispatch pre-checks `urlf
 
 ## Verify
 
-Userscript integration tests require Chromium; set `CHROMIUM` to override its executable. Run `node userscript/test-offline.mjs <saved-gallery.html>` to verify native search controls and links, uncropped portrait covers, natural-height titles, live queue actions, responsive layout and native-mode fallback against a locally saved page. The saved page is not a test dependency or a tracked fixture.
+Run `make test` for isolation, showcase and live UI checks; Chromium is required, overridable with `CHROMIUM`. Live tests use a loopback fixture server, mocked GM APIs and CSP-blocked external requests. Optionally run `node userscript/test-live.mjs <saved-gallery.html>` to check a saved ExHentai page without its scripts or external resources. `LRR_LIVE_PREVIEW=1 node userscript/test-live.mjs` serves fixtures for manual CDP inspection; `/history` exercises real cursor navigation and browser back/forward.
+
+`make dev` serves the interactive showcase at `/preview.html`; `/preview.html?view=isolation` retains the small boundary test page. Showcase screenshots are written to `userscript/dist/showcase-*.png`. The legacy integration suites below are not applicable to the new UI.
+
+Legacy userscript integration tests require Chromium; set `CHROMIUM` to override its executable. Run `node userscript/test-offline.mjs <saved-gallery.html>` to verify native search controls and links, uncropped portrait covers, natural-height titles, live queue actions, responsive layout and native-mode fallback against a locally saved page. The saved page is not a test dependency or a tracked fixture.
 
 ```bash
 .venv/bin/ruff check lrr_queue tests
@@ -124,5 +134,7 @@ Userscript integration tests require Chromium; set `CHROMIUM` to override its ex
 pnpm --dir web build
 pnpm --dir web build:userscript
 node --check lanraragi-checker.user.js
-node userscript/test.mjs
+node userscript/test-isolation.mjs
+node userscript/test-showcase.mjs
+node userscript/test-live.mjs
 ```

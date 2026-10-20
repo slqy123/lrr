@@ -12,9 +12,16 @@
 // @grant        GM_setClipboard
 // @connect      *
 // @run-at       document-idle
-// @license      MIT
-// @version      1.5.9
+// @license      AGPL-3.0-only
+// @version      2.0.0-alpha.3
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
+
+/*
+ * Includes AniBT UI, Copyright (C) 2026 AniBT, modified for Shadow DOM.
+ * Distributed under AGPL-3.0-only, without warranty.
+ * License: https://github.com/OpenAniBT/ui/blob/main/LICENSE
+ * Corresponding source: https://github.com/slqy123/lrr
+ */
 

@@ -1,0 +1,1475 @@
+/*
+ * @anibt/theme — AniBT 「贴纸手账」 (A) as a shadcn theme.
+ *
+ * This file is the single source of the theme. `scripts/registry-theme.mjs`
+ * turns it into the `registry:theme` item (`registry/anibt/theme/registry.json`):
+ *
+ * - `@theme inline { … }`  → `cssVars.theme`
+ * - `:host { --x: … }`     → `cssVars.light`  (白樱)
+ * - `.dark { --x: … }`     → `cssVars.dark`   (夜樱)
+ * - plain declarations in `:root` / `.dark` (e.g. `color-scheme`), every
+ *   `@import`, `@keyframes`, `@utility` and `@layer base` → `css`
+ *
+ * The site imports this file as-is, so what the docs paint is what a consumer
+ * installs. Rules the CLI's JSON form cannot carry are rejected by the
+ * generator: a property declared twice in one rule, and an at-rule with a body
+ * nested inside a `@utility`.
+ *
+ * Token mapping. A's values sit on the STANDARD shadcn names, so stock shadcn
+ * components pick them up:
+ *   canvas → background · paper → card / popover · ink → foreground
+ *   deep → secondary / muted · ink3 → muted-foreground · line → border
+ *   line2 → input (the control edge) · mark → ring (focus)
+ *   wash → accent (the selected / hover tint) · A's pink ink → accent-foreground
+ *   danger → destructive · accent-fill → primary
+ * Everything A has beyond that is prefixed `--anibt-*`; every recipe is an
+ * `anibt-*` utility so nothing collides with a consumer's own class names.
+ *
+ * One job per colour: pink = action / selection / "you are here"; blue = time /
+ * now / in progress; mint = done; red = danger; ink = everything else.
+ */
+
+@theme inline {
+  /* Figures, English labels, tags, stickers and key caps: Fredoka (Latin
+     only); every Han character falls through to the platform family after it.
+     The body stack (`--font-sans`) is set on :root below, not here: stock
+     `shadcn init` already writes `--font-sans: var(--font-sans)` into
+     @theme, and the CLI keeps an existing @theme key, so only a :root value
+     reaches a consumer project. */
+  --font-anibt-display: "Fredoka", ui-rounded, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC", sans-serif;
+
+  /* Motion: springy for anything that moves, calm for colour. */
+  --ease-anibt-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-anibt-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --animate-anibt-blink: anibt-blink 1.2s ease-in-out infinite;
+  --animate-anibt-wiggle: anibt-wiggle 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  --animate-anibt-pop: anibt-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-anibt-bob: anibt-bob 2.2s ease-in-out infinite;
+  --animate-anibt-twinkle: anibt-twinkle 2.4s ease-in-out infinite;
+  --animate-anibt-peek: anibt-peek 4s ease-in-out infinite;
+  --animate-anibt-ripple: anibt-ripple 2s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
+  --animate-anibt-sway: anibt-sway 2.6s ease-in-out infinite;
+  --animate-anibt-tape-in: anibt-tape-in 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* The A colours beyond the standard names, as Tailwind colours
+     (`text-anibt-ink2`, `bg-anibt-time-wash`, …). */
+  --color-anibt-ink2: var(--anibt-ink2);
+  --color-anibt-deep2: var(--anibt-deep2);
+  --color-anibt-mark: var(--anibt-mark);
+  --color-anibt-wash2: var(--anibt-wash2);
+  --color-anibt-wash-line: var(--anibt-wash-line);
+  --color-anibt-time: var(--anibt-time);
+  --color-anibt-time-ink: var(--anibt-time-ink);
+  --color-anibt-time-wash: var(--anibt-time-wash);
+  --color-anibt-time-wash2: var(--anibt-time-wash2);
+  --color-anibt-time-line: var(--anibt-time-line);
+  --color-anibt-ok: var(--anibt-ok);
+  --color-anibt-ok-fill: var(--anibt-ok-fill);
+  --color-anibt-ok-wash: var(--anibt-ok-wash);
+  --color-anibt-warn: var(--anibt-warn);
+  --color-anibt-warn-fill: var(--anibt-warn-fill);
+  --color-anibt-warn-wash: var(--anibt-warn-wash);
+  --color-anibt-danger-fill: var(--anibt-danger-fill);
+  --color-anibt-danger-wash: var(--anibt-danger-wash);
+  --color-anibt-danger-line: var(--anibt-danger-line);
+  --color-anibt-tip: var(--anibt-tip);
+  --color-anibt-tip-ink: var(--anibt-tip-ink);
+  --color-anibt-sticker-edge: var(--anibt-sticker-edge);
+  --color-anibt-candy-edge: var(--anibt-candy-edge);
+  --color-anibt-candy-ink: var(--anibt-candy-ink);
+  --color-anibt-scrim: var(--anibt-scrim);
+}
+
+:host {
+  /* Body: the platform CJK stack (no web font for Han characters). */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC", sans-serif;
+  color-scheme: light;
+
+  /* ── 白樱 — neutrals: cool, with the faintest lilac ─────────────────────── */
+  --radius: 0.625rem;
+  --background: #f7f5fa;
+  --foreground: #1f1c28;
+  --card: #ffffff;
+  --card-foreground: #1f1c28;
+  --popover: #ffffff;
+  --popover-foreground: #1f1c28;
+  --primary: #c22a62;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f0f7;
+  --secondary-foreground: #565163;
+  --muted: #f3f0f7;
+  --muted-foreground: #6e6a78;
+  --accent: #fff0f5;
+  --accent-foreground: #c22a62;
+  --destructive: #b3341d;
+  --border: #ebe6f0;
+  --input: #dad3e3;
+  --ring: #ff6f9c;
+  --chart-1: #ff6f9c;
+  --chart-2: #5aa9ff;
+  --chart-3: #25b582;
+  --chart-4: #f0a531;
+  --chart-5: #e5533d;
+  --sidebar: #f3f0f7;
+  --sidebar-foreground: #1f1c28;
+  --sidebar-primary: #c22a62;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ffffff;
+  --sidebar-accent-foreground: #1f1c28;
+  --sidebar-border: #ebe6f0;
+  --sidebar-ring: #ff6f9c;
+
+  /* A beyond the standard names. */
+  --anibt-ink2: #565163;
+  --anibt-deep2: #ece7f2;
+  --anibt-mark: #ff6f9c;
+  --anibt-wash2: #ffdbe7;
+  --anibt-wash-line: #ffb3cb;
+  --anibt-time: #5aa9ff;
+  --anibt-time-ink: #1a64bf;
+  --anibt-time-wash: #edf5ff;
+  --anibt-time-wash2: #d6e9ff;
+  --anibt-time-line: #a9d0ff;
+  --anibt-ok: #0e7a53;
+  --anibt-ok-fill: #25b582;
+  --anibt-ok-wash: #e4f7ef;
+  --anibt-warn: #9a5b06;
+  --anibt-warn-fill: #f0a531;
+  --anibt-warn-wash: #fff4e0;
+  --anibt-danger-fill: #e5533d;
+  --anibt-danger-wash: #fff0ec;
+  --anibt-danger-line: #f6b8ab;
+  --anibt-tip: #26222f;
+  --anibt-tip-ink: #ffffff;
+  --anibt-scrim: rgba(31, 28, 40, 0.5);
+
+  /* Stickers and candy. The die-cut rim stays white-ish in both modes. */
+  --anibt-sticker-edge: #ffffff;
+  --anibt-candy: linear-gradient(180deg, #ff8fb4 0%, #ff6c9b 52%, #f2558a 100%);
+  --anibt-candy-edge: #d63e74;
+  --anibt-candy-glow: rgba(242, 85, 138, 0.42);
+  --anibt-candy-ink: #ffffff;
+  --anibt-candy-text-shadow: 0 1px 0 rgba(176, 28, 82, 0.38);
+  --anibt-water: linear-gradient(180deg, #7dbcff 0%, #5aa9ff 52%, #3f92f0 100%);
+  --anibt-water-edge: #2c78d6;
+  --anibt-water-text-shadow: 0 1px 0 rgba(20, 80, 160, 0.38);
+  --anibt-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0));
+  --anibt-sheen: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.5) 50%, transparent 65%);
+  --anibt-sleeve: linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 38%);
+  --anibt-sparkle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1.5c.9 5.6 4.9 9.6 10.5 10.5-5.6.9-9.6 4.9-10.5 10.5C11.1 16.9 7.1 12.9 1.5 12 7.1 11.1 11.1 7.1 12 1.5Z'/%3E%3C/svg%3E");
+
+  /* Washi tape — the single "you are here" mark — the dashed stitch, and the
+     dot ground. The composites are declared in both modes so a `.dark` on any
+     element (not just <html>) re-resolves them. */
+  --anibt-tape: rgba(255, 111, 156, 0.66);
+  --anibt-tape-stripe: rgba(255, 255, 255, 0.38);
+  --anibt-tape-fill: repeating-linear-gradient(135deg, var(--anibt-tape-stripe) 0 2px, transparent 2px 5px), var(--anibt-tape);
+  --anibt-stitch: linear-gradient(90deg, var(--input) 0 4px, transparent 4px 8px);
+  --anibt-stitch-y: linear-gradient(180deg, var(--input) 0 4px, transparent 4px 8px);
+  --anibt-dot-a: rgba(255, 111, 156, 0.2);
+  --anibt-dot-b: rgba(90, 169, 255, 0.18);
+  --anibt-dots: radial-gradient(circle, var(--anibt-dot-a) 0 1px, transparent 1.5px), radial-gradient(circle, var(--anibt-dot-b) 0 1px, transparent 1.5px);
+
+  /* Four shadow steps and the focus halos. */
+  --anibt-shadow-sticker: 0 1px 1px rgba(31, 28, 40, 0.1), 0 2px 6px rgba(31, 28, 40, 0.12);
+  --anibt-shadow-panel: 0 1px 0 rgba(31, 28, 40, 0.02), 0 6px 18px -10px rgba(70, 40, 100, 0.16);
+  --anibt-shadow-lift: 0 2px 4px rgba(31, 28, 40, 0.06), 0 14px 28px -10px rgba(90, 40, 120, 0.28);
+  --anibt-shadow-pop: 0 4px 10px -2px rgba(31, 28, 40, 0.1), 0 16px 32px -12px rgba(70, 40, 100, 0.3);
+  --anibt-ring-pink: 0 0 0 4px rgba(255, 111, 156, 0.18);
+  --anibt-ring-danger: 0 0 0 4px rgba(229, 83, 61, 0.14);
+}
+
+:host(.dark) {
+  /* Same body stack as 白樱 (the CLI writes light and dark vars as pairs). */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC", sans-serif;
+  color-scheme: dark;
+
+  /* ── 夜樱 — the same names; the tints are opaque so a pinned cell can
+     repaint them, and the pink ink turns pastel. ──────────────────────────── */
+  --background: #13111a;
+  --foreground: #f3f0f8;
+  --card: #1c1926;
+  --card-foreground: #f3f0f8;
+  --popover: #1c1926;
+  --popover-foreground: #f3f0f8;
+  --primary: #ffa3c3;
+  --primary-foreground: #1f1c28;
+  --secondary: #16141f;
+  --secondary-foreground: #bdb7cb;
+  --muted: #16141f;
+  --muted-foreground: #9690a6;
+  --accent: #3a2435;
+  --accent-foreground: #ffa3c3;
+  --destructive: #ff9d8a;
+  --border: #2b2738;
+  --input: #3b354a;
+  --ring: #ff7aa6;
+  --chart-1: #ff7aa6;
+  --chart-2: #6cb4ff;
+  --chart-3: #3fd09c;
+  --chart-4: #f0a531;
+  --chart-5: #ff6d55;
+  --sidebar: #16141f;
+  --sidebar-foreground: #f3f0f8;
+  --sidebar-primary: #ffa3c3;
+  --sidebar-primary-foreground: #1f1c28;
+  --sidebar-accent: #1c1926;
+  --sidebar-accent-foreground: #f3f0f8;
+  --sidebar-border: #2b2738;
+  --sidebar-ring: #ff7aa6;
+
+  --anibt-ink2: #bdb7cb;
+  --anibt-deep2: #252130;
+  --anibt-mark: #ff7aa6;
+  --anibt-wash2: #522e42;
+  --anibt-wash-line: #89425f;
+  --anibt-time: #6cb4ff;
+  --anibt-time-ink: #9fcdff;
+  --anibt-time-wash: #242c42;
+  --anibt-time-wash2: #2b3c5a;
+  --anibt-time-line: #3b6192;
+  --anibt-ok: #74e2b8;
+  --anibt-ok-fill: #3fd09c;
+  --anibt-ok-wash: #1d3034;
+  --anibt-warn: #f2c46d;
+  --anibt-warn-fill: #f0a531;
+  --anibt-warn-wash: #33291c;
+  --anibt-danger-fill: #ff6d55;
+  --anibt-danger-wash: #3a2229;
+  --anibt-danger-line: #824441;
+  --anibt-tip: #f3f0f8;
+  --anibt-tip-ink: #1f1c28;
+  --anibt-scrim: rgba(0, 0, 0, 0.6);
+
+  --anibt-sticker-edge: #f1ebf6;
+  --anibt-candy: linear-gradient(180deg, #ff8fb4 0%, #ff6c9b 52%, #f2558a 100%);
+  --anibt-candy-edge: #d63e74;
+  --anibt-candy-glow: rgba(242, 85, 138, 0.42);
+  --anibt-candy-ink: #ffffff;
+  --anibt-candy-text-shadow: 0 1px 0 rgba(176, 28, 82, 0.38);
+  --anibt-water: linear-gradient(180deg, #7dbcff 0%, #5aa9ff 52%, #3f92f0 100%);
+  --anibt-water-edge: #2c78d6;
+  --anibt-water-text-shadow: 0 1px 0 rgba(20, 80, 160, 0.38);
+  --anibt-gloss: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0));
+  --anibt-sheen: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.5) 50%, transparent 65%);
+  --anibt-sleeve: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 38%);
+  --anibt-sparkle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1.5c.9 5.6 4.9 9.6 10.5 10.5-5.6.9-9.6 4.9-10.5 10.5C11.1 16.9 7.1 12.9 1.5 12 7.1 11.1 11.1 7.1 12 1.5Z'/%3E%3C/svg%3E");
+
+  /* The starry ground and a brighter tape. */
+  --anibt-tape: rgba(255, 122, 166, 0.72);
+  --anibt-tape-stripe: rgba(255, 255, 255, 0.26);
+  --anibt-tape-fill: repeating-linear-gradient(135deg, var(--anibt-tape-stripe) 0 2px, transparent 2px 5px), var(--anibt-tape);
+  --anibt-stitch: linear-gradient(90deg, var(--input) 0 4px, transparent 4px 8px);
+  --anibt-stitch-y: linear-gradient(180deg, var(--input) 0 4px, transparent 4px 8px);
+  --anibt-dot-a: rgba(255, 122, 166, 0.22);
+  --anibt-dot-b: rgba(108, 180, 255, 0.24);
+  --anibt-dots: radial-gradient(circle, var(--anibt-dot-a) 0 1px, transparent 1.5px), radial-gradient(circle, var(--anibt-dot-b) 0 1px, transparent 1.5px);
+
+  --anibt-shadow-sticker: 0 1px 1px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.35);
+  --anibt-shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.02) inset, 0 8px 22px -12px rgba(0, 0, 0, 0.6);
+  --anibt-shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.3), 0 16px 30px -10px rgba(0, 0, 0, 0.6);
+  --anibt-shadow-pop: 0 4px 10px -2px rgba(0, 0, 0, 0.35), 0 18px 34px -12px rgba(0, 0, 0, 0.65);
+  --anibt-ring-pink: 0 0 0 4px rgba(255, 122, 166, 0.22);
+  --anibt-ring-danger: 0 0 0 4px rgba(255, 109, 85, 0.2);
+}
+
+/* ── Motion ─────────────────────────────────────────────────────────────── */
+
+@keyframes anibt-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@keyframes anibt-wiggle {
+  0%, 100% { transform: rotate(0); }
+  30% { transform: rotate(-12deg); }
+  65% { transform: rotate(9deg); }
+}
+
+@keyframes anibt-pop {
+  0% { transform: scale(0.6); }
+  60% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+@keyframes anibt-bob {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -3px; }
+}
+
+@keyframes anibt-twinkle {
+  0%, 100% { transform: scale(0.55) rotate(0deg); opacity: 0.55; }
+  50% { transform: scale(1) rotate(45deg); opacity: 1; }
+}
+
+@keyframes anibt-peek {
+  0%, 70%, 100% { translate: 0 0; }
+  80% { translate: 0 -5px; }
+  90% { translate: 0 0; }
+}
+
+@keyframes anibt-ripple {
+  0% { opacity: 0.7; transform: scale(0.9); }
+  100% { opacity: 0; transform: scale(1.12); }
+}
+
+@keyframes anibt-sway {
+  0%, 100% { transform: rotate(-10deg); }
+  50% { transform: rotate(10deg); }
+}
+
+@keyframes anibt-tape-in {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+/* ── Ground and text shapes ─────────────────────────────────────────────── */
+
+/** The dot ground (starry in 夜樱): two offset dot grids over the canvas.
+    Opt-in — put it on <body> or on any full-bleed container. */
+@utility anibt-ground {
+  background-color: var(--background);
+  background-image: var(--anibt-dots);
+  background-size: 24px 24px;
+  background-position: 0 0, 12px 12px;
+}
+
+/** Figures (sizes, dates, counts, episode numbers) in the round face,
+    tabular. Sets no weight: the caller's wins. */
+@utility anibt-num {
+  font-family: var(--font-anibt-display);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+/** One line, always. */
+@utility anibt-ell {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/** Two lines at most, sized by the content. */
+@utility anibt-clamp2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+/** Two lines at most and always two lines tall: a card title in a grid, so
+    every card in a row is the same height. */
+@utility anibt-clamp2-fixed {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  block-size: 2lh;
+}
+
+/* ── Surfaces ───────────────────────────────────────────────────────────── */
+
+/** A panel: paper on the ground, a 1px border edge drawn outside the box and
+    the panel shadow, radius 14. A panel inside a panel keeps only the edge. */
+@utility anibt-sheet {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px var(--border), var(--anibt-shadow-panel);
+
+  & .anibt-sheet {
+    box-shadow: 0 0 0 1px var(--border);
+  }
+}
+
+/** Anything that floats: dialog, drawer, popover, menu, toast. */
+@utility anibt-pop {
+  background-color: var(--popover);
+  color: var(--popover-foreground);
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px var(--border), var(--anibt-shadow-pop);
+}
+
+/** A group inside a panel: the 1px edge, radius 10, no lift. */
+@utility anibt-well {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+/** The die-cut white rim of a sticker, for a box: a thumbnail, an avatar. */
+@utility anibt-rim {
+  box-shadow: 0 0 0 2px var(--anibt-sticker-edge), var(--anibt-shadow-sticker);
+}
+
+/** The same rim for a shape that is not a box (an SVG, a mascot). */
+@utility anibt-rim-cut {
+  filter: drop-shadow(1.5px 0 0 var(--anibt-sticker-edge)) drop-shadow(-1.5px 0 0 var(--anibt-sticker-edge)) drop-shadow(0 1.5px 0 var(--anibt-sticker-edge)) drop-shadow(0 -1.5px 0 var(--anibt-sticker-edge)) drop-shadow(0 2px 3px rgba(31, 28, 40, 0.18));
+}
+
+/* ── Lines and marks ────────────────────────────────────────────────────── */
+
+/** A 1px stitched rule as its own element. */
+@utility anibt-stitch {
+  height: 1px;
+  background-image: var(--anibt-stitch);
+  background-size: 8px 1px;
+  background-repeat: repeat-x;
+}
+
+/** A stitched bottom edge: a bar, a tab strip, a dialog or card head. */
+@utility anibt-stitch-under {
+  background-image: var(--anibt-stitch);
+  background-size: 8px 1px;
+  background-repeat: repeat-x;
+  background-position: 0 100%;
+}
+
+/** A stitched top edge: the next row, a footer. */
+@utility anibt-stitch-over {
+  background-image: var(--anibt-stitch);
+  background-size: 8px 1px;
+  background-repeat: repeat-x;
+  background-position: 0 0;
+}
+
+/** A stitched right edge: a rail beside its content. */
+@utility anibt-stitch-side {
+  background-image: var(--anibt-stitch-y);
+  background-size: 1px 8px;
+  background-repeat: repeat-y;
+  background-position: 100% 0;
+}
+
+/** Washi tape, the single "you are here" mark: a 6px striped pink strip with
+    torn ends. The caller places and tilts it. */
+@utility anibt-tape {
+  height: 6px;
+  pointer-events: none;
+  background: var(--anibt-tape-fill);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 2px) 50%, 100% 100%, 0 100%, 2px 50%);
+}
+
+/** The vertical tape on a rail item's left edge. */
+@utility anibt-tape-y {
+  width: 6px;
+  pointer-events: none;
+  background: var(--anibt-tape-fill);
+  clip-path: polygon(0 0, 50% 2px, 100% 0, 100% 100%, 50% calc(100% - 2px), 0 100%);
+}
+
+/* ── Fields ─────────────────────────────────────────────────────────────── */
+
+/** The 32px field container (an input inside): paper, a 1px input ring, pink
+    under the pointer, a 1.5px ring-colour edge and the pink halo on focus. */
+@utility anibt-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  min-width: 0;
+  padding-inline: 12px;
+  border-radius: 10px;
+  background-color: var(--card);
+  color: var(--muted-foreground);
+  box-shadow: inset 0 0 0 1px var(--input);
+  font-size: 13px;
+  transition: box-shadow 140ms cubic-bezier(0.2, 0.7, 0.2, 1), color 140ms cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  &:hover {
+    box-shadow: inset 0 0 0 1px var(--anibt-wash-line);
+  }
+
+  &:focus-within {
+    color: var(--accent-foreground);
+    box-shadow: inset 0 0 0 1.5px var(--ring), var(--anibt-ring-pink);
+  }
+}
+
+@utility anibt-field-on {
+  &, &.anibt-field, &.anibt-field:hover {
+    color: var(--accent-foreground);
+    box-shadow: inset 0 0 0 1.5px var(--ring), var(--anibt-ring-pink);
+  }
+}
+
+/** A bare 32px input element on the field material. */
+@utility anibt-input {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 32px;
+  padding-inline: 12px;
+  border-radius: 10px;
+  background-color: var(--card);
+  color: var(--foreground);
+  box-shadow: inset 0 0 0 1px var(--input);
+  font-size: 13px;
+  transition: box-shadow 140ms cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  &:hover {
+    box-shadow: inset 0 0 0 1px var(--anibt-wash-line);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 1.5px var(--ring), var(--anibt-ring-pink);
+  }
+}
+
+@utility anibt-input-on {
+  &, &.anibt-input {
+    box-shadow: inset 0 0 0 1.5px var(--ring), var(--anibt-ring-pink);
+  }
+}
+
+/** The label above a field: 13/600, 6px over the control. */
+@utility anibt-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--anibt-ink2);
+}
+
+/** A key cap: ⌘K in a search field, esc in a palette. */
+@utility anibt-kbd {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  height: 20px;
+  min-width: 20px;
+  padding-inline: 4px;
+  border-radius: 6px;
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+  box-shadow: inset 0 -1px 0 var(--input), inset 0 0 0 1px var(--border);
+  font-family: var(--font-anibt-display);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+
+/** `anibt-btn` alone is the raised tier with its own 32px box: paper, a 1px
+    input ring and a 1.5px bottom edge. Hover lifts it and turns it pink;
+    press pushes it down onto its edge. */
+@utility anibt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 32px;
+  padding-inline: 16px;
+  border: 0;
+  border-radius: 10px;
+  background-color: var(--card);
+  color: var(--foreground);
+  box-shadow: inset 0 0 0 1px var(--input), 0 1.5px 0 var(--input);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.14s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.14s cubic-bezier(0.2, 0.7, 0.2, 1), background-color 0.14s, color 0.14s, filter 0.14s;
+
+  &:hover {
+    color: var(--accent-foreground);
+    transform: translateY(-1px);
+    box-shadow: inset 0 0 0 1px var(--anibt-wash-line), 0 2.5px 0 var(--anibt-wash-line);
+  }
+
+  &:active {
+    color: var(--accent-foreground);
+    background-color: var(--accent);
+    transform: translateY(1.5px);
+    box-shadow: inset 0 0 0 1px var(--anibt-wash-line), 0 0 0 var(--anibt-wash-line);
+  }
+}
+
+/** The raised paint alone, for a box sized by someone else. */
+@utility anibt-btn-raised {
+  &, &.anibt-btn {
+    background-color: var(--card);
+    color: var(--foreground);
+    box-shadow: inset 0 0 0 1px var(--input), 0 1.5px 0 var(--input);
+    transition: transform 0.14s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.14s cubic-bezier(0.2, 0.7, 0.2, 1), background-color 0.14s, color 0.14s;
+  }
+
+  &:hover, &.anibt-btn:hover {
+    color: var(--accent-foreground);
+    transform: translateY(-1px);
+    box-shadow: inset 0 0 0 1px var(--anibt-wash-line), 0 2.5px 0 var(--anibt-wash-line);
+  }
+
+  &:active, &.anibt-btn:active {
+    color: var(--accent-foreground);
+    background-color: var(--accent);
+    transform: translateY(1.5px);
+    box-shadow: inset 0 0 0 1px var(--anibt-wash-line), 0 0 0 var(--anibt-wash-line);
+  }
+}
+
+/** The one filled action: candy. A pink gradient under white ink, a gloss
+    over its top half (`::before`), a deeper 1.5px edge and a glow; hover lifts
+    it and pops a ✦ (`::after`), press pushes it down. The box must be
+    positioned (`relative`). Disabled drops the candy for the quiet well. */
+@utility anibt-btn-primary {
+  &, &.anibt-btn {
+    background-color: var(--anibt-candy-edge);
+    background-image: var(--anibt-candy);
+    color: var(--anibt-candy-ink);
+    text-shadow: var(--anibt-candy-text-shadow);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 1.5px 0 var(--anibt-candy-edge), 0 4px 10px -4px var(--anibt-candy-glow);
+    transition: transform 0.14s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.14s cubic-bezier(0.2, 0.7, 0.2, 1), background-color 0.14s, color 0.14s, filter 0.14s;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    right: 8px;
+    left: 8px;
+    height: 42%;
+    border-radius: 6px;
+    background-image: var(--anibt-gloss);
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    background-color: #fff;
+    -webkit-mask: var(--anibt-sparkle) center / contain no-repeat;
+    mask: var(--anibt-sparkle) center / contain no-repeat;
+    transform: scale(0) rotate(-45deg);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+  }
+
+  &:hover, &.anibt-btn:hover {
+    color: var(--anibt-candy-ink);
+    transform: translateY(-1px);
+    filter: saturate(1.08) brightness(1.03);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 2.5px 0 var(--anibt-candy-edge), 0 8px 16px -6px var(--anibt-candy-glow);
+  }
+
+  &:hover::after {
+    transform: scale(1) rotate(0deg);
+  }
+
+  &:active, &.anibt-btn:active {
+    color: var(--anibt-candy-ink);
+    transform: translateY(1.5px);
+    filter: saturate(1.05) brightness(0.97);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 0 0 var(--anibt-candy-edge), 0 1px 2px var(--anibt-candy-glow);
+  }
+
+  &:is(:disabled, [aria-disabled="true"]):not([aria-busy="true"]) {
+    background-image: none;
+    background-color: var(--muted);
+    color: var(--muted-foreground);
+    text-shadow: none;
+    filter: none;
+    transform: none;
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+
+  &:is(:disabled, [aria-disabled="true"])::before, &:is(:disabled, [aria-disabled="true"])::after {
+    display: none;
+  }
+}
+
+/** A raised key that is the current one: the wash under the pink ink. */
+@utility anibt-btn-on {
+  &.anibt-btn, &.anibt-btn:hover, &.anibt-btn-raised, &.anibt-btn-raised:hover {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+    transform: none;
+    box-shadow: inset 0 0 0 1px var(--anibt-wash-line), 0 1.5px 0 var(--anibt-wash-line);
+  }
+}
+
+/** Quiet: no fill and no edge until the pointer is on it, then the wash. */
+@utility anibt-btn-ghost {
+  &, &.anibt-btn {
+    background-color: transparent;
+    color: var(--anibt-ink2);
+    box-shadow: none;
+    transition: transform 0.14s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.14s cubic-bezier(0.2, 0.7, 0.2, 1), background-color 0.14s, color 0.14s, filter 0.14s;
+  }
+
+  &:hover, &.anibt-btn:hover {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+    transform: none;
+    box-shadow: none;
+  }
+
+  &:active, &.anibt-btn:active {
+    background-color: var(--anibt-wash2);
+    color: var(--accent-foreground);
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/** Danger: the red tint under the red ink with the red edge; the raised
+    tier's lift and press. */
+@utility anibt-btn-danger {
+  &, &.anibt-btn {
+    background-color: var(--anibt-danger-wash);
+    color: var(--destructive);
+    box-shadow: inset 0 0 0 1px var(--anibt-danger-line), 0 1.5px 0 var(--anibt-danger-line);
+    transition: transform 0.14s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.14s cubic-bezier(0.2, 0.7, 0.2, 1), background-color 0.14s, color 0.14s, filter 0.14s;
+  }
+
+  &:hover, &.anibt-btn:hover {
+    background-color: var(--anibt-danger-wash);
+    color: var(--destructive);
+    transform: translateY(-1px);
+    box-shadow: inset 0 0 0 1px var(--anibt-danger-fill), 0 2.5px 0 var(--anibt-danger-line);
+  }
+
+  &:active, &.anibt-btn:active {
+    transform: translateY(1.5px);
+    box-shadow: inset 0 0 0 1px var(--anibt-danger-fill), 0 0 0 var(--anibt-danger-line);
+  }
+}
+
+@utility anibt-btn-sm {
+  &, &.anibt-btn {
+    height: 28px;
+    padding-inline: 12px;
+    font-size: 12px;
+  }
+}
+
+@utility anibt-btn-lg {
+  &, &.anibt-btn {
+    height: 36px;
+    padding-inline: 20px;
+    font-size: 14px;
+  }
+}
+
+/** The 32px icon square on the raised material; the glyph wiggles under the
+    pointer. */
+@utility anibt-icobtn {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 10px;
+  background-color: var(--card);
+  color: var(--anibt-ink2);
+  box-shadow: inset 0 0 0 1px var(--input), 0 1.5px 0 var(--input);
+  cursor: pointer;
+  transition: transform 0.14s cubic-bezier(0.2, 0.7, 0.2, 1), background-color 0.14s, color 0.14s, box-shadow 0.14s;
+
+  &:hover {
+    color: var(--accent-foreground);
+    box-shadow: inset 0 0 0 1px var(--anibt-wash-line), 0 1.5px 0 var(--anibt-wash-line);
+  }
+
+  &:hover > svg {
+    animation: anibt-wiggle 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  &:active {
+    transform: translateY(1px) scale(0.96);
+  }
+}
+
+@utility anibt-icobtn-sm {
+  &, &.anibt-icobtn {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/** The quiet icon square: no fill until the pointer is on it. */
+@utility anibt-icobtn-ghost {
+  &, &.anibt-icobtn {
+    background-color: transparent;
+    box-shadow: none;
+  }
+
+  &:hover, &.anibt-icobtn:hover {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+    box-shadow: none;
+  }
+}
+
+/* ── Tabs, segmented, chips ─────────────────────────────────────────────── */
+
+/** A tab strip: 32px tabs over a stitched line. */
+@utility anibt-tabs {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  align-items: flex-end;
+  gap: 4px;
+  padding-bottom: 6px;
+  background-image: var(--anibt-stitch);
+  background-size: 8px 1px;
+  background-repeat: repeat-x;
+  background-position: 0 100%;
+}
+
+@utility anibt-tab {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding-inline: 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--anibt-ink2);
+  transition: color 140ms cubic-bezier(0.2, 0.7, 0.2, 1), background-color 140ms cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  &:hover {
+    color: var(--foreground);
+    background-color: var(--accent);
+  }
+}
+
+/** The current tab wears the tilted washi tape under its label. */
+@utility anibt-tab-on {
+  &.anibt-tab, &.anibt-tab:hover {
+    color: var(--foreground);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    right: 8px;
+    bottom: -5px;
+    left: 8px;
+    height: 6px;
+    pointer-events: none;
+    background: var(--anibt-tape-fill);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 2px) 50%, 100% 100%, 0 100%, 2px 50%);
+    transform: rotate(-1.5deg);
+    animation: anibt-tape-in 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+}
+
+/** The segmented control: a sunk track holding 24px items; the current one
+    is a white sticker thumb with its glyph in pink. */
+@utility anibt-seg {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 10px;
+  background-color: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--border);
+
+  & > * {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 24px;
+    padding-inline: 8px;
+    border: 0;
+    border-radius: 6px;
+    background-color: transparent;
+    color: var(--anibt-ink2);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.2s cubic-bezier(0.2, 0.7, 0.2, 1), background-color 0.2s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  & > * svg {
+    color: var(--muted-foreground);
+  }
+
+  & > :is([data-state="on"], [data-state="active"], [aria-pressed="true"], [aria-selected="true"], [aria-checked="true"], [aria-current="true"], [aria-current="page"]) {
+    background-color: var(--card);
+    color: var(--foreground);
+    box-shadow: var(--anibt-shadow-sticker);
+  }
+
+  & > :is([data-state="on"], [data-state="active"], [aria-pressed="true"], [aria-selected="true"], [aria-checked="true"], [aria-current="true"], [aria-current="page"]) svg {
+    color: var(--anibt-mark);
+  }
+}
+
+/** The checked item of a segmented control built from labels: the same
+    sticker thumb. */
+@utility anibt-seg-on {
+  background-color: var(--card);
+  color: var(--foreground);
+  box-shadow: var(--anibt-shadow-sticker);
+
+  & svg {
+    color: var(--anibt-mark);
+  }
+}
+
+/** The 28px filter chip; on is the wash with a pink ring and pink ink. */
+@utility anibt-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding-inline: 12px;
+  border: 0;
+  border-radius: 10px;
+  background-color: var(--card);
+  color: var(--anibt-ink2);
+  box-shadow: inset 0 0 0 1px var(--input);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 140ms, color 140ms;
+
+  &:is(button, a, label, [role="button"], [role="checkbox"], [role="radio"]):hover {
+    transform: translateY(-1px);
+    color: var(--accent-foreground);
+  }
+}
+
+@utility anibt-chip-on {
+  &, &.anibt-chip {
+    color: var(--accent-foreground);
+    background-color: var(--accent);
+    box-shadow: inset 0 0 0 1px var(--anibt-wash-line);
+  }
+}
+
+/* ── Tags, stickers, counts, status ─────────────────────────────────────── */
+
+/** The 20px fact tag: a spec, a category. Neutral by default. */
+@utility anibt-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding-inline: 8px;
+  border-radius: 6px;
+  background-color: var(--muted);
+  color: var(--anibt-ink2);
+  box-shadow: inset 0 0 0 1px var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/** Resolution / format / time: blue, in the round face. */
+@utility anibt-tag-res {
+  &, &.anibt-tag {
+    background-color: var(--anibt-time-wash);
+    color: var(--anibt-time-ink);
+    box-shadow: none;
+    font-family: var(--font-anibt-display);
+  }
+}
+
+/** Language / subtitle: pink. */
+@utility anibt-tag-lang {
+  &, &.anibt-tag {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+    box-shadow: none;
+  }
+}
+
+@utility anibt-tag-ok {
+  &, &.anibt-tag {
+    background-color: var(--anibt-ok-wash);
+    color: var(--anibt-ok);
+    box-shadow: none;
+  }
+}
+
+@utility anibt-tag-warn {
+  &, &.anibt-tag {
+    background-color: var(--anibt-warn-wash);
+    color: var(--anibt-warn);
+    box-shadow: none;
+  }
+}
+
+@utility anibt-tag-danger {
+  &, &.anibt-tag {
+    background-color: var(--anibt-danger-wash);
+    color: var(--destructive);
+    box-shadow: none;
+  }
+}
+
+/** A die-cut sticker: paper with a 2px white rim and a small shadow, tilted
+    by `--anibt-tilt`. */
+@utility anibt-sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding-inline: 8px;
+  border-radius: 6px;
+  background-color: var(--card);
+  color: var(--card-foreground);
+  box-shadow: 0 0 0 2px var(--anibt-sticker-edge), var(--anibt-shadow-sticker);
+  font-family: var(--font-anibt-display);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  transform: rotate(var(--anibt-tilt, 0deg));
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@utility anibt-sticker-candy {
+  &, &.anibt-sticker {
+    background-color: var(--anibt-candy-edge);
+    background-image: var(--anibt-candy);
+    color: var(--anibt-candy-ink);
+    text-shadow: var(--anibt-candy-text-shadow);
+  }
+}
+
+@utility anibt-sticker-water {
+  &, &.anibt-sticker {
+    background-color: var(--anibt-water-edge);
+    background-image: var(--anibt-water);
+    color: var(--anibt-candy-ink);
+    text-shadow: var(--anibt-water-text-shadow);
+  }
+}
+
+/** The candy fill on its own (a selected day, a progress bar). */
+@utility anibt-candy {
+  background-color: var(--anibt-candy-edge);
+  background-image: var(--anibt-candy);
+  color: var(--anibt-candy-ink);
+  text-shadow: var(--anibt-candy-text-shadow);
+}
+
+/** The water fill: the blue twin for time / now. */
+@utility anibt-water {
+  background-color: var(--anibt-water-edge);
+  background-image: var(--anibt-water);
+  color: var(--anibt-candy-ink);
+  text-shadow: var(--anibt-water-text-shadow);
+}
+
+/** A count: a 20px candy pill with the sticker rim. */
+@utility anibt-count {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding-inline: 4px;
+  border-radius: 999px;
+  background-color: var(--anibt-candy-edge);
+  background-image: var(--anibt-candy);
+  color: var(--anibt-candy-ink);
+  text-shadow: var(--anibt-candy-text-shadow);
+  box-shadow: 0 0 0 2px var(--anibt-sticker-edge), var(--anibt-shadow-sticker);
+  font-family: var(--font-anibt-display);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+@utility anibt-count-quiet {
+  &, &.anibt-count {
+    background-image: none;
+    background-color: var(--muted);
+    color: var(--muted-foreground);
+    text-shadow: none;
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+}
+
+/** A status: a 20px tint holding a 6px dot and a word. The word is required;
+    the colour never speaks alone. */
+@utility anibt-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  max-width: 100%;
+  padding-inline: 8px;
+  border-radius: 6px;
+  background-color: var(--muted);
+  color: var(--anibt-ink2);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+
+  &::before {
+    content: "";
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background-color: currentColor;
+  }
+}
+
+@utility anibt-status-ok {
+  &, &.anibt-status {
+    background-color: var(--anibt-ok-wash);
+    color: var(--anibt-ok);
+  }
+}
+
+/** In progress: blue, and the dot blinks. */
+@utility anibt-status-run {
+  &, &.anibt-status {
+    background-color: var(--anibt-time-wash);
+    color: var(--anibt-time-ink);
+  }
+
+  &::before {
+    animation: anibt-blink 1.2s ease-in-out infinite;
+  }
+}
+
+@utility anibt-status-fail {
+  &, &.anibt-status {
+    background-color: var(--anibt-danger-wash);
+    color: var(--destructive);
+  }
+}
+
+@utility anibt-status-warn {
+  &, &.anibt-status {
+    background-color: var(--anibt-warn-wash);
+    color: var(--anibt-warn);
+  }
+}
+
+@utility anibt-status-mute {
+  &, &.anibt-status {
+    background-color: var(--muted);
+    color: var(--muted-foreground);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+}
+
+/** On / live / subscribed: the pink tint. */
+@utility anibt-status-on {
+  &, &.anibt-status {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+  }
+}
+
+/** A bare 6px dot beside a word. */
+@utility anibt-dot {
+  display: inline-block;
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background-color: var(--anibt-mark);
+  vertical-align: middle;
+}
+
+@utility anibt-dot-ok {
+  &, &.anibt-dot {
+    background-color: var(--anibt-ok-fill);
+  }
+}
+
+@utility anibt-dot-warn {
+  &, &.anibt-dot {
+    background-color: var(--anibt-warn-fill);
+  }
+}
+
+@utility anibt-dot-danger {
+  &, &.anibt-dot {
+    background-color: var(--anibt-danger-fill);
+  }
+}
+
+@utility anibt-dot-time {
+  &, &.anibt-dot {
+    background-color: var(--anibt-time);
+  }
+}
+
+@utility anibt-dot-hollow {
+  &, &.anibt-dot {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1.5px var(--muted-foreground);
+  }
+}
+
+@utility anibt-dot-mute {
+  &, &.anibt-dot {
+    background-color: var(--muted-foreground);
+  }
+}
+
+/* ── Tables, stats, avatars ─────────────────────────────────────────────── */
+
+/** A grid-table head row: 36px, 12/600 muted, stitched under. The grid
+    template is the caller's. */
+@utility anibt-th {
+  display: grid;
+  gap: 12px;
+  align-items: center;
+  height: 36px;
+  padding-inline: 16px;
+  background-image: var(--anibt-stitch);
+  background-size: 8px 1px;
+  background-repeat: repeat-x;
+  background-position: 0 100%;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--muted-foreground);
+}
+
+/** A grid-table row: at least 48px, rows parted by the stitch. */
+@utility anibt-tr {
+  display: grid;
+  gap: 12px;
+  align-items: center;
+  min-height: 48px;
+  padding-inline: 16px;
+  background-image: var(--anibt-stitch);
+  background-size: 8px 1px;
+  background-repeat: repeat-x;
+  background-position: 0 100%;
+  font-size: 13px;
+
+  &:last-child {
+    background-image: none;
+  }
+
+  &:hover {
+    background-color: var(--muted);
+  }
+
+  & > * {
+    min-width: 0;
+  }
+}
+
+/** One cell of a stat strip. */
+@utility anibt-stat {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+}
+
+/** The figure in a stat cell: the round face at 600/24. */
+@utility anibt-stat-value {
+  font-family: var(--font-anibt-display);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/** An identity tile (a letter for a group or a user), sized by the caller.
+    Add `anibt-rim` for the die-cut look. */
+@utility anibt-avatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+  font-family: var(--font-anibt-display);
+  font-weight: 600;
+}
+
+/* ── Menus, checks, switches, pager, tooltip ────────────────────────────── */
+
+@utility anibt-menu {
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+}
+
+@utility anibt-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding-inline: 8px;
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--foreground);
+
+  & svg {
+    color: var(--muted-foreground);
+  }
+
+  &:hover, &[data-highlighted], &[data-state="open"], &[aria-current="true"], &[aria-selected="true"] {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  &:hover svg, &[data-highlighted] svg, &[aria-current="true"] svg, &[aria-selected="true"] svg {
+    color: var(--anibt-mark);
+  }
+}
+
+@utility anibt-menu-head {
+  padding: 8px 8px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+@utility anibt-menu-sep {
+  height: 1px;
+  margin: 4px 8px;
+  background-image: var(--anibt-stitch);
+  background-size: 8px 1px;
+  background-repeat: repeat-x;
+}
+
+/** The 18px candy box; checked is candy with a white tick. */
+@utility anibt-check {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background-color: var(--card);
+  color: var(--anibt-candy-ink);
+  box-shadow: inset 0 0 0 1.5px var(--input);
+  transition: background-color 0.15s, box-shadow 0.15s;
+}
+
+@utility anibt-check-on {
+  &, &.anibt-check {
+    background-color: var(--anibt-candy-edge);
+    background-image: var(--anibt-candy);
+    color: var(--anibt-candy-ink);
+    box-shadow: 0 1px 0 var(--anibt-candy-edge);
+  }
+}
+
+/** The 36×20 switch track: sunk off, candy on. The knob is the caller's. */
+@utility anibt-switch {
+  display: inline-flex;
+  position: relative;
+  flex: none;
+  align-items: center;
+  width: 36px;
+  height: 20px;
+  padding: 2px;
+  border-radius: 999px;
+  background-color: var(--muted);
+  box-shadow: inset 0 0 0 1.5px var(--input);
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+@utility anibt-switch-on {
+  &, &.anibt-switch {
+    background-color: var(--anibt-candy-edge);
+    background-image: var(--anibt-candy);
+    box-shadow: 0 1px 0 var(--anibt-candy-edge);
+  }
+}
+
+/** One 32px pager cell in the round face; current is the wash. */
+@utility anibt-pager-item {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 32px;
+  height: 32px;
+  padding-inline: 8px;
+  border-radius: 10px;
+  color: var(--anibt-ink2);
+  font-family: var(--font-anibt-display);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  transition: background-color 140ms, color 140ms;
+
+  &:hover {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+  }
+}
+
+@utility anibt-pager-item-on {
+  &, &.anibt-pager-item, &.anibt-pager-item:hover {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+    box-shadow: inset 0 0 0 1px var(--anibt-wash-line);
+    font-weight: 600;
+  }
+}
+
+/** The tooltip face: dark (light in 夜樱), 12/16, radius 6. */
+@utility anibt-tip {
+  padding: 4px 8px;
+  border-radius: 6px;
+  background-color: var(--anibt-tip);
+  color: var(--anibt-tip-ink);
+  font-size: 12px;
+  line-height: 16px;
+  box-shadow: var(--anibt-shadow-sticker);
+}
+
+/* ── Base ───────────────────────────────────────────────────────────────── */
+
+@layer base {
+  /* Every A motion stops under reduced motion. Scoped to the A recipes so a
+     consumer's own animations are left alone. */
+  @media (prefers-reduced-motion: reduce) {
+    [class*="anibt-"], [class*="anibt-"]::before, [class*="anibt-"]::after, [class*="anibt-"] > svg {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ── U2: display + blocks ───────────────────────────────────────────────── */
+
+@theme inline {
+  /* An indeterminate progress fill sliding along its track. */
+  --animate-anibt-indeterminate: anibt-indeterminate 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
+}
+
+@keyframes anibt-indeterminate {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
+}

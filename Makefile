@@ -9,8 +9,9 @@ build:
 	pnpm --dir web build:userscript
 
 test: build
-	LRR_TEST_DESKTOP_ONLY=1 node userscript/test-offline.mjs refs/ExHentai.org.html userscript/dist
-	LRR_TEST_DESKTOP_ONLY=1 node userscript/test.mjs
+	node userscript/test-isolation.mjs
+	node userscript/test-showcase.mjs
+	node userscript/test-live.mjs
 	node --check lanraragi-checker.user.js
 
 watch:

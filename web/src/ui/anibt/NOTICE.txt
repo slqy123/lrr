@@ -1,0 +1,21 @@
+AniBT UI
+Copyright (C) 2026 AniBT
+License: AGPL-3.0-only; see LICENSE in this directory.
+Source: https://github.com/OpenAniBT/ui
+Upstream revision: 0e758b0 (chore: update GitHub repository URL to OpenAniBT/ui)
+
+Vendored files: button.tsx, spinner.tsx, input.tsx, popover.tsx,
+dialog.tsx, checkbox.tsx, badge.tsx, table.tsx, poster-card.tsx, theme.css.
+Local modifications, 2026-10-20:
+- Component imports use local module paths.
+- PopoverContent and DialogContent require explicit portal containers for Shadow DOM isolation.
+- Theme root selectors target :host and :host(.dark).
+- Theme font imports are replaced by bundled Latin font registration under a private family name.
+
+Fredoka is bundled under the SIL Open Font License; see Fredoka-LICENSE.txt.
+The local showcase illustrations are generated SVGs, not AniBT brand artwork.
+
+AniBT logos and mascot artwork are not included.
+The surrounding React userscript implementation is distributed under AGPL-3.0-only.
+The pre-existing backend and legacy UI are not relicensed by this notice.
+Corresponding project source: https://github.com/slqy123/lrr
