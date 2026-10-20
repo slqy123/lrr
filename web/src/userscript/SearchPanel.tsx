@@ -1,9 +1,10 @@
 import * as React from 'react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Check, Flower2, Search, SlidersHorizontal, Upload } from 'lucide-react'
 import { Button } from '../ui/anibt/button'
 import { Input } from '../ui/anibt/input'
 import { Checkbox } from '../ui/anibt/checkbox'
+import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/anibt/dialog'
 import { Popover, PopoverAnchor, PopoverContent, PopoverTitle, PopoverTrigger } from '../ui/anibt/popover'
 import { categories, type GalleryPage } from './page'
 import { categoryAppearance } from './categories'
@@ -27,6 +28,8 @@ export function SearchPanel({ page, portal }: { page: GalleryPage; portal: HTMLE
   const [previousMask, setPreviousMask] = useState(mask)
   const [suggest, setSuggest] = useState(false)
   const [fileSearch, setFileSearch] = useState(false)
+  const [toolsOpen, setToolsOpen] = useState(false)
+  const toolsTrigger = useRef<HTMLButtonElement>(null)
   const [jumpRating, setJumpRating] = useState(initial.get('f_srdd') || '0')
   const [minimum, setMinimum] = useState(initial.get('f_spf') || '')
   const [maximum, setMaximum] = useState(initial.get('f_spt') || '')
@@ -59,15 +62,19 @@ export function SearchPanel({ page, portal }: { page: GalleryPage; portal: HTMLE
           <PopoverContent id="lrr-suggestions" container={portal} align="start" onOpenAutoFocus={event => event.preventDefault()} onCloseAutoFocus={event => event.preventDefault()}><PopoverTitle>快捷筛选</PopoverTitle><div className="flex gap-2">{[['chinese', '仅中文'], ['japanese', '仅日文']].map(([language, label]) => <FilterChip key={language} checked={searchTokens.some(value => languageTag(value) === language)} onClick={() => setLanguage(language)}>{label}</FilterChip>)}<FilterChip checked={allAges} onClick={allAgesToggle}>全年龄</FilterChip></div></PopoverContent>
         </Popover>
         <Button type="submit">搜索</Button><Button asChild variant="secondary"><a href={page.action}>清空</a></Button>
-        <Popover><PopoverTrigger asChild><Button type="button" variant="secondary"><SlidersHorizontal />筛选与工具</Button></PopoverTrigger><PopoverContent container={portal} align="end" className="w-96"><PopoverTitle>高级筛选</PopoverTitle>
+        <Popover open={toolsOpen} onOpenChange={setToolsOpen}><PopoverTrigger asChild><Button ref={toolsTrigger} type="button" variant="secondary"><SlidersHorizontal />筛选与工具</Button></PopoverTrigger><PopoverContent container={portal} align="end" className="w-96" onCloseAutoFocus={event => { if (fileSearch) event.preventDefault() }}><PopoverTitle>高级筛选</PopoverTitle>
           <div className="filter-fields"><label>最低评分<select className="anibt-input" aria-label="最低评分" value={jumpRating} onChange={event => setJumpRating(event.target.value)}>{[['0', '不限'], ['2', '2 星'], ['3', '3 星'], ['4', '4 星'], ['5', '5 星']].map(([value, title]) => <option key={value} value={value}>{title}</option>)}</select></label>
           <label>页数范围<div className="flex gap-2"><Input type="number" min="0" max="9999" aria-label="最少页数" placeholder="最少页数" value={minimum} onChange={event => setMinimum(event.target.value)} /><Input type="number" min="0" max="9999" aria-label="最多页数" placeholder="最多页数" value={maximum} onChange={event => setMaximum(event.target.value)} /></div></label>
           </div>
           <div className="filter-options anibt-stitch-over">{advanced.map(([name, title]) => <label key={name} className="check-label"><Checkbox checked={flags.has(name)} onCheckedChange={checked => setFlags(previous => { const next = new Set(previous); if (checked) next.add(name); else next.delete(name); return next })} />{title}</label>)}</div>
-          <div className="filter-actions anibt-stitch-over"><Button type="button" variant="secondary" onClick={() => setFileSearch(value => !value)}><Upload />文件搜索</Button><Button type="submit" form="lrr-search">应用筛选并搜索</Button></div>
+          <div className="filter-actions anibt-stitch-over"><Button type="button" variant="secondary" onClick={() => { setToolsOpen(false); setFileSearch(true) }}><Upload />文件搜索</Button><Button type="submit" form="lrr-search">应用筛选并搜索</Button></div>
         </PopoverContent></Popover>
       </div>
     </form>
-    {fileSearch && <form className="file-search anibt-stitch-over" action={fileAction} method="post" encType="multipart/form-data"><p className="muted">所选图片将直接上传到原站，以查找相同或相似文件。</p><Input name="sfile" type="file" accept="image/*" required aria-label="文件搜索图片" /><label className="check-label"><Checkbox name="fs_similar" defaultChecked />相似图片</label><label className="check-label"><Checkbox name="fs_covers" />仅搜索封面</label><Button type="submit" name="f_sfile" value="File Search">文件搜索</Button></form>}
+    <Dialog open={fileSearch} onOpenChange={setFileSearch}><DialogContent container={portal} onCloseAutoFocus={event => { event.preventDefault(); toolsTrigger.current?.focus() }}>
+      <DialogHeader><DialogTitle><Upload size={18} />文件搜索</DialogTitle><DialogDescription>所选图片将直接上传到原站，以查找相同或相似文件。</DialogDescription></DialogHeader>
+      <DialogBody><form id="lrr-file-search" className="file-search" action={fileAction} method="post" encType="multipart/form-data"><Input name="sfile" type="file" accept="image/*" required aria-label="文件搜索图片" /><label className="check-label"><Checkbox name="fs_similar" defaultChecked />相似图片</label><label className="check-label"><Checkbox name="fs_covers" />仅搜索封面</label></form></DialogBody>
+      <DialogFooter><Button type="button" variant="ghost" onClick={() => setFileSearch(false)}>取消</Button><Button type="submit" form="lrr-file-search" name="f_sfile" value="File Search">文件搜索</Button></DialogFooter>
+    </DialogContent></Dialog>
   </section>
 }

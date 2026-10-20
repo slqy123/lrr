@@ -20,8 +20,7 @@
 .filter-options { display: flex; flex-direction: column; gap: 12px; padding-top: 14px; }
 .filter-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 14px; }
 .filter-actions > button:last-child { flex: 1; }
-.file-search { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 20px; padding-top: 20px; }
-.file-search > p, .file-search > input { width: 100%; }
+.file-search { display: flex; flex-direction: column; gap: 16px; }
 .status-action { position: relative; z-index: 30; display: inline-flex; cursor: pointer; border-radius: 4px; }
 .status-action:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
 .library-details { display: grid; gap: 16px; }
