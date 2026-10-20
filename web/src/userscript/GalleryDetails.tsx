@@ -91,7 +91,7 @@ export function GalleryDetails({ item, tab: requestedTab, changeTab, close, live
         <Button variant="ghost" size="icon-sm" aria-label="收起作品详情" onClick={() => close()}><X /></Button>
       </div>
     </header>
-    <nav className="detail-tabs" role="tablist" aria-label="作品信息">{tabs.map((entry, index) => <button key={entry.key} type="button" role="tab" id={`${id}-${entry.key}`} aria-controls={`${id}-content`} aria-selected={tab === entry.key} tabIndex={tab === entry.key ? 0 : -1} onClick={() => changeTab(entry.key)} onKeyDown={event => {
+    <nav className="detail-tabs anibt-tabs" role="tablist" aria-label="作品信息">{tabs.map((entry, index) => <button key={entry.key} type="button" className={tab === entry.key ? 'anibt-tab anibt-tab-on' : 'anibt-tab'} role="tab" id={`${id}-${entry.key}`} aria-controls={`${id}-content`} aria-selected={tab === entry.key} tabIndex={tab === entry.key ? 0 : -1} onClick={() => changeTab(entry.key)} onKeyDown={event => {
       const next = event.key === 'ArrowRight' ? (index + 1) % tabs.length : event.key === 'ArrowLeft' ? (index + tabs.length - 1) % tabs.length : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : -1
       if (next < 0) return
       event.preventDefault()

@@ -29,9 +29,8 @@
 .detail-heading-actions { display: flex; align-items: center; gap: 4px; margin-left: auto; flex-shrink: 0; }
 .detail-heading-actions > button:last-child { margin-left: 8px; }
 .detail-heading-text h3 { margin: 0; font-size: 13px; font-weight: 700; overflow-wrap: anywhere; }
-.detail-tabs { display: flex; flex-wrap: wrap; gap: 22px; border-bottom: 1px dashed var(--input); padding: 0 18px; }
-.detail-tabs button { padding: 7px 0; font-size: 12px; color: var(--muted-foreground); border-bottom: 2px solid transparent; cursor: pointer; }
-.detail-tabs button[aria-selected=true] { color: var(--accent-foreground); border-color: var(--ring); }
+.detail-tabs { flex-wrap: wrap; padding-inline: 18px; }
+.detail-tabs button { cursor: pointer; }
 .detail-tabs button:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
 .detail-content { min-height: 100px; padding: 12px 18px; overflow-wrap: anywhere; }
 .detail-content h4 { margin: 0 0 8px; font-weight: 650; }
