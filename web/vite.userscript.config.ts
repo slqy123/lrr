@@ -18,7 +18,7 @@ export default defineConfig({
   resolve: { dedupe: ['react', 'react-dom'] },
   build: {
     assetsInlineLimit: () => true,
-    emptyOutDir: true,
+    emptyOutDir: false,
     outDir: fileURLToPath(new URL('../userscript/dist', import.meta.url)),
     minify: false,
     lib: {

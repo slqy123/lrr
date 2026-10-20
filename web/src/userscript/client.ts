@@ -2,6 +2,7 @@ import type { Archive, Gallery } from './model'
 import type { Settings } from './settings'
 import { lookupCache } from './cache'
 import { readTorrents } from './torrents'
+import { readDetails } from './details'
 
 class SearchPending extends Error {}
 
@@ -157,5 +158,12 @@ export function createClient(settings: Settings, fresh = false) {
     const html = await request(url.origin, url.pathname + url.search, 'GET', undefined, {}, settings.requestTimeoutMs, true, signal) as string
     return readTorrents(html, url.href)
   }
-  return { check, lookup, send, torrents, dispose: () => controller.abort() }
+  async function details(href: string, signal?: AbortSignal) {
+    const url = new URL(href, location.href)
+    const sites = ['e-hentai.org', 'exhentai.org', 'g.e-hentai.org']
+    if (!['http:', 'https:'].includes(url.protocol) || (url.origin !== location.origin && !(sites.includes(url.hostname) && sites.includes(location.hostname))) || !/^\/g\/\d+\/[a-zA-Z0-9]+\/$/.test(url.pathname)) throw new Error('无效的原站作品地址')
+    const html = await request(url.origin, url.pathname, 'GET', undefined, {}, settings.requestTimeoutMs, true, signal) as string
+    return readDetails(html, url.href)
+  }
+  return { check, lookup, send, torrents, details, dispose: () => controller.abort() }
 }

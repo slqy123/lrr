@@ -6,6 +6,7 @@ import { Input } from '../ui/anibt/input'
 import { Checkbox } from '../ui/anibt/checkbox'
 import { Popover, PopoverAnchor, PopoverContent, PopoverTitle, PopoverTrigger } from '../ui/anibt/popover'
 import { categories, type GalleryPage } from './page'
+import { categoryAppearance } from './categories'
 
 const advanced = [['f_sh', '包括已删除画廊'], ['f_sto', '必须有种子'], ['f_sfl', '忽略语言过滤'], ['f_sfu', '忽略上传者过滤'], ['f_sft', '忽略标签过滤']] as const
 const managed = new Set(['f_search', 'f_cats', 'advsearch', 'f_spf', 'f_spt', 'f_srdd', ...advanced.map(([name]) => name)])
@@ -41,8 +42,8 @@ export function SearchPanel({ page, portal }: { page: GalleryPage; portal: HTMLE
       <input type="hidden" name="f_srdd" value={jumpRating} disabled={jumpRating === '0'} />
       {advanced.filter(([name]) => flags.has(name)).map(([name]) => <input key={name} type="hidden" name={name} value="on" />)}
       <div className="category-row" role="group" aria-label="作品分类">
-        <Button type="button" size="sm" variant={mask === 0 ? 'default' : 'ghost'} onClick={() => setMask(0)}>全部</Button>
-        {categories.map(([bit, title]) => <Button key={bit} type="button" size="sm" aria-pressed={!(mask & bit)} variant={mask & bit ? 'ghost' : 'secondary'} onClick={() => setMask(value => value ^ bit)}>{title}</Button>)}
+        <Button type="button" size="sm" className="category-filter category-key" aria-pressed={mask === 0} variant={mask === 0 ? 'secondary' : 'ghost'} onClick={() => setMask(0)}>全部</Button>
+        {categories.map(([bit, title]) => <Button key={bit} type="button" size="sm" className="category-filter category-key" style={categoryAppearance(title).style} aria-pressed={!(mask & bit)} variant={mask & bit ? 'ghost' : 'secondary'} onClick={() => setMask(value => value ^ bit)}><span aria-hidden="true">{mask & bit ? '○' : '✓'}</span>{categoryAppearance(title).label}</Button>)}
       </div>
       <div className="search-row">
         <Popover open={suggest} onOpenChange={setSuggest}><PopoverAnchor asChild><div className="search-field"><Search size={17} /><Input name={query ? 'f_search' : undefined} aria-label="搜索作品" aria-expanded={suggest} aria-controls="lrr-suggestions" aria-haspopup="dialog" placeholder="搜索标题、作者或标签…" value={query} onFocus={() => setSuggest(true)} onClick={() => setSuggest(true)} onChange={event => setQuery(event.target.value)} /></div></PopoverAnchor>

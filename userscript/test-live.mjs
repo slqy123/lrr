@@ -7,7 +7,9 @@ import { promisify } from 'node:util'
 
 const run = promisify(execFile)
 const dir = mkdtempSync(join(tmpdir(), 'lrr-live-'))
-const script = readFileSync(new URL('../lanraragi-checker.user.js', import.meta.url), 'utf8').replaceAll('</script', '<\\/script')
+const script = readFileSync(process.env.LRR_PREVIEW_SCRIPT || new URL('../lanraragi-checker.user.js', import.meta.url), 'utf8').replaceAll('</script', '<\\/script')
+const manualPreview = process.env.LRR_LIVE_PREVIEW === 'manual'
+const testScript = test => manualPreview ? '' : `<script>(${test.toString()})().catch(error=>document.body.dataset.result='FAIL '+error.stack)</script>`
 const boot = (savedPage = false, pendingSearch = false) => {
   window.values = { lrrServerUrl: location.origin + '/library', queueServerUrl: location.origin + '/queue', lrrApiKey: 'offline-key', theme: 'light', lrrConcurrency: 2, altSearchConcurrency: 1 }
   window.GM_getValue = (key, fallback) => values[key] ?? fallback
@@ -23,12 +25,24 @@ const boot = (savedPage = false, pendingSearch = false) => {
     if (kind) maximumRequests[kind] = Math.max(maximumRequests[kind], ++activeRequests[kind])
     let completed = false
     const complete = () => { if (!completed && kind) activeRequests[kind]--; completed = true }
-    const delayed = stale && index === 7 || url.pathname === '/gallerytorrents.php' && window.slowTorrents
+    const delayed = stale && index === 7 || url.pathname === '/gallerytorrents.php' && window.slowTorrents || url.pathname.startsWith('/g/') && window.slowDetails
     let cancelled = false
     const timer = setTimeout(() => {
       if (cancelled && !delayed) return
       complete()
       const respond = value => options.onload({ status: 200, responseText: JSON.stringify(value) })
+      if (url.pathname.startsWith('/g/')) {
+        if (window.failDetails) return options.onerror()
+        const gid = url.pathname.split('/')[2]
+        const count = window.shortDetails ? 2 : 7
+        const pages = Array.from({ length: count }, (_, index) => {
+          const page = index + 1
+          const image = window.legacyDetails ? `<img src="/placeholder.png" data-src="/page-${page}.png" alt="Page ${page}">` : `<div title="Page ${page}" style="width:200px;height:${page === 4 ? 141 : 282}px;background:transparent url(/sprite-${gid}.png) -${index * 200}px 0 no-repeat"></div>`
+          return `<a href="/s/token/${gid}-${page}">${image}</a>`
+        }).join('')
+        const text = window.invalidDetails ? '<h1>Login required</h1>' : `<h1 id="gn">Gallery ${gid}</h1><div id="gdd"><table><tr><td>File Size:</td><td>56.46 MiB</td></tr><tr><td>Length:</td><td>${count} pages</td></tr></table></div><div id="taglist"><table><tr><td>artist:</td><td><a href="/tag/artist:author">Author ${gid}</a></td></tr><tr><td>parody:</td><td><a href="/tag/parody:series">Original series</a></td></tr><tr><td>language:</td><td><a href="/tag/language:chinese">chinese</a></td></tr></table></div><div id="gdt">${window.noPreviews ? '' : pages}</div><div id="cdiv"><div class="c1"><div><a name="ulcomment"></a>Uploader Comment</div><div class="c6">Uploader summary<br>Translation credits</div></div><div class="c1"><div class="c6">Reader comment must not become uploader summary</div></div></div><scr${'ipt'}>window.detailInjected=true</scr${'ipt'}>`
+        return options.onload({ status: 200, responseText: text })
+      }
       if (url.pathname === '/gallerytorrents.php') {
         if (window.failTorrents) return options.onerror()
         const text = window.invalidTorrents ? '<h1>Login required</h1>' : window.emptyTorrents ? '<div id="torrentinfo">There are no torrents for this gallery.</div>' : `<div id="torrentinfo"><form><input name="gtid" value="1"><table><tr><td><span>Posted:</span> <span>2026-08-21 10:26</span></td><td><span>Size:</span> 128 MiB</td><td><span>Seeds:</span> 4</td></tr><tr><td><a href="https://ehtracker.org/get/example.torrent">Example torrent.zip</a><a href="magnet:?xt=urn:btih:example">Magnet</a></td></tr></table></form></div>`
@@ -45,7 +59,7 @@ const boot = (savedPage = false, pendingSearch = false) => {
       }
       options.onerror()
     }, delayed ? 500 : 5)
-    return { abort() { if (url.pathname === '/gallerytorrents.php') window.abortedTorrents = (window.abortedTorrents || 0) + 1; complete(); cancelled = true; if (!delayed) clearTimeout(timer); options.onabort() } }
+    return { abort() { if (url.pathname.startsWith('/g/')) window.abortedDetails = (window.abortedDetails || 0) + 1; if (url.pathname === '/gallerytorrents.php') window.abortedTorrents = (window.abortedTorrents || 0) + 1; complete(); cancelled = true; if (!delayed) clearTimeout(timer); options.onabort() } }
   }
   window.addEventListener('error', event => { document.body.dataset.error = event.message })
   window.originalMarkup = document.querySelector('.itg').innerHTML
@@ -68,6 +82,35 @@ const tests = async () => {
   assert(root.querySelector('.live-app') && !root.querySelector('.preview-strip'), 'real pages never show mock galleries')
   assert(document.documentElement.scrollWidth <= innerWidth, 'live UI has no horizontal overflow')
   assert(root.querySelectorAll('[data-slot=poster-card]').length === 12, 'all native galleries adapted')
+  const categoryLabels = [...root.querySelectorAll('.card-category')]
+  assert(categoryLabels[0].textContent === '漫画' && categoryLabels[1].textContent === '全年龄' && new Set(categoryLabels.map(node => node.textContent)).size === 10, 'native categories use consistent Chinese labels')
+  assert(!root.querySelector('[data-slot=poster-card-sticker]'), 'categories no longer overlay covers')
+  for (const card of root.querySelectorAll('[data-slot=poster-card]')) {
+    const row = card.querySelector('.card-category-row').getBoundingClientRect()
+    const category = card.querySelector('.card-category').getBoundingClientRect()
+    const checkbox = card.querySelector('.cover-select [role=checkbox]').getBoundingClientRect()
+    assert(Math.abs(category.top - checkbox.top) < 1 && Math.abs(category.height - checkbox.height) < 1 && Math.abs(checkbox.width - checkbox.height) < 1, 'card checkbox is square and matches category height and alignment')
+    assert(row.top >= card.querySelector('[data-slot=poster-card-cover]').getBoundingClientRect().bottom && row.bottom <= card.querySelector('[data-slot=poster-card-title]').getBoundingClientRect().top, 'category and checkbox sit between cover and title')
+  }
+  const categoryKeys = [...root.querySelectorAll('.category-filter[style][aria-pressed=true]')]
+  assert(new Set(categoryKeys.map(node => getComputedStyle(node).color)).size === categoryKeys.length, 'enabled categories have distinct text colors')
+  assert(new Set(categoryKeys.map(node => getComputedStyle(node).backgroundImage)).size === 1, 'category backgrounds share the neutral theme material')
+  const secondaryMaterial = getComputedStyle(root.querySelector('.search-row > a'))
+  assert([...categoryKeys, ...categoryLabels].every(node => {
+    const style = getComputedStyle(node)
+    return style.backgroundImage === secondaryMaterial.backgroundImage && style.backgroundColor === secondaryMaterial.backgroundColor && style.boxShadow === secondaryMaterial.boxShadow
+  }), 'category filters and labels reuse the standard secondary button material')
+  const lightCategoryColor = getComputedStyle(categoryLabels[0]).color
+  root.host.classList.add('dark')
+  assert(getComputedStyle(categoryLabels[0]).color !== lightCategoryColor, 'category text adapts to the dark theme')
+  root.host.classList.remove('dark')
+  const cardCheckbox = root.querySelector('.card-category-row [role=checkbox]')
+  cardCheckbox.scrollIntoView({ block: 'center' }); await wait(30)
+  const checkboxBounds = cardCheckbox.getBoundingClientRect()
+  assert(root.elementFromPoint(checkboxBounds.x + checkboxBounds.width / 2, checkboxBounds.y + checkboxBounds.height / 2)?.closest('[role=checkbox]') === cardCheckbox, 'checkbox remains above the stretched detail link')
+  cardCheckbox.click(); await wait(30)
+  assert(cardCheckbox.getAttribute('aria-checked') === 'true' && !root.querySelector('.gallery-details'), 'below-cover checkbox selects without opening details')
+  cardCheckbox.click(); await wait(30)
   const states = () => [...root.querySelectorAll('.gallery-grid .gallery-status')].map(node => node.textContent)
   assert(JSON.stringify(states()) === JSON.stringify(['已入库', '疑似重复', '在队列中', '在队列中', '在队列中', '在队列中', '查询异常', '未收录', '疑似重复', '查询异常', '未收录', '未收录']), 'library and queue state precedence: ' + states())
   assert(maximumRequests.library <= 2 && maximumRequests.search <= 1, 'configured request concurrency respected')
@@ -81,10 +124,24 @@ const tests = async () => {
   assert(root.querySelector('.native-rating').style.backgroundPosition === '0px -21px', 'native rating sprite preserved')
   const openCard = async (index, target = '.card-detail') => { root.querySelectorAll('[data-slot=poster-card]')[index].querySelector(target).click(); await wait(80) }
   const detailTabs = () => [...root.querySelectorAll('.detail-tabs [role=tab]')].map(node => node.textContent)
+  assert(!requests.some(request => new URL(request.url).pathname.startsWith('/g/')), 'gallery details are fetched only after opening their detail tab')
   await openCard(0)
   assert(detailTabs().join(',') === '详情,BT 种子,书库', 'downloaded gallery has only the library state tab')
-  assert(root.querySelector('[role=tab][aria-selected=true]').textContent === '详情' && root.querySelector('.detail-placeholder'), 'card opens detail placeholder without navigating')
-  assert(root.querySelector('.gallery-details a[href*="gallerypopups.php"]'), 'native favorite link preserved in detail')
+  assert(root.querySelector('[role=tab][aria-selected=true]').textContent === '详情' && root.querySelector('.detail-summary'), 'card opens compact details without navigating')
+  assert(root.querySelector('.detail-facts').textContent.includes('56.46 MiB') && root.querySelector('.detail-facts').textContent.includes('Original series'), 'native filesize and metadata shown')
+  assert(root.querySelector('.detail-description').textContent === 'Uploader summary Translation credits' && !window.detailInjected, 'only uploader text extracted without executing native scripts')
+  assert(root.querySelectorAll('.detail-preview-page').length === 5, 'default preview is exactly the first five native pages')
+  assert([...root.querySelectorAll('.detail-preview-page')].every((node, index) => node.href.endsWith(`/100-${index + 1}`)), 'native preview order starts at page one without deduplication')
+  assert(root.querySelectorAll('.detail-preview-sprite')[1].style.backgroundPosition === '-200px 0px', 'sprite offset retained')
+  assert(root.querySelectorAll('.detail-preview-sprite')[3].style.height === '141px', 'landscape page keeps its native aspect ratio')
+  assert(root.querySelector('.detail-preview-more').textContent.includes('7 页') && !root.querySelector('.detail-cover'), 'total count retained without repeating a large cover')
+  root.querySelector('.detail-preview-sprite img').dispatchEvent(new Event('error')); await wait(20)
+  assert(root.querySelector('.detail-preview-page').textContent.includes('图片不可用') && root.querySelector('.detail-preview-page').href.endsWith('/100-1'), 'failed thumbnail keeps its page number and native reader link')
+  assert(root.querySelector('.detail-previews').scrollHeight <= 190 && document.documentElement.scrollWidth <= innerWidth, 'five previews remain in one row without page overflow')
+  assert(requests.filter(request => new URL(request.url).pathname.startsWith('/g/')).every(request => !request.headers.Authorization), 'detail requests never receive library credentials')
+  const favoriteLink = root.querySelector('.gallery-details a[href*="gallerypopups.php"]')
+  assert(favoriteLink?.closest('.detail-heading-actions') && favoriteLink.nextElementSibling.textContent.includes('打开详情页'), 'native favorite link precedes the full detail link in the header')
+  assert(root.querySelectorAll('.gallery-details a[href*="gallerypopups.php"]').length === 1 && !root.querySelector('.detail-summary a[href*="gallerypopups.php"]'), 'favorite link appears only once and no longer occupies the preview footer')
   assert(!root.querySelector('.card-more'), 'more menu removed')
   await openCard(1)
   assert(detailTabs().join(',') === '详情,BT 种子,重复作品', 'duplicate gallery reuses library UI under duplicate tab')
@@ -93,10 +150,29 @@ const tests = async () => {
   await openCard(7)
   assert(detailTabs().join(',') === '详情,BT 种子', 'missing gallery has no state tab')
   await openCard(6)
-  assert(detailTabs().join(',') === '详情,BT 种子' && root.querySelector('.detail-placeholder [role=alert]'), 'unknown library result has no state tab and retains error')
+  assert(detailTabs().join(',') === '详情,BT 种子' && root.querySelector('.detail-summary [role=alert]'), 'unknown library result has no state tab and retains error')
   await openCard(11)
   assert(detailTabs().join(',') === '详情', 'gallery without native torrent link has no BT tab')
   assert(!requests.some(request => request.url.includes('gallerytorrents.php')), 'native torrent pages are fetched only when their tab is opened')
+  window.failDetails = true; await openCard(0)
+  assert(root.querySelector('.detail-load-error [role=alert]'), 'detail request failures have an explicit retry state')
+  window.failDetails = false; window.invalidDetails = true; button('重试详情').click(); await wait(60)
+  assert(root.querySelector('.detail-load-error [role=alert]'), 'login pages are not treated as empty details')
+  window.invalidDetails = false; window.shortDetails = true; button('重试详情').click(); await wait(60)
+  assert(root.querySelectorAll('.detail-preview-page').length === 2, 'short galleries show their real page count without padding')
+  window.shortDetails = false; window.legacyDetails = true; await openCard(1)
+  assert(root.querySelectorAll('.detail-preview-image > img').length === 5 && root.querySelector('.detail-preview-image > img').getAttribute('src') === location.origin + '/page-1.png', 'legacy image previews preserve lazy source and page one')
+  assert(!performance.getEntriesByType('resource').some(entry => /\/(?:page-[67]|placeholder)\.png$/.test(new URL(entry.name).pathname)), 'parsing native HTML does not load discarded previews or lazy placeholders')
+  window.legacyDetails = false; window.noPreviews = true; await openCard(2)
+  assert(!root.querySelector('.detail-preview-page') && root.querySelector('.detail-preview-more').textContent.includes('未能读取'), 'unrecognized previews retain full-page fallback')
+  window.noPreviews = false; window.slowDetails = true; await openCard(0)
+  assert(root.querySelector('.detail-summary [role=status]'), 'details have an explicit loading state')
+  window.slowDetails = false; await openCard(1); await wait(550)
+  assert(window.abortedDetails > 0 && root.querySelector('.detail-facts').textContent.includes('Author 101'), 'changing gallery aborts details and rejects late results')
+  window.slowDetails = true; await openCard(0)
+  root.querySelector('[aria-label=收起作品详情]').click(); await wait(550)
+  assert(!root.querySelector('.gallery-details'), 'closing details prevents late requests from reopening the panel')
+  window.slowDetails = false
   await openCard(0, '.card-torrents')
   assert(root.querySelector('[role=tab][aria-selected=true]').textContent === 'BT 种子' && root.querySelectorAll('.torrent-row').length === 1, 'BT shortcut loads native torrents inline')
   assert(root.querySelector('.torrent-row').textContent.includes('大小：128 MiB') && root.querySelector('.torrent-row').textContent.includes('做种：4'), 'native torrent metadata parsed')
@@ -224,6 +300,21 @@ const tests = async () => {
   document.body.dataset.result = 'PASS'
 }
 
+const mobileDetailTests = async () => {
+  const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
+  const assert = (value, message) => { if (!value) throw new Error(message) }
+  await wait(400)
+  const root = document.getElementById('lrr-app')?.shadowRoot
+  root.querySelector('.card-detail').click(); await wait(100)
+  const panel = root.querySelector('.gallery-details')
+  const strip = root.querySelector('.detail-previews')
+  assert(panel.getBoundingClientRect().right <= innerWidth, 'inline panel fits the narrow viewport')
+  assert(root.querySelector('.detail-heading-actions').getBoundingClientRect().right <= panel.getBoundingClientRect().right, 'header actions fit the narrow inline panel')
+  assert(strip.scrollWidth > strip.clientWidth && strip.scrollHeight <= 190, 'five thumbnails scroll horizontally in one row')
+  assert(root.querySelectorAll('.detail-preview-page').length === 5, 'narrow screens retain all five preview pages')
+  document.body.dataset.result = 'PASS'
+}
+
 const historyTests = async () => {
   const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
   const forward = () => {
@@ -281,31 +372,35 @@ const savedTests = async () => {
 function fixture(mode) {
   const cards = Array.from({ length: 12 }, (_, index) => {
     const title = [1, 8].includes(index) ? '[Offline Author] Duplicate Gallery' : index === 10 ? 'No author gallery' : `[Author ${index}] Gallery ${index} [Chinese]`
-    const content = `<a href="/g/${100 + index}/token/"><div class="glink">${title}</div></a><div class="gl3t"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-src="data:image/gif;base64,R0lGODlhAQABAAAAACw="></div><div class="gl5t"><div class="cs">Manga</div><div id="posted_${index}" onclick="popUp('/gallerypopups.php?gid=${100 + index}&amp;t=token',675,415)">2026-01-01 12:38</div><div>${index + 20} pages</div><div class="ir" style="background-image:url(data:image/gif;base64,R0lGODlhAQABAAAAACw=);background-position:0px -21px;opacity:.66"></div>${index === 11 ? '' : `<a href="/gallerytorrents.php?gid=${100 + index}&amp;t=token">T</a>`}</div>`
+    const content = `<a href="/g/${100 + index}/token/"><div class="glink">${title}</div></a><div class="gl3t"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-src="data:image/gif;base64,R0lGODlhAQABAAAAACw="></div><div class="gl5t"><div class="cs">${['Manga', 'Non-H', 'Doujinshi', 'Artist CG', 'Game CG', 'Western', 'Image Set', 'Cosplay', 'Asian Porn', 'Misc'][index % 10]}</div><div id="posted_${index}" onclick="popUp('/gallerypopups.php?gid=${100 + index}&amp;t=token',675,415)">2026-01-01 12:38</div><div>${index + 20} pages</div><div class="ir" style="background-image:url(data:image/gif;base64,R0lGODlhAQABAAAAACw=);background-position:0px -21px;opacity:.66"></div>${index === 11 ? '' : `<a href="/gallerytorrents.php?gid=${100 + index}&amp;t=token">T</a>`}</div>`
     return mode === 'table' ? `<tr><td>${content}</td></tr>` : `<div class="gl1t">${content}</div>`
   }).join('')
   const list = mode === 'empty' ? '<div class="itg gld"></div>' : mode === 'malformed' ? '<div class="itg"><div class="gl1t"><a href="/g/100/token/">Unrecognized markup</a></div></div>' : mode === 'table' ? `<table class="itg"><tbody>${cards}</tbody></table>` : `<div class="itg gld">${cards}</div>`
-  return `<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="connect-src 'none'; img-src data:; font-src data:;"><div id="nb"><a href="/favorites.php">Favorites</a></div><div id="searchbox"><form action="/" method="get"><input name="f_search" value="original"><input name="f_cats" value="4" ${mode === 'default-categories' ? 'disabled' : ''}><input name="opaque" value="preserve-me"></form></div><div class="searchtext">12 results</div><div class="searchnav"><span id="uprev"></span><a id="unext" href="/?f_search=original&amp;next=99&amp;f_cats=767">Next</a></div>${list}<script>(${boot.toString()})(false, ${mode === 'pending-search'})</script><script>${script}</script><script>(${(mode.startsWith('history') ? historyTests : ['empty', 'malformed'].includes(mode) ? recoveryTests : tests).toString()})().catch(error=>document.body.dataset.result='FAIL '+error.stack)</script>`
+  return `<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="connect-src 'none'; img-src data: 'self'; font-src data:;"><div id="nb"><a href="/favorites.php">Favorites</a></div><div id="searchbox"><form action="/" method="get"><input name="f_search" value="original"><input name="f_cats" value="4" ${mode === 'default-categories' ? 'disabled' : ''}><input name="opaque" value="preserve-me"></form></div><div class="searchtext">12 results</div><div class="searchnav"><span id="uprev"></span><a id="unext" href="/?f_search=original&amp;next=99&amp;f_cats=767">Next</a></div>${list}<script>(${boot.toString()})(false, ${mode === 'pending-search'})</script><script>${script}</script>${testScript(mode === 'inline-mobile' ? mobileDetailTests : mode.startsWith('history') ? historyTests : ['empty', 'malformed'].includes(mode) ? recoveryTests : tests)}`
 }
 
 const saved = process.argv[2] ? readFileSync(process.argv[2], 'utf8').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '') : ''
 const server = createServer((req, res) => {
+  if (/^\/(?:sprite-\d+|page-\d+|placeholder)\.png$/.test(req.url)) {
+    res.setHeader('Content-Type', 'image/gif')
+    return res.end(Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64'))
+  }
   res.setHeader('Content-Type', 'text/html; charset=utf-8')
   if (req.url === '/saved') {
     const source = saved.replaceAll('https://exhentai.org', `http://${req.headers.host}`)
-    res.end(`<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; connect-src 'none';">${source}<script>(${boot.toString()})(true)</script><script>${script}</script><script>(${savedTests.toString()})().catch(error=>document.body.dataset.result='FAIL '+error.stack)</script>`)
+    res.end(`<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; connect-src 'none';">${source}<script>(${boot.toString()})(true)</script><script>${script}</script>${testScript(savedTests)}`)
   } else res.end(fixture(req.url.startsWith('/?') ? 'history-next' : req.url.slice(1)))
 })
 try {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   if (process.env.LRR_LIVE_PREVIEW) {
-    console.log(`http://127.0.0.1:${server.address().port}/history`)
+    console.log(`${process.env.LRR_PREVIEW_LABEL || 'Live preview'}: http://127.0.0.1:${server.address().port}/${saved ? 'saved' : 'history'}`)
     process.once('SIGTERM', () => { server.closeAllConnections(); server.close() })
     await new Promise(resolve => server.once('close', resolve))
-  } else for (const [mode, width] of [['thumbnail', 1440], ['thumbnail', 900], ['table', 1440], ['default-categories', 1440], ['pending-search', 1440], ['empty', 1440], ['malformed', 1440], ...(saved ? [['saved', 1440]] : [])]) {
+  } else for (const [mode, width] of [['thumbnail', 1440], ['thumbnail', 900], ['inline-mobile', 390], ['table', 1440], ['default-categories', 1440], ['pending-search', 1440], ['empty', 1440], ['malformed', 1440], ...(saved ? [['saved', 1440]] : [])]) {
     const { stdout } = await run(process.env.CHROMIUM || 'chromium', ['--headless', '--no-sandbox', '--disable-gpu', '--no-proxy-server', '--force-prefers-reduced-motion', `--user-data-dir=${join(dir, `${mode}-${width}`)}`, '--virtual-time-budget=10000', `--window-size=${width},1000`, '--dump-dom', `http://127.0.0.1:${server.address().port}/${mode}`], { timeout: 30000, maxBuffer: 12 * 1024 * 1024 })
     const status = stdout.match(/data-result="([^"]*)"/)?.[1]
     if (status !== 'PASS') { writeFileSync('/tmp/lrr-live-failure.html', stdout); throw new Error(`${mode}: ${status || 'no result'}`) }
-    console.log(`PASS: ${['thumbnail', 'table', 'default-categories', 'pending-search'].includes(mode) ? `${mode} live UI, API semantics, settings, cache, mutations and restoration` : mode === 'saved' ? 'saved gallery DOM, titles, links, filters and cursors' : mode === 'history' ? 'real cursor navigation with browser back and forward' : `${mode} page handling`} (${width}px, offline Chromium)`)
+    console.log(`PASS: ${['thumbnail', 'table', 'default-categories', 'pending-search'].includes(mode) ? `${mode} live UI, API semantics, settings, cache, mutations and restoration` : mode === 'inline-mobile' ? 'inline details with five horizontally scrolling previews' : mode === 'saved' ? 'saved gallery DOM, titles, links, filters and cursors' : mode === 'history' ? 'real cursor navigation with browser back and forward' : `${mode} page handling`} (${width}px, offline Chromium)`)
   }
 } finally { server.close(); rmSync(dir, { recursive: true, force: true }) }
