@@ -60,10 +60,11 @@ export function SearchPanel({ page, portal }: { page: GalleryPage; portal: HTMLE
         </Popover>
         <Button type="submit">搜索</Button><Button asChild variant="secondary"><a href={page.action}>清空</a></Button>
         <Popover><PopoverTrigger asChild><Button type="button" variant="secondary"><SlidersHorizontal />筛选与工具</Button></PopoverTrigger><PopoverContent container={portal} align="end" className="w-96"><PopoverTitle>高级筛选</PopoverTitle>
-          <label>最低评分<select className="anibt-input" aria-label="最低评分" value={jumpRating} onChange={event => setJumpRating(event.target.value)}>{[['0', '不限'], ['2', '2 星'], ['3', '3 星'], ['4', '4 星'], ['5', '5 星']].map(([value, title]) => <option key={value} value={value}>{title}</option>)}</select></label>
-          <label>页数范围<div className="flex gap-2 mt-2"><Input type="number" min="0" max="9999" aria-label="最少页数" placeholder="最少页数" value={minimum} onChange={event => setMinimum(event.target.value)} /><Input type="number" min="0" max="9999" aria-label="最多页数" placeholder="最多页数" value={maximum} onChange={event => setMaximum(event.target.value)} /></div></label>
-          {advanced.map(([name, title]) => <label key={name} className="check-label"><Checkbox checked={flags.has(name)} onCheckedChange={checked => setFlags(previous => { const next = new Set(previous); if (checked) next.add(name); else next.delete(name); return next })} />{title}</label>)}
-          <Button type="button" variant="secondary" onClick={() => setFileSearch(value => !value)}><Upload />文件搜索</Button><Button type="submit" form="lrr-search">应用筛选并搜索</Button>
+          <div className="filter-fields"><label>最低评分<select className="anibt-input" aria-label="最低评分" value={jumpRating} onChange={event => setJumpRating(event.target.value)}>{[['0', '不限'], ['2', '2 星'], ['3', '3 星'], ['4', '4 星'], ['5', '5 星']].map(([value, title]) => <option key={value} value={value}>{title}</option>)}</select></label>
+          <label>页数范围<div className="flex gap-2"><Input type="number" min="0" max="9999" aria-label="最少页数" placeholder="最少页数" value={minimum} onChange={event => setMinimum(event.target.value)} /><Input type="number" min="0" max="9999" aria-label="最多页数" placeholder="最多页数" value={maximum} onChange={event => setMaximum(event.target.value)} /></div></label>
+          </div>
+          <div className="filter-options anibt-stitch-over">{advanced.map(([name, title]) => <label key={name} className="check-label"><Checkbox checked={flags.has(name)} onCheckedChange={checked => setFlags(previous => { const next = new Set(previous); if (checked) next.add(name); else next.delete(name); return next })} />{title}</label>)}</div>
+          <div className="filter-actions anibt-stitch-over"><Button type="button" variant="secondary" onClick={() => setFileSearch(value => !value)}><Upload />文件搜索</Button><Button type="submit" form="lrr-search">应用筛选并搜索</Button></div>
         </PopoverContent></Popover>
       </div>
     </form>

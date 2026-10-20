@@ -15,6 +15,11 @@
 .collection-summary .library-link { margin-left: 6px; }
 .collection-health { display: flex; flex-wrap: wrap; gap: 8px; }
 .bottom-pagination { display: flex; justify-content: center; margin-top: 28px; }
+.filter-fields { display: flex; flex-direction: column; gap: 14px; }
+.filter-fields > label { display: flex; flex-direction: column; gap: 8px; }
+.filter-options { display: flex; flex-direction: column; gap: 12px; padding-top: 14px; }
+.filter-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 14px; }
+.filter-actions > button:last-child { flex: 1; }
 .file-search { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 20px; padding-top: 20px; }
 .file-search > p, .file-search > input { width: 100%; }
 .status-action { position: relative; z-index: 30; display: inline-flex; cursor: pointer; border-radius: 4px; }
