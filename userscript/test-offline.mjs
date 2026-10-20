@@ -144,7 +144,7 @@ function assertThemeContrast(page){
  const options=page.querySelector('.lrr-search-options');options.open=true;await pause(10);
  assert(getComputedStyle(options.querySelector('.lrr-extra-options')).position==='absolute','combined options open as an anchored dropdown');options.open=false;
  assert(!page.querySelector('.lrr-intro'),'search replaces generic introduction');
- assert(!page.querySelector('[data-choice=none]'),'no redundant clear selection controls');
+ assert(page.querySelector('.lrr-selection-bar [data-choice=none]')?.textContent==='取消选择','floating selection bar offers deselection');
  assert(page.querySelectorAll('.lrr-bulk [data-choice]').length===5,'four status groups and select all');
  const groupMenu=page.querySelector('.lrr-selection-groups');
  const collapsed=matchMedia('(max-width: 1100px)').matches;

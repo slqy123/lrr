@@ -1,4 +1,4 @@
-import { galleries, queueStatuses, select, type Gallery } from './state'
+import { galleries, queueStatuses, select, setStatusContent, type Gallery } from './state'
 import styles from './layout.css?inline'
 
 const categoryColors: Record<string, string> = {
@@ -7,11 +7,11 @@ const categoryColors: Record<string, string> = {
   ct7: 'rgb(137, 105, 167)', ct8: 'rgb(166, 104, 146)', ct9: 'rgb(99, 151, 178)', cta: 'rgb(157, 150, 103)',
 }
 const selectionGroups = [
-  { id: 'missing', label: '未收录', icon: '<path d="M4 19V5a2 2 0 0 1 2-2h14v18H6a2 2 0 0 1 0-4h14"/>' },
-  { id: 'duplicate', label: '疑似重复', icon: '<rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V3H4v13h4"/>' },
-  { id: 'queue', label: '队列中', icon: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>' },
-  { id: 'downloaded', label: '已入库', icon: '<path d="M4 3v18M9 3v18M14 3v18M18 3l3 18M2 21h20"/>' },
-]
+  { id: 'missing', status: 'missing' },
+  { id: 'duplicate', status: 'duplicate' },
+  { id: 'queue', status: 'queued' },
+  { id: 'downloaded', status: 'downloaded' },
+] as const
 const matchesGroup = (item: Gallery, choice: string) => choice === 'all' || (choice === 'queue' ? queueStatuses.has(item.status) : item.status === choice)
 
 type Config = Record<string, string | number | boolean>
@@ -62,9 +62,9 @@ export function mountLayout(config: Config, persist: (key: string, value: unknow
   page.className = 'lrr-page'
   page.innerHTML = `<header class="lrr-topbar"><div class="lrr-shell"><a class="lrr-brand" href="/">▥ Gallery</a><nav class="lrr-navigation" aria-label="站点导航"></nav><div class="lrr-top-actions"><button data-tool="backend" class="lrr-backend">▣ 队列后台 ↗</button><button data-tool="recheck">↻ 重新检查</button><button data-tool="settings">设置</button><details class="lrr-more-nav"><summary>更多</summary><div><button data-tool="recheck">重新检查</button></div></details></div></div></header>
     <main class="lrr-shell"><section class="lrr-search" aria-label="搜索与筛选"></section>
-    <section class="lrr-result-section" aria-label="作品结果"><div class="lrr-results"><div class="lrr-statistics" aria-live="polite"></div><div class="lrr-result-actions"><div class="lrr-density" role="group" aria-label="网格密度"><button data-density="compact">紧凑</button><button data-density="standard">标准</button></div><button class="lrr-native-view">原站界面</button></div></div><div class="lrr-list-toolbar"><div class="lrr-bulk" role="group" aria-label="批量选择"><details class="lrr-selection-groups"><summary>按状态选择</summary><div>${selectionGroups.map(group => `<button data-choice="${group.id}"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${group.icon}</svg><span>${group.label}</span><span class="lrr-choice-count">0</span><span class="lrr-choice-state" aria-hidden="true"></span></button>`).join('')}</div></details><button data-choice="all"><span class="lrr-all-state" aria-hidden="true"></span>全选</button></div><div class="lrr-top-pagination"></div></div><div class="lrr-grid-slot"></div><div class="lrr-bottom-pagination"></div></section>
+    <section class="lrr-result-section" aria-label="作品结果"><div class="lrr-results"><div class="lrr-statistics" aria-live="polite"></div><div class="lrr-result-actions"><div class="lrr-density" role="group" aria-label="网格密度"><button data-density="compact">紧凑</button><button data-density="standard">标准</button></div><button class="lrr-native-view">原站界面</button></div></div><div class="lrr-list-toolbar"><div class="lrr-bulk" role="group" aria-label="批量选择"><details class="lrr-selection-groups"><summary>按状态选择</summary><div>${selectionGroups.map(group => `<button data-choice="${group.id}"><span class="lrr-choice-label"></span><span class="lrr-choice-count">0</span><span class="lrr-choice-state" aria-hidden="true"></span></button>`).join('')}</div></details><button data-choice="all"><span class="lrr-all-state" aria-hidden="true"></span>全选</button></div><div class="lrr-top-pagination"></div></div><div class="lrr-grid-slot"></div><div class="lrr-bottom-pagination"></div></section>
     <footer class="lrr-page-footer"><span class="lrr-native-results"></span><button data-tool="backend">打开队列面板 ↗</button></footer></main>
-    <aside class="lrr-selection-bar" aria-label="批量操作" hidden><span>已选择 <strong>0</strong> 部</span><div><button data-tool="copy">复制链接</button><button data-tool="send" class="lrr-primary">发送队列 →</button></div></aside><p class="lrr-feedback" role="status" hidden></p>`
+    <aside class="lrr-selection-bar" aria-label="批量操作" hidden><span>已选择 <strong>0</strong> 部</span><div><button data-choice="none">取消选择</button><button data-tool="copy">复制链接</button><button data-tool="send" class="lrr-primary">发送队列 →</button></div></aside><p class="lrr-feedback" role="status" hidden></p>`
   document.body.append(page)
   const get = <T extends Element = HTMLElement>(selector: string) => page.querySelector<T>(selector)!
   if (nav) {
@@ -89,6 +89,20 @@ export function mountLayout(config: Config, persist: (key: string, value: unknow
     pager.classList.remove('lrr-native-shell')
     pager.setAttribute('aria-label', index === 0 ? '顶部分页' : '底部分页')
     const translatePager = () => {
+      for (const box of pager.querySelectorAll<HTMLElement>('.jumpbox')) {
+        const input = box.querySelector<HTMLInputElement>(':scope > input')
+        const popover = box.querySelector<HTMLElement>('.jumppop')
+        if (input && popover) {
+          const trigger = document.createElement('button')
+          trigger.type = 'button'
+          trigger.textContent = '跳转 ⌄'
+          trigger.addEventListener('click', () => { popover.style.display = ''; input.focus() })
+          box.prepend(trigger)
+          input.placeholder = '日期或偏移量'
+          input.setAttribute('aria-label', '跳转日期或偏移量')
+          popover.prepend(input)
+        }
+      }
       const labels: Record<string, string> = {
         '<< First': '« 首页', '< Prev': '‹ 上一页', 'Jump/Seek': '跳转 ⌄', 'Next >': '下一页 ›', 'Last >>': '末页 »',
         '< Jump': '‹ 向前跳转', 'Jump >': '向后跳转 ›', '< Seek': '‹ 向前定位', 'Seek >': '向后定位 ›',
@@ -201,6 +215,7 @@ export function mountLayout(config: Config, persist: (key: string, value: unknow
     const selected = matching.filter(item => item.selected).length
     return { count: matching.length, pressed: selected === 0 ? 'false' : selected === matching.length ? 'true' : 'mixed' }
   }
+  for (const group of selectionGroups) setStatusContent(get(`[data-choice="${group.id}"] .lrr-choice-label`), group.status)
   const groupMenu = get<HTMLDetailsElement>('.lrr-selection-groups')
   const narrowToolbar = matchMedia('(max-width: 1100px)')
   const placeGroups = () => { groupMenu.open = !narrowToolbar.matches }
@@ -214,6 +229,12 @@ export function mountLayout(config: Config, persist: (key: string, value: unknow
   })
   document.addEventListener('click', event => {
     if (narrowToolbar.matches && !groupMenu.contains(event.target as Node)) groupMenu.open = false
+    page.querySelectorAll<HTMLElement>('.jumpbox').forEach(box => {
+      if (!box.contains(event.target as Node)) box.querySelector<HTMLButtonElement>('.jumpcancel')?.click()
+    })
+    page.querySelectorAll<HTMLDetailsElement>('.lrr-search-options[open]').forEach(options => {
+      if (!options.contains(event.target as Node)) options.open = false
+    })
   })
   density(String(config.density || 'standard'))
   page.addEventListener('click', event => {
@@ -224,7 +245,7 @@ export function mountLayout(config: Config, persist: (key: string, value: unknow
     if (target.dataset.choice) {
       const choice = target.dataset.choice
       const active = choiceState(choice).pressed === 'true'
-      select(item => matchesGroup(item, choice) ? !active : item.selected)
+      select(item => choice === 'none' ? false : matchesGroup(item, choice) ? !active : item.selected)
     }
     const details = target.closest('details')
     if (details !== groupMenu) details?.removeAttribute('open')
