@@ -17,7 +17,7 @@ def click_named(name, role='button'):
     x, y = sum(quad[0::2]) / 4, sum(quad[1::2]) / 4
     assert 0 <= x < js('innerWidth') and 0 <= y < js('innerHeight'), f'{name} is outside the viewport'
     click_at_xy(x, y)
-    time.sleep(.25)
+    time.sleep(.05)
 
 
 def open_suggestions():
@@ -31,6 +31,7 @@ def open_suggestions():
 
 
 def capture(version, theme, width):
+    time.sleep(.2)
     data = js(f"""(() => {{
       const r = {ROOT}, p = r.querySelector('#lrr-suggestions[data-state=open]').getBoundingClientRect();
       const s = r.querySelector('.search-panel').getBoundingClientRect();
@@ -84,7 +85,7 @@ for version in ['before', 'after']:
         click_named('全年龄')
     for width in [1440, 900]:
         cdp('Emulation.setDeviceMetricsOverride', width=width, height=1100, deviceScaleFactor=1, mobile=False)
-        time.sleep(.25)
+        time.sleep(.05)
         click_named('标准' if width == 1440 else '紧凑')
         for theme in ['light', 'dark']:
             if js("document.querySelector('#lrr-app').classList.contains('dark')") != (theme == 'dark'):
@@ -92,7 +93,7 @@ for version in ['before', 'after']:
             open_suggestions()
             results[f'{version}-{theme}-{width}'] = capture(version, theme, width)
     cdp('Emulation.setDeviceMetricsOverride', width=1440, height=1100, deviceScaleFactor=1, mobile=False)
-    time.sleep(.25)
+    time.sleep(.05)
     click_named('标准')
     open_suggestions()
 

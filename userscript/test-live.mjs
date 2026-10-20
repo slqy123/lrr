@@ -412,13 +412,16 @@ const server = createServer((req, res) => {
     res.end(`<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; connect-src 'none';">${source}<script>(${boot.toString()})(true)</script><script>${script}</script>${testScript(savedTests)}`)
   } else res.end(fixture(req.url.startsWith('/?') ? 'history-next' : req.url.slice(1)))
 })
+const scenarios = process.env.LRR_TEST_QUICK === '1'
+  ? [['thumbnail', 1440]]
+  : [['thumbnail', 1440], ['thumbnail', 900], ['inline-mobile', 390], ['table', 1440], ['default-categories', 1440], ['pending-search', 1440], ['empty', 1440], ['malformed', 1440], ...(saved ? [['saved', 1440]] : [])]
 try {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   if (process.env.LRR_LIVE_PREVIEW) {
     console.log(`${process.env.LRR_PREVIEW_LABEL || 'Live preview'}: http://127.0.0.1:${server.address().port}/${saved ? 'saved' : 'history'}`)
     process.once('SIGTERM', () => { server.closeAllConnections(); server.close() })
     await new Promise(resolve => server.once('close', resolve))
-  } else for (const [mode, width] of [['thumbnail', 1440], ['thumbnail', 900], ['inline-mobile', 390], ['table', 1440], ['default-categories', 1440], ['pending-search', 1440], ['empty', 1440], ['malformed', 1440], ...(saved ? [['saved', 1440]] : [])]) {
+  } else for (const [mode, width] of scenarios) {
     const { stdout } = await run(process.env.CHROMIUM || 'chromium', ['--headless', '--no-sandbox', '--disable-gpu', '--no-proxy-server', '--force-prefers-reduced-motion', `--user-data-dir=${join(dir, `${mode}-${width}`)}`, '--virtual-time-budget=10000', `--window-size=${width},1000`, '--dump-dom', `http://127.0.0.1:${server.address().port}/${mode}`], { timeout: 30000, maxBuffer: 12 * 1024 * 1024 })
     const status = stdout.match(/data-result="([^"]*)"/)?.[1]
     if (status !== 'PASS') { writeFileSync('/tmp/lrr-live-failure.html', stdout); throw new Error(`${mode}: ${status || 'no result'}`) }

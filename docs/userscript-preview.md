@@ -4,6 +4,14 @@
 
 A preview request means an interactive before/after comparison of the actual built userscript, opened in two browser-harness tabs. Do not author separate preview HTML, CSS, or substitute components. Reuse `userscript/test-live.mjs`: its native-page fixture (or supplied saved page), GM mocks, and Shadow DOM application are shared with integration tests.
 
+## Iteration and pre-commit tests
+
+During iteration, run `make test-quick`. It builds the current userscript and runs the 1440px live thumbnail scenario plus syntax checking. The scenario retains its full assertions for mounting, card layout, library/queue semantics, inline details, torrents, search, selection, settings, cancellation and restoration.
+
+Before committing, run `make test` for full isolation, showcase and live regression coverage. When a saved real page is available, run `make test SAVED_PAGE=/path/to/gallery.html` instead; this adds the saved-page scenario without repeating the generic live suite.
+
+After a successful build of the current source, such as `node userscript/preview.mjs after`, use `make -o build test-quick` or `make -o build test` to avoid rebuilding it. Do not skip the build after changing application source.
+
 ## Capture and serve
 
 Run from the repository root:
@@ -55,7 +63,7 @@ LRR_PREVIEW_AFTER_URL=http://127.0.0.1:<after-port>/saved \
 browser-harness < userscript/preview-browser.py
 ```
 
-The script opens Chinese and all-ages filters, checks their state and fit, and captures close-ups and surrounding context in both themes at 1440px standard and 900px compact layouts. It leaves both tabs at 1440px standard in the dark theme. Screenshots and measurements go to `userscript/dist/comparison/`.
+The script uses short post-click waits and settles animations before each screenshot pair. Run it for visible UI changes, not every code edit. It opens Chinese and all-ages filters, checks their state and fit, and captures close-ups and surrounding context in both themes at 1440px standard and 900px compact layouts. It leaves both tabs at 1440px standard in the dark theme. Screenshots and measurements go to `userscript/dist/comparison/`.
 
 Matching tabs are reused. When restarting the servers changes the URLs, pass `LRR_PREVIEW_BEFORE_TAB` and `LRR_PREVIEW_AFTER_TAB` with the existing target IDs to reuse the same comparison tabs. This scenario expects an initially empty search query. It does not replace visual inspection or automated regression tests.
 
