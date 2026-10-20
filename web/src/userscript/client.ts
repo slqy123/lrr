@@ -1,6 +1,7 @@
 import type { Archive, Gallery } from './model'
 import type { Settings } from './settings'
 import { lookupCache } from './cache'
+import { readTorrents } from './torrents'
 
 class SearchPending extends Error {}
 
@@ -38,19 +39,20 @@ export function createClient(settings: Settings, fresh = false) {
     if (!['http:', 'https:'].includes(url.protocol)) throw new Error('服务地址必须使用 HTTP(S)')
     return base.replace(/\/+$/, '') + path
   }
-  async function request(base: string, path: string, method = 'GET', data?: unknown, headers: Record<string, string> = {}, timeout = settings.requestTimeoutMs): Promise<unknown> {
-    if (controller.signal.aborted) throw new Error('检查已取消')
+  async function request(base: string, path: string, method = 'GET', data?: unknown, headers: Record<string, string> = {}, timeout = settings.requestTimeoutMs, raw = false, abortSignal?: AbortSignal): Promise<unknown> {
+    const signal = abortSignal ? AbortSignal.any([controller.signal, abortSignal]) : controller.signal
+    if (signal.aborted) throw new Error('检查已取消')
     const url = endpoint(base, path)
     if (settings.enableLogging) console.info('[LRR]', method, new URL(url).pathname)
     return new Promise((resolve, reject) => {
       const finish = (error?: Error, value?: unknown) => {
-        controller.signal.removeEventListener('abort', abort)
+        signal.removeEventListener('abort', abort)
         if (error) reject(error)
         else resolve(value)
       }
       let handle: { abort(): void } | undefined
       const abort = () => { handle?.abort(); finish(new Error('检查已取消')) }
-      controller.signal.addEventListener('abort', abort, { once: true })
+      signal.addEventListener('abort', abort, { once: true })
       try {
         handle = GM_xmlhttpRequest({
           method, url, headers: { ...headers, ...(data === undefined ? {} : { 'Content-Type': 'application/json' }) },
@@ -58,7 +60,7 @@ export function createClient(settings: Settings, fresh = false) {
           onload(response) {
             if (response.status < 200 || response.status >= 300) return finish(new Error(`HTTP ${response.status}`))
             if (response.status === 204) return finish(new SearchPending('标题搜索尚未就绪，请重新检查'))
-            try { finish(undefined, JSON.parse(response.responseText)) } catch { finish(new Error('服务响应不是有效 JSON')) }
+            try { finish(undefined, raw ? response.responseText : JSON.parse(response.responseText)) } catch { finish(new Error('服务响应不是有效 JSON')) }
           },
           onerror: () => finish(new Error('无法连接服务')),
           ontimeout: () => finish(new Error('服务请求超时')),
@@ -77,7 +79,7 @@ export function createClient(settings: Settings, fresh = false) {
       if (!item || typeof item !== 'object') throw new Error('书库条目格式异常')
       const id = typeof item.id === 'string' ? item.id : typeof item.arcid === 'string' ? item.arcid : undefined
       if (!id) throw new Error('书库条目格式异常')
-      return { id, title: typeof item.title === 'string' ? item.title : item.id, tags: typeof item.tags === 'string' ? item.tags : undefined, pagecount: typeof item.pagecount === 'number' ? item.pagecount : undefined, filesize: typeof item.filesize === 'number' ? item.filesize : undefined }
+      return { id, title: typeof item.title === 'string' ? item.title : id, tags: typeof item.tags === 'string' ? item.tags : undefined, pagecount: typeof item.pagecount === 'number' ? item.pagecount : undefined, filesize: typeof item.filesize === 'number' ? item.filesize : undefined }
     })
   }
   async function checkRemote(item: Gallery): Promise<Partial<Gallery>> {
@@ -149,5 +151,11 @@ export function createClient(settings: Settings, fresh = false) {
     if (response?.ok !== true || !Number.isInteger(response.added) || !Number.isInteger(response.duplicates) || response.added! < 0 || response.duplicates! < 0 || response.added! + response.duplicates! !== urls.length) throw new Error('队列未确认整批接收，选择已保留')
     return response as { added: number; duplicates: number }
   }
-  return { check, lookup, send, dispose: () => controller.abort() }
+  async function torrents(href: string, signal?: AbortSignal) {
+    const url = new URL(href, location.href)
+    if (url.origin !== location.origin || url.pathname !== '/gallerytorrents.php') throw new Error('无效的原站种子地址')
+    const html = await request(url.origin, url.pathname + url.search, 'GET', undefined, {}, settings.requestTimeoutMs, true, signal) as string
+    return readTorrents(html, url.href)
+  }
+  return { check, lookup, send, torrents, dispose: () => controller.abort() }
 }

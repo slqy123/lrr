@@ -23,12 +23,17 @@ const boot = (savedPage = false, pendingSearch = false) => {
     if (kind) maximumRequests[kind] = Math.max(maximumRequests[kind], ++activeRequests[kind])
     let completed = false
     const complete = () => { if (!completed && kind) activeRequests[kind]--; completed = true }
-    const delayed = stale && index === 7
+    const delayed = stale && index === 7 || url.pathname === '/gallerytorrents.php' && window.slowTorrents
     let cancelled = false
     const timer = setTimeout(() => {
       if (cancelled && !delayed) return
       complete()
       const respond = value => options.onload({ status: 200, responseText: JSON.stringify(value) })
+      if (url.pathname === '/gallerytorrents.php') {
+        if (window.failTorrents) return options.onerror()
+        const text = window.invalidTorrents ? '<h1>Login required</h1>' : window.emptyTorrents ? '<div id="torrentinfo">There are no torrents for this gallery.</div>' : `<div id="torrentinfo"><form><input name="gtid" value="1"><table><tr><td><span>Posted:</span> <span>2026-08-21 10:26</span></td><td><span>Size:</span> 128 MiB</td><td><span>Seeds:</span> 4</td></tr><tr><td><a href="https://ehtracker.org/get/example.torrent">Example torrent.zip</a><a href="magnet:?xt=urn:btih:example">Magnet</a></td></tr></table></form></div>`
+        return options.onload({ status: 200, responseText: text })
+      }
       if (url.pathname.endsWith('/add')) return failSend ? options.onerror() : partialSend ? respond({ ok: true, added: 0, duplicates: 0 }) : respond({ ok: true, added: JSON.parse(options.data).urls.length - 1, duplicates: 1 })
       if (url.pathname.endsWith('/lookup')) return savedPage ? respond({ items: [] }) : failQueue ? options.onerror() : respond({ items: ['running', '', 'pending', 'running', 'failed', 'dead', '', 'done'].flatMap((status, i) => status ? [{ url: location.origin + `/g/${100 + i}/token/`, status, attempts: 1, max_attempts: 3, error: status === 'dead' ? 'offline download failed' : '' }] : []) })
       if (url.pathname.endsWith('/search') && pendingSearch) { pendingSearch = false; return options.onload({ status: 204, responseText: '' }) }
@@ -40,7 +45,7 @@ const boot = (savedPage = false, pendingSearch = false) => {
       }
       options.onerror()
     }, delayed ? 500 : 5)
-    return { abort() { complete(); cancelled = true; if (!delayed) clearTimeout(timer); options.onabort() } }
+    return { abort() { if (url.pathname === '/gallerytorrents.php') window.abortedTorrents = (window.abortedTorrents || 0) + 1; complete(); cancelled = true; if (!delayed) clearTimeout(timer); options.onabort() } }
   }
   window.addEventListener('error', event => { document.body.dataset.error = event.message })
   window.originalMarkup = document.querySelector('.itg').innerHTML
@@ -74,9 +79,44 @@ const tests = async () => {
   assert(root.querySelector('.gallery-grid img').getAttribute('src').includes('data:image/'), 'lazy cover source retained')
   assert(root.querySelector('[data-slot=poster-card]').textContent.includes('20 页') && !root.querySelector('[data-slot=poster-card]').textContent.includes('3820 页'), 'page count is separate from adjacent timestamp')
   assert(root.querySelector('.native-rating').style.backgroundPosition === '0px -21px', 'native rating sprite preserved')
-  root.querySelector('.card-more').click(); await wait(50)
-  assert(root.querySelector('.native-links a[href*="gallerypopups.php"]') && root.querySelector('.native-links a[href*="gallerytorrents.php"]'), 'favorite and torrent links preserved')
-  root.querySelector('[data-slot=popover-content]').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true })); await wait(200)
+  const openCard = async (index, target = '.card-detail') => { root.querySelectorAll('[data-slot=poster-card]')[index].querySelector(target).click(); await wait(80) }
+  const detailTabs = () => [...root.querySelectorAll('.detail-tabs [role=tab]')].map(node => node.textContent)
+  await openCard(0)
+  assert(detailTabs().join(',') === '详情,BT 种子,书库', 'downloaded gallery has only the library state tab')
+  assert(root.querySelector('[role=tab][aria-selected=true]').textContent === '详情' && root.querySelector('.detail-placeholder'), 'card opens detail placeholder without navigating')
+  assert(root.querySelector('.gallery-details a[href*="gallerypopups.php"]'), 'native favorite link preserved in detail')
+  assert(!root.querySelector('.card-more'), 'more menu removed')
+  await openCard(1)
+  assert(detailTabs().join(',') === '详情,BT 种子,重复作品', 'duplicate gallery reuses library UI under duplicate tab')
+  await openCard(2)
+  assert(detailTabs().join(',') === '详情,BT 种子,队列', 'queued gallery has only the queue state tab')
+  await openCard(7)
+  assert(detailTabs().join(',') === '详情,BT 种子', 'missing gallery has no state tab')
+  await openCard(6)
+  assert(detailTabs().join(',') === '详情,BT 种子' && root.querySelector('.detail-placeholder [role=alert]'), 'unknown library result has no state tab and retains error')
+  await openCard(11)
+  assert(detailTabs().join(',') === '详情', 'gallery without native torrent link has no BT tab')
+  assert(!requests.some(request => request.url.includes('gallerytorrents.php')), 'native torrent pages are fetched only when their tab is opened')
+  await openCard(0, '.card-torrents')
+  assert(root.querySelector('[role=tab][aria-selected=true]').textContent === 'BT 种子' && root.querySelectorAll('.torrent-row').length === 1, 'BT shortcut loads native torrents inline')
+  assert(root.querySelector('.torrent-row').textContent.includes('大小：128 MiB') && root.querySelector('.torrent-row').textContent.includes('做种：4'), 'native torrent metadata parsed')
+  assert(root.querySelector('.torrent-row a[href^="magnet:"]') && root.querySelector('.torrent-row a[href$=".torrent"]'), 'actual torrent and magnet links retained')
+  assert(!requests.find(request => request.url.includes('gallerytorrents.php')).headers.Authorization, 'torrent request never receives library credentials')
+  window.failTorrents = true; button('重新加载').click(); await wait(60)
+  assert(root.querySelector('.torrent-list [role=alert]'), 'torrent failures remain errors')
+  window.failTorrents = false; window.invalidTorrents = true; button('重新加载').click(); await wait(60)
+  assert(root.querySelector('.torrent-list [role=alert]'), 'login or invalid torrent pages are not empty results')
+  window.invalidTorrents = false; window.emptyTorrents = true; button('重新加载').click(); await wait(60)
+  assert(root.querySelector('.torrent-list').textContent.includes('原站暂无种子'), 'definitive empty torrent response displayed')
+  window.emptyTorrents = false
+  root.querySelector('[aria-label=收起作品详情]').click(); await wait(40)
+  assert(!root.querySelector('.gallery-details'), 'inline details close explicitly')
+  window.slowTorrents = true
+  await openCard(0, '.card-torrents')
+  assert(root.querySelector('.torrent-list [role=status]'), 'torrent tab has an explicit loading state')
+  root.querySelector('[aria-label=收起作品详情]').click(); await wait(550)
+  assert(window.abortedTorrents > 0 && !root.querySelector('.gallery-details'), 'closing details aborts torrent requests and rejects late updates')
+  window.slowTorrents = false
   assert(getComputedStyle(root.querySelector('.gallery-grid img')).objectFit === 'contain', 'covers remain uncropped')
   assert(document.querySelector('.itg').innerHTML === originalMarkup, 'source DOM untouched')
   const next = root.querySelector('[aria-label=下一页]')
@@ -114,6 +154,7 @@ const tests = async () => {
   const choice = name => root.querySelector(`[aria-label="选择${name}"]`)
   choice('未收录').click(); await wait(20)
   assert(root.querySelector('.selected-count strong').textContent === '3', 'unknown, queue and lookup errors excluded from missing selection')
+  assert(!root.querySelector('.gallery-details'), 'batch selection never opens gallery details')
   choice('疑似重复').click(); await wait(20)
   assert(root.querySelector('.selected-count strong').textContent === '5', 'selection groups are additive')
   button('复制链接').click(); await wait(20)
@@ -128,19 +169,17 @@ const tests = async () => {
   assert(!root.querySelector('.selection-bar'), 'successful send clears only submitted batch')
   const sent = requests.filter(request => request.url.endsWith('/add'))
   assert(sent.length === 3 && JSON.parse(sent[2].data).urls.length === 5, 'queue contract preserved')
-  root.querySelector('.gallery-grid .status-action').click(); await wait(80)
-  assert(root.querySelector('.library-details a[href*="/reader?id=archive"]'), 'library hover card has actual reader link')
-  root.querySelector('.library-details').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true })); await wait(200)
-  assert(!root.querySelector('.library-details'), 'Escape closes library details without focus restoration reopening them')
-  const statusTrigger = root.querySelector('.gallery-grid .status-action')
-  statusTrigger.blur()
-  statusTrigger.dispatchEvent(new PointerEvent('pointerover', { bubbles: true }))
-  await wait(80)
-  assert(root.querySelector('.library-details'), 'pointer hover opens library details')
-  statusTrigger.dispatchEvent(new PointerEvent('pointerout', { bubbles: true, relatedTarget: document.body }))
-  await wait(500)
-  assert(!root.querySelector('.library-details'), 'pointer leave stays closed after trigger focus restoration')
-  assert(root.activeElement !== statusTrigger, 'hover dismissal does not focus or highlight the status trigger')
+  await openCard(0, '.status-action')
+  assert(root.querySelector('.library-details a[href*="/reader?id=archive"]'), 'inline library tab has actual reader link')
+  assert(root.querySelectorAll('.gallery-details').length === 1, 'only one inline detail panel is mounted')
+  const cards = [...root.querySelectorAll('[data-slot=poster-card]')]
+  const columns = getComputedStyle(root.querySelector('.gallery-grid')).gridTemplateColumns.split(' ').length
+  assert(root.querySelector('.gallery-details').previousElementSibling === cards[columns - 1], 'detail panel inserted after the selected card row')
+  assert(root.querySelector('.gallery-details').getBoundingClientRect().width > cards[0].getBoundingClientRect().width * 2, 'detail panel spans the full gallery row')
+  root.querySelector('.gallery-details').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true })); await wait(80)
+  assert(!root.querySelector('.gallery-details'), 'Escape closes inline details')
+  root.querySelector('.gallery-grid .status-action').dispatchEvent(new PointerEvent('pointerover', { bubbles: true })); await wait(60)
+  assert(!root.querySelector('.gallery-details'), 'hover never opens or pins a detail panel')
   failQueue = true
   root.querySelector('[aria-label=重新检查]').click(); await wait(300)
   assert(states()[0] === '已入库' && states()[7] === '查询异常', 'queue lookup failure is unknown, not missing; library hit wins')
@@ -242,7 +281,7 @@ const savedTests = async () => {
 function fixture(mode) {
   const cards = Array.from({ length: 12 }, (_, index) => {
     const title = [1, 8].includes(index) ? '[Offline Author] Duplicate Gallery' : index === 10 ? 'No author gallery' : `[Author ${index}] Gallery ${index} [Chinese]`
-    const content = `<a href="/g/${100 + index}/token/"><div class="glink">${title}</div></a><div class="gl3t"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-src="data:image/gif;base64,R0lGODlhAQABAAAAACw="></div><div class="gl5t"><div class="cs">Manga</div><div id="posted_${index}" onclick="popUp('/gallerypopups.php?gid=${100 + index}&amp;t=token',675,415)">2026-01-01 12:38</div><div>${index + 20} pages</div><div class="ir" style="background-image:url(data:image/gif;base64,R0lGODlhAQABAAAAACw=);background-position:0px -21px;opacity:.66"></div><a href="/gallerytorrents.php?gid=${100 + index}&amp;t=token">T</a></div>`
+    const content = `<a href="/g/${100 + index}/token/"><div class="glink">${title}</div></a><div class="gl3t"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-src="data:image/gif;base64,R0lGODlhAQABAAAAACw="></div><div class="gl5t"><div class="cs">Manga</div><div id="posted_${index}" onclick="popUp('/gallerypopups.php?gid=${100 + index}&amp;t=token',675,415)">2026-01-01 12:38</div><div>${index + 20} pages</div><div class="ir" style="background-image:url(data:image/gif;base64,R0lGODlhAQABAAAAACw=);background-position:0px -21px;opacity:.66"></div>${index === 11 ? '' : `<a href="/gallerytorrents.php?gid=${100 + index}&amp;t=token">T</a>`}</div>`
     return mode === 'table' ? `<tr><td>${content}</td></tr>` : `<div class="gl1t">${content}</div>`
   }).join('')
   const list = mode === 'empty' ? '<div class="itg gld"></div>' : mode === 'malformed' ? '<div class="itg"><div class="gl1t"><a href="/g/100/token/">Unrecognized markup</a></div></div>' : mode === 'table' ? `<table class="itg"><tbody>${cards}</tbody></table>` : `<div class="itg gld">${cards}</div>`

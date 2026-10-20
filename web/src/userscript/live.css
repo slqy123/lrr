@@ -8,10 +8,9 @@
 .bottom-pagination { display: flex; justify-content: center; margin-top: 28px; }
 .file-search { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 20px; padding-top: 20px; }
 .file-search > p, .file-search > input { width: 100%; }
-.card-more { position: absolute; top: 12px; right: 12px; z-index: 30; }
 .status-action { position: relative; z-index: 30; display: inline-flex; cursor: pointer; border-radius: 4px; }
 .status-action:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
-.library-details { width: min(400px, calc(100vw - 40px)); max-height: min(520px, 80vh); overflow: auto; }
+.library-details { display: grid; gap: 16px; }
 .library-details p { white-space: pre-wrap; overflow-wrap: anywhere; }
 .archive-hit { border-top: 1px dashed var(--input); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
 .archive-hit-heading { display: flex; align-items: flex-start; gap: 12px; }
@@ -19,5 +18,42 @@
 .native-rating { display: inline-block; width: 80px; height: 16px; margin-left: auto; background-repeat: no-repeat; flex-shrink: 0; }
 .archive-tags { color: var(--muted-foreground); font-size: 12px; }
 .queue-detail { display: flex; flex-direction: column; gap: 6px; }
+.card-status-stack { display: flex; flex-direction: column; align-items: flex-start; width: 100%; min-width: 0; }
+.card-status-stack .card-native-meta { width: 100%; }
+.card-native-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; color: var(--muted-foreground); font-size: 11px; }
+.card-torrents { position: relative; z-index: 30; display: inline-flex; align-items: center; gap: 3px; border: 1px solid var(--input); border-radius: 6px; padding: 2px 6px; color: var(--accent-foreground); cursor: pointer; }
+.live-app [data-expanded=true] { box-shadow: 0 0 0 2px var(--ring), var(--anibt-shadow-lift); }
+.gallery-details { grid-column: 1 / -1; min-width: 0; overflow: hidden; border: 1px solid var(--input); border-radius: 16px; }
+.gallery-details-heading { display: flex; align-items: flex-start; gap: 16px; padding: 20px; }
+.detail-cover { width: 52px; height: 74px; object-fit: contain; border-radius: 7px; flex-shrink: 0; }
+.detail-heading-text { flex: 1; min-width: 0; }
+.detail-heading-text h3 { margin: 0 0 5px; font-size: 18px; font-weight: 700; overflow-wrap: anywhere; }
+.detail-heading-text p { margin: 3px 0; font-size: 12px; }
+.detail-tabs { display: flex; flex-wrap: wrap; gap: 24px; border-block: 1px dashed var(--input); padding: 0 20px; }
+.detail-tabs button { padding: 12px 0; color: var(--muted-foreground); border-bottom: 3px solid transparent; cursor: pointer; }
+.detail-tabs button[aria-selected=true] { color: var(--accent-foreground); border-color: var(--ring); }
+.detail-tabs button:focus-visible, .card-torrents:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+.detail-content { min-height: 210px; padding: 20px; overflow-wrap: anywhere; }
+.detail-content h4 { margin: 0 0 8px; font-weight: 650; }
+.detail-placeholder { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; }
+.detail-placeholder > p, .detail-placeholder > nav { width: 100%; }
+.detail-placeholder .native-links { flex-direction: row; flex-wrap: wrap; }
+.torrent-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding-bottom: 12px; font-size: 12px; }
+.torrent-toolbar > span { margin-right: auto; }
+.torrent-toolbar .library-link { display: inline-flex; align-items: center; gap: 4px; }
+.torrent-row { display: flex; align-items: center; gap: 20px; padding: 16px 0; border-top: 1px dashed var(--input); }
+.torrent-row > div:first-child { flex: 1; min-width: 0; }
+.torrent-row h4 { font-size: 14px; }
+.torrent-row p { font-size: 12px; margin: 0; }
+.torrent-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.detail-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 14px 20px; border-top: 1px solid var(--input); }
+.detail-feedback { padding: 0 20px 14px; font-size: 12px; }
+@media (max-width: 700px) {
+  .gallery-details-heading { gap: 10px; padding: 14px; flex-wrap: wrap; }
+  .detail-heading-text { flex-basis: calc(100% - 100px); }
+  .detail-heading-text h3 { font-size: 15px; }
+  .detail-content { padding: 14px; }
+  .torrent-row { align-items: flex-start; flex-direction: column; gap: 10px; }
+}
 @container poster (max-width: 170px) { .native-rating { display: none; } }
 .cover-placeholder { position: absolute; inset: 0; display: grid; align-content: center; justify-items: center; gap: 10px; color: var(--muted-foreground); }
