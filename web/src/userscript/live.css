@@ -63,6 +63,9 @@
 .torrent-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .detail-footer { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px; padding: 8px 18px; border-top: 1px dashed var(--input); }
 .detail-feedback { padding: 0 20px 14px; font-size: 12px; }
+.operation-feedback { display: flex; align-items: center; gap: 10px; }
+.operation-feedback > [data-slot=status-badge], .operation-feedback > button { flex-shrink: 0; }
+.feedback-message { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 @media (max-width: 700px) {
   .gallery-details-heading { gap: 10px; padding: 14px; flex-wrap: wrap; }
   .detail-heading-text { flex-basis: 100%; }

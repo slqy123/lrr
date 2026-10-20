@@ -1,10 +1,11 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
-import { Flower2, Settings, Sun, Moon, ExternalLink, RefreshCw, Copy, ArrowRight, Check, X, BookOpen } from 'lucide-react'
+import { Flower2, Settings, Sun, Moon, ExternalLink, RefreshCw, Copy, ArrowRight, Check, BookOpen } from 'lucide-react'
 import { Button } from '../ui/anibt/button'
 import { Checkbox } from '../ui/anibt/checkbox'
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '../ui/anibt/popover'
 import { GalleryCards, Status } from './GalleryCards'
+import { Feedback, type FeedbackMessage } from './Feedback'
 import { SettingsDialog } from './SettingsDialog'
 import { SearchPanel } from './SearchPanel'
 import { Pager } from './Pager'
@@ -25,7 +26,7 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [sending, setSending] = useState(false)
-  const [feedback, setFeedback] = useState('')
+  const [feedback, setFeedback] = useState<FeedbackMessage | null>(null)
   useEffect(() => {
     const available = new Set(page.galleries.map(item => item.id))
     setSelected(previous => new Set([...previous].filter(id => available.has(id))))
@@ -43,7 +44,7 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
     return next
   })
   const density = (value: boolean) => {
-    try { GM_setValue('density', value ? 'compact' : 'standard'); setCompact(value) } catch { setFeedback('无法保存显示密度，请检查 Tampermonkey 权限。') }
+    try { GM_setValue('density', value ? 'compact' : 'standard'); setCompact(value) } catch { setFeedback({ tone: 'fail', message: '无法保存显示密度，请检查 Tampermonkey 权限。' }) }
   }
   const send = async () => {
     if (sending) return
@@ -54,9 +55,9 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
       const result = await client.send(batch.map(item => item.url))
       const sent = new Set(batch.map(item => item.id))
       setSelected(previous => new Set([...previous].filter(id => !sent.has(id))))
-      setFeedback(`队列已接收：新增 ${result.added}，已有 ${result.duplicates}。`)
+      setFeedback({ tone: 'ok', message: `队列已接收：新增 ${result.added}，已有 ${result.duplicates}。` })
       refreshQueue()
-    } catch (error) { setFeedback(`${(error as Error).message}；选择已保留，可以重试。`) }
+    } catch (error) { setFeedback({ tone: 'fail', message: `${(error as Error).message}；选择已保留，可以重试。` }) }
     finally { setSending(false) }
   }
   const configured = !!settings.lrrServerUrl && !!settings.queueServerUrl
@@ -84,8 +85,8 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
       </section>
       <footer className="page-footer"><span><Flower2 size={14} />为每一次心动，留一个位置。</span><span>AniBT UI · <a href="https://github.com/OpenAniBT/ui">AGPL-3.0-only</a> · <a href="https://github.com/slqy123/lrr">对应源码</a></span></footer>
     </main>
-    {selected.size > 0 && <aside className="selection-bar anibt-pop" aria-label="批量操作"><span className="selected-count"><Check size={17} />已选择 <strong>{selected.size}</strong> 部</span><Button variant="ghost" size="sm" disabled={sending} onClick={() => setSelected(new Set())}>取消选择</Button><span className="selection-divider" /><Button variant="secondary" disabled={sending} onClick={() => { try { copyLinks(items.filter(item => selected.has(item.id)).map(item => item.url).join('\n')); setFeedback(`已复制 ${selected.size} 个链接。`) } catch { setFeedback('无法写入剪贴板，选择已保留。') } }}><Copy />复制链接</Button><Button loading={sending} onClick={() => void send()}>发送队列 <ArrowRight /></Button></aside>}
-    {feedback && <div className="preview-feedback anibt-pop" role="status">{feedback}<Button variant="ghost" size="icon-sm" aria-label="关闭提示" onClick={() => setFeedback('')}><X /></Button></div>}
-    <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} portal={portal} settings={settings} save={value => { configure({ ...value, density: compact ? 'compact' : 'standard' }); setFeedback('设置已保存，正在重新检查当前页。') }} theme={theme} setTheme={setTheme} />
+    {selected.size > 0 && <aside className="selection-bar anibt-pop" aria-label="批量操作"><span className="selected-count"><Check size={17} />已选择 <strong>{selected.size}</strong> 部</span><Button variant="ghost" size="sm" disabled={sending} onClick={() => setSelected(new Set())}>取消选择</Button><span className="selection-divider" /><Button variant="secondary" disabled={sending} onClick={() => { try { copyLinks(items.filter(item => selected.has(item.id)).map(item => item.url).join('\n')); setFeedback({ tone: 'ok', message: `已复制 ${selected.size} 个链接。` }) } catch { setFeedback({ tone: 'fail', message: '无法写入剪贴板，选择已保留。' }) } }}><Copy />复制链接</Button><Button loading={sending} onClick={() => void send()}>发送队列 <ArrowRight /></Button></aside>}
+    <Feedback value={feedback} className="preview-feedback anibt-pop" onClose={() => setFeedback(null)} />
+    <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} portal={portal} settings={settings} save={value => { configure({ ...value, density: compact ? 'compact' : 'standard' }); setFeedback({ tone: 'mute', message: '设置已保存，正在重新检查当前页。' }) }} theme={theme} setTheme={setTheme} />
   </div>
 }

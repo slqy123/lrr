@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { Copy, Download, ExternalLink, Link, RefreshCw, X } from 'lucide-react'
 import { Button } from '../ui/anibt/button'
+import { Feedback, type FeedbackMessage } from './Feedback'
 import { copyLinks, type createClient } from './client'
 import { displayState, type Gallery } from './model'
 import type { Torrent } from './torrents'
@@ -54,7 +55,7 @@ export function GalleryDetails({ item, tab: requestedTab, changeTab, close, live
   const [error, setError] = useState('')
   const [revision, setRevision] = useState(0)
   const [sending, setSending] = useState(false)
-  const [feedback, setFeedback] = useState('')
+  const [feedback, setFeedback] = useState<FeedbackMessage | null>(null)
   useEffect(() => {
     setResources(undefined)
     setError('')
@@ -74,9 +75,9 @@ export function GalleryDetails({ item, tab: requestedTab, changeTab, close, live
     setSending(true)
     try {
       const result = await live.client.send([item.url])
-      setFeedback(`队列已接收：新增 ${result.added}，已有 ${result.duplicates}。`)
+      setFeedback({ tone: 'ok', message: `队列已接收：新增 ${result.added}，已有 ${result.duplicates}。` })
       live.refreshQueue()
-    } catch (reason) { setFeedback(reason instanceof Error ? reason.message : '发送失败，可以重试') }
+    } catch (reason) { setFeedback({ tone: 'fail', message: reason instanceof Error ? reason.message : '发送失败，可以重试' }) }
     finally { setSending(false) }
   }
   const tabs: { key: DetailTab; label: string }[] = [{ key: 'detail', label: '详情' }, ...(torrentLink ? [{ key: 'torrents' as const, label: 'BT 种子' }] : []), ...(stateLabel ? [{ key: 'state' as const, label: stateLabel }] : [])]
@@ -115,7 +116,7 @@ export function GalleryDetails({ item, tab: requestedTab, changeTab, close, live
       {tab === 'state' && (stateLabel === '队列' ? <div className="queue-detail"><h4>{item.queue?.label}</h4><p>尝试 {item.queue?.attempts} / {item.queue?.max_attempts}</p>{item.queue?.next_attempt_at && <p>下次尝试：{new Date(item.queue.next_attempt_at * 1000).toLocaleString()}</p>}{item.queue?.error && <p role="alert">{item.queue.error}</p>}</div> : <div className="library-details"><h4>{stateLabel === '重复作品' ? '标题检查发现疑似重复作品' : '已在书库中找到该作品'}</h4>{!item.hits.length && <p>原站 URL 已命中，但服务未返回可打开的条目 ID。</p>}{item.hits.map(hit => <article className="archive-hit" key={hit.id}><div className="archive-hit-heading"><img src={`${base}/api/archivethumbnail?id=${encodeURIComponent(hit.id)}`} alt="" loading="lazy" referrerPolicy="no-referrer" onError={event => { event.currentTarget.hidden = true }} /><strong>{hit.title}</strong></div><p className="muted">{[hit.pagecount ? `${hit.pagecount} 页` : '', hit.filesize ? `${(hit.filesize / 1048576).toFixed(1)} MB` : ''].filter(Boolean).join(' · ')}</p>{hit.tags && <p className="archive-tags">{hit.tags}</p>}<div className="torrent-actions"><Button asChild size="sm"><a href={`${base}/reader?id=${encodeURIComponent(hit.id)}`} target="_blank" rel="noopener noreferrer">阅读器</a></Button><Button asChild variant="secondary" size="sm"><a href={`${base}/edit?id=${encodeURIComponent(hit.id)}`} target="_blank" rel="noopener noreferrer">编辑</a></Button></div></article>)}{item.search && base && <a className="library-link" href={`${base}/?${new URLSearchParams({ sort: '1', sortdir: 'desc', q: item.search })}`} target="_blank" rel="noopener noreferrer">在 LANraragi 中查看全部 →</a>}</div>)}
       {tab === 'state' && <Button variant="ghost" size="sm" onClick={live.recheck}><RefreshCw size={14} />重新检查</Button>}
     </div>
-    <footer className="detail-footer"><div className="torrent-actions"><Button variant="secondary" size="sm" onClick={() => { try { copyLinks(item.url); setFeedback('链接已复制') } catch { setFeedback('无法写入剪贴板') } }}><Copy size={14} />复制链接</Button><Button size="sm" loading={sending} onClick={() => void send()}>发送到队列</Button></div></footer>
-    {feedback && <p className="detail-feedback" role="status">{feedback}</p>}
+    <footer className="detail-footer"><div className="torrent-actions"><Button variant="secondary" size="sm" onClick={() => { try { copyLinks(item.url); setFeedback({ tone: 'ok', message: '链接已复制' }) } catch { setFeedback({ tone: 'fail', message: '无法写入剪贴板' }) } }}><Copy size={14} />复制链接</Button><Button size="sm" loading={sending} onClick={() => void send()}>发送到队列</Button></div></footer>
+    <Feedback value={feedback} className="detail-feedback" />
   </section>
 }
