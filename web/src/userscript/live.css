@@ -23,7 +23,7 @@
 .card-native-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; color: var(--muted-foreground); font-size: 11px; }
 .card-torrents { z-index: 30; }
 .live-app [data-expanded=true] { box-shadow: 0 0 0 2px var(--ring), var(--anibt-shadow-lift); }
-.gallery-details { grid-column: 1 / -1; min-width: 0; overflow: hidden; border: 1px solid var(--input); border-radius: 16px; }
+.gallery-details { grid-column: 1 / -1; min-width: 0; overflow: hidden; }
 .gallery-details-heading { display: flex; align-items: center; gap: 12px; padding: 10px 18px; }
 .detail-heading-text { flex: 1; min-width: 0; }
 .detail-heading-actions { display: flex; align-items: center; gap: 4px; margin-left: auto; flex-shrink: 0; }

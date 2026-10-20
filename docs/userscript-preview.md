@@ -6,11 +6,9 @@ A preview request means an interactive before/after comparison of the actual bui
 
 ## Iteration and pre-commit tests
 
-During iteration, run `make test-quick`. It builds the current userscript and runs the 1440px live thumbnail scenario plus syntax checking. The scenario retains its full assertions for mounting, card layout, library/queue semantics, inline details, torrents, search, selection, settings, cancellation and restoration.
+By default, assistant verification is limited to `pnpm --dir web build:userscript` (including TypeScript checking), `node --check lanraragi-checker.user.js` and `git diff --check`. A successful preview build already satisfies the build check for unchanged source. Do not automatically run live tests, showcase tests, browser interaction checks or theme/viewport matrices, including before commits. The user handles interactive, visual and full regression verification unless explicitly requesting assistant-run tests.
 
-Before committing, run `make test` for full isolation, showcase and live regression coverage. When a saved real page is available, run `make test SAVED_PAGE=/path/to/gallery.html` instead; this adds the saved-page scenario without repeating the generic live suite.
-
-After a successful build of the current source, such as `node userscript/preview.mjs after`, use `make -o build test-quick` or `make -o build test` to avoid rebuilding it. Do not skip the build after changing application source.
+Manual test commands remain available: `make test-quick` runs the core live scenario, while `make test` runs the full suite. `make test SAVED_PAGE=/path/to/gallery.html` includes a saved page without repeating the generic live suite. These commands are not part of the assistant's default checks.
 
 ## Capture and serve
 
@@ -36,11 +34,13 @@ The command prints labeled `before` and `after` URLs and stays running until Ctr
 
 ## Browser comparison
 
+The user performs this comparison by default. The assistant serves the frozen builds when a preview is requested, but only runs browser automation when explicitly requested.
+
 1. Open both printed URLs using browser-harness, one tab per version. Reuse these tabs on subsequent inspections; do not open duplicate comparison tabs.
 2. Keep browser viewport, zoom, theme, fixture, and interaction state identical. Set settings and selections equally in each tab; reload both to reset the mocks.
 3. Check both surrounding layout and close-ups, light/dark themes, and normal/compact viewport sizes. Compare checked/unchecked, hover, focus, expanded, and disabled states where relevant.
 4. Capture browser screenshots without editing the depicted UI. Label intentional differences. Leave both tabs and servers available while the user compares them.
-5. Run `make test` separately. Passing tests or geometry assertions alone do not establish visual fidelity.
+5. The user runs regression tests as needed. Passing tests or geometry assertions alone do not establish visual fidelity.
 6. After subsequent changes, recapture only `after`, restart the comparison servers, and reload the same tabs with their newly printed URLs. Recheck against the approved appearance before delivery.
 
 State the preview source, simulated data and behavior, working interactions, and any remaining visual differences when presenting the comparison. Do not imply that automated tests were run unless they actually were.
@@ -63,7 +63,7 @@ LRR_PREVIEW_AFTER_URL=http://127.0.0.1:<after-port>/saved \
 browser-harness < userscript/preview-browser.py
 ```
 
-The script uses short post-click waits and settles animations before each screenshot pair. Run it for visible UI changes, not every code edit. It opens Chinese and all-ages filters, checks their state and fit, and captures close-ups and surrounding context in both themes at 1440px standard and 900px compact layouts. It leaves both tabs at 1440px standard in the dark theme. Screenshots and measurements go to `userscript/dist/comparison/`.
+The script uses short post-click waits and settles animations before each screenshot pair. Run it only when the user explicitly requests automated browser comparison. It opens Chinese and all-ages filters, checks their state and fit, and captures close-ups and surrounding context in both themes at 1440px standard and 900px compact layouts. It leaves both tabs at 1440px standard in the dark theme. Screenshots and measurements go to `userscript/dist/comparison/`.
 
 Matching tabs are reused. When restarting the servers changes the URLs, pass `LRR_PREVIEW_BEFORE_TAB` and `LRR_PREVIEW_AFTER_TAB` with the existing target IDs to reuse the same comparison tabs. This scenario expects an initially empty search query. It does not replace visual inspection or automated regression tests.
 
