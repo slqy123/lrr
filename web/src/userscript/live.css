@@ -12,7 +12,7 @@
 .status-action:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
 .library-details { display: grid; gap: 16px; }
 .library-details p { white-space: pre-wrap; overflow-wrap: anywhere; }
-.archive-hit { border-top: 1px dashed var(--input); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.archive-hit { padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
 .archive-hit-heading { display: flex; align-items: flex-start; gap: 12px; }
 .archive-hit-heading img { width: 64px; height: 88px; object-fit: contain; border-radius: 6px; flex-shrink: 0; }
 .native-rating { display: inline-block; width: 80px; height: 16px; margin-left: auto; background-repeat: no-repeat; flex-shrink: 0; }
@@ -41,7 +41,7 @@
 .detail-facts dd { margin: 0; }
 .detail-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .detail-description { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
-.detail-previews { display: flex; align-items: center; gap: 10px; padding-top: 10px; border-top: 1px dashed var(--input); overflow-x: auto; }
+.detail-previews { display: flex; align-items: center; gap: 10px; padding-top: 10px; overflow-x: auto; }
 .detail-preview-page { flex: 0 0 114px; padding: 5px; }
 .detail-preview-image { position: relative; display: grid; place-items: center; width: 104px; height: 140px; overflow: hidden; border-radius: 4px; font-size: 11px; }
 .detail-preview-image > img { width: 100%; height: 100%; object-fit: contain; }
@@ -54,12 +54,12 @@
 .torrent-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding-bottom: 12px; font-size: 12px; }
 .torrent-toolbar > span { margin-right: auto; }
 .torrent-toolbar .library-link { display: inline-flex; align-items: center; gap: 4px; }
-.torrent-row { display: flex; align-items: center; gap: 20px; padding: 16px 0; border-top: 1px dashed var(--input); }
+.torrent-row { display: flex; align-items: center; gap: 20px; padding: 16px 0; }
 .torrent-row > div:first-child { flex: 1; min-width: 0; }
 .torrent-row h4 { font-size: 14px; }
 .torrent-row p { font-size: 12px; margin: 0; }
 .torrent-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.detail-footer { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px; padding: 8px 18px; border-top: 1px dashed var(--input); }
+.detail-footer { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px; padding: 8px 18px; }
 .detail-feedback { padding: 0 20px 14px; font-size: 12px; }
 .operation-feedback { display: flex; align-items: center; gap: 10px; }
 .operation-feedback > [data-slot=status-badge], .operation-feedback > button { flex-shrink: 0; }
