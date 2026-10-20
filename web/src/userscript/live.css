@@ -43,7 +43,7 @@
 .detail-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .detail-description { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
 .detail-previews { display: flex; align-items: center; gap: 10px; padding-top: 10px; border-top: 1px dashed var(--input); overflow-x: auto; }
-.detail-preview-page { flex: 0 0 114px; padding: 4px; border: 1px solid var(--input); border-radius: 7px; background: var(--muted); }
+.detail-preview-page { flex: 0 0 114px; padding: 5px; }
 .detail-preview-image { position: relative; display: grid; place-items: center; width: 104px; height: 140px; overflow: hidden; border-radius: 4px; font-size: 11px; }
 .detail-preview-image > img { width: 100%; height: 100%; object-fit: contain; }
 .detail-preview-sprite { position: absolute; top: 50%; left: 50%; background-repeat: no-repeat; }

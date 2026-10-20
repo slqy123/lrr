@@ -24,7 +24,7 @@ export function stateTab(item: Gallery) {
 function PagePreview({ page }: { page: PreviewPage }) {
   const [failed, setFailed] = useState(false)
   const sprite = page.sprite
-  return <a className="detail-preview-page" href={page.url} target="_blank" rel="noopener noreferrer" aria-label={`打开第 ${page.page} 页`}>
+  return <a className="detail-preview-page anibt-well" href={page.url} target="_blank" rel="noopener noreferrer" aria-label={`打开第 ${page.page} 页`}>
     <span className="detail-preview-image">
       {failed || (!sprite && !page.image) ? <span className="muted">图片不可用</span> : sprite ? <span className="detail-preview-sprite" style={{ width: sprite.width, height: sprite.height, backgroundImage: `url("${sprite.image}")`, backgroundPosition: sprite.position, backgroundSize: sprite.size, transform: `translate(-50%, -50%) scale(${Math.min(104 / sprite.width, 140 / sprite.height)})` }}><img hidden src={sprite.image} alt="" onError={() => setFailed(true)} /></span> : <img src={page.image} alt={`第 ${page.page} 页预览`} onError={() => setFailed(true)} />}
     </span><small>第 {page.page} 页</small>
