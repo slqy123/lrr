@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { Flower2, Settings, Sun, Moon, ExternalLink, RefreshCw, Copy, ArrowRight, Check, BookOpen } from 'lucide-react'
 import { Button } from '../ui/anibt/button'
-import { Badge } from '../ui/anibt/badge'
+import { Badge, StatusBadge } from '../ui/anibt/badge'
 import { Checkbox } from '../ui/anibt/checkbox'
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '../ui/anibt/popover'
 import { GalleryCards, Status } from './GalleryCards'
@@ -62,6 +62,8 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
     finally { setSending(false) }
   }
   const configured = !!settings.lrrServerUrl && !!settings.queueServerUrl
+  const errorCount = items.filter(item => displayState(item) === 'error').length
+  const checkingCount = items.filter(item => displayState(item) === 'checking').length
   return <div className="surface anibt-ground showcase live-app">
     <header className="site-header"><div className="page-width header-inner">
       <a className="brand" href={page.action}><span className="brand-mark"><Flower2 size={24} /></span><span>LRR <b>Gallery</b><small>把喜欢的故事，收进书架。</small></span></a>
@@ -74,8 +76,20 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
       {!configured && <div className="connection-notice anibt-sheet" role="status"><span>请填写图库和队列服务地址，查询异常不会计入“未收录”。</span><Button size="sm" onClick={() => setSettingsOpen(true)}>连接设置</Button></div>}
       <SearchPanel page={page} portal={portal} />
       <section aria-label="作品画廊">
-        <div className="collection-heading"><div><h2><span className="anibt-tape">发现作品</span><span className="muted count">{items.length}</span></h2><p className="muted">{page.summary} {page.summaryLinks.map((link, index) => <a className="library-link" key={index} href={link.url}>{link.title}</a>)}</p><p className="muted">{(['downloaded', 'queued', 'error', 'checking'] as const).map(state => `${stateLabels[state]} ${items.filter(item => displayState(item) === state).length}`).join(' · ')}</p></div><div className="density-control anibt-well"><Button size="sm" variant={!compact ? 'secondary' : 'ghost'} aria-pressed={!compact} onClick={() => density(false)}>标准</Button><Button size="sm" variant={compact ? 'secondary' : 'ghost'} aria-pressed={compact} onClick={() => density(true)}>紧凑</Button></div></div>
-        <p className="selection-scope muted">{settings.enableAltSearch ? '未收录：URL 与可提取的标题均未命中；检查中、队列和查询异常不计入。' : '未收录仅表示 URL 未命中；标题搜索已关闭。'}</p>
+        <div className="collection-heading collection-overview">
+          <div className="collection-overview-row">
+            <h2><span className="anibt-tape">发现作品</span><Badge className="collection-total" variant="count-quiet">{items.length}</Badge></h2>
+            <span className="collection-rule anibt-stitch" aria-hidden="true" />
+          </div>
+          <div className="collection-meta">
+            <p className="collection-summary">{page.summary} {page.summaryLinks.map((link, index) => <a className="library-link" key={index} href={link.url}>{link.title}</a>)}</p>
+            {(errorCount > 0 || checkingCount > 0) && <div className="collection-health" role="status">
+              {errorCount > 0 && <StatusBadge tone="fail">{stateLabels.error} {errorCount}</StatusBadge>}
+              {checkingCount > 0 && <StatusBadge tone="run">{stateLabels.checking} {checkingCount}</StatusBadge>}
+            </div>}
+            <div className="density-control anibt-well"><Button size="sm" variant={!compact ? 'secondary' : 'ghost'} aria-pressed={!compact} onClick={() => density(false)}>标准</Button><Button size="sm" variant={compact ? 'secondary' : 'ghost'} aria-pressed={compact} onClick={() => density(true)}>紧凑</Button></div>
+          </div>
+        </div>
         <div className="gallery-toolbar"><div className="selection-groups">{groups.map(state => {
           const matching = items.filter(item => displayState(item) === state)
           const count = matching.filter(item => selected.has(item.id)).length

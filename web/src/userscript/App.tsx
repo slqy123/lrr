@@ -98,7 +98,7 @@ export function App({ host, portal, restore }: { host: HTMLElement; portal: HTML
           {minimumRating && <div className="mt-3"><Badge variant="lang">评分 ≥ 4 ★ · 示意条件</Badge></div>}
         </section>
         <section aria-label="作品画廊">
-          <div className="collection-heading"><div><h2><span className="anibt-tape">发现作品</span> <span className="muted count">{visible.length}</span></h2><p className="muted">已入库 2 · 队列中 2 · 查询异常 1</p></div><div className="density-control anibt-well"><Button size="sm" variant={!compact ? 'secondary' : 'ghost'} aria-pressed={!compact} onClick={() => setCompact(false)}>标准</Button><Button size="sm" variant={compact ? 'secondary' : 'ghost'} aria-pressed={compact} onClick={() => setCompact(true)}>紧凑</Button></div></div>
+          <div className="collection-heading"><div><h2><span className="anibt-tape">发现作品</span> <Badge className="count" variant="count-quiet">{visible.length}</Badge></h2><p className="muted">已入库 2 · 队列中 2 · 查询异常 1</p></div><div className="density-control anibt-well"><Button size="sm" variant={!compact ? 'secondary' : 'ghost'} aria-pressed={!compact} onClick={() => setCompact(false)}>标准</Button><Button size="sm" variant={compact ? 'secondary' : 'ghost'} aria-pressed={compact} onClick={() => setCompact(true)}>紧凑</Button></div></div>
           <div className="gallery-toolbar"><div className="selection-groups">{groups.map(state => {
             const matching = visible.filter(item => item.status === state)
             const count = matching.filter(item => selected.has(item.id)).length

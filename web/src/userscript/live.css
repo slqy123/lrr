@@ -4,7 +4,16 @@
 .native-links { display: flex; flex-direction: column; gap: 12px; }
 .native-links a, .library-link { color: var(--accent-foreground); text-decoration: underline; text-underline-offset: 3px; }
 .connection-notice { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; margin-bottom: 24px; }
-.selection-scope { margin: 0 0 14px; font-size: 12px; }
+.collection-overview { display: block; }
+.collection-overview-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; min-width: 0; }
+.collection-overview h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 17px; white-space: nowrap; }
+.collection-overview .collection-total { min-width: 28px; height: 28px; padding-inline: 6px; font-size: inherit; }
+.collection-rule { flex: 1; min-width: 24px; }
+.collection-overview .density-control { flex-shrink: 0; margin-left: auto; }
+.collection-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; min-width: 0; margin-top: 8px; }
+.collection-summary { min-width: 0; overflow-wrap: anywhere; }
+.collection-summary .library-link { margin-left: 6px; }
+.collection-health { display: flex; flex-wrap: wrap; gap: 8px; }
 .bottom-pagination { display: flex; justify-content: center; margin-top: 28px; }
 .file-search { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 20px; padding-top: 20px; }
 .file-search > p, .file-search > input { width: 100%; }

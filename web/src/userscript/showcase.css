@@ -30,8 +30,8 @@
 .search-row > button { min-width: 76px; }
 .collection-heading { margin-bottom: 18px; }
 .collection-heading h2 { margin: 0 0 10px; font-size: 19px; font-weight: 800; }
-.collection-heading h2 .anibt-tape { padding: 2px 8px; }
-.count { margin-left: 12px; font: 500 15px/1 var(--font-anibt-display); }
+.collection-heading h2 .anibt-tape { height: auto; padding: 2px 8px; }
+.count { margin-left: 12px; }
 .muted { color: var(--muted-foreground); }
 .density-control { display: flex; padding: 3px; gap: 2px; }
 .gallery-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; }
