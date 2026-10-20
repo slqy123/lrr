@@ -17,14 +17,16 @@ export function Status({ state }: { state: GalleryState }) {
 function LibraryDetails({ item, portal, server, recheck }: { item: Gallery; portal: HTMLElement; server: string; recheck: () => void }) {
   const [open, setOpen] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const restoringFocus = useRef(false)
+  const keyboardInteraction = useRef(false)
   const enter = () => { clearTimeout(timer.current); setOpen(true) }
   const leave = () => { timer.current = setTimeout(() => setOpen(false), 180) }
   useEffect(() => () => clearTimeout(timer.current), [])
   const state = displayState(item)
   const base = server.replace(/\/+$/, '')
   return <Popover open={open} onOpenChange={setOpen}>
-    <PopoverTrigger asChild><button className="status-action" aria-label={`${item.title}：${stateLabels[state]}`} onPointerEnter={enter} onPointerLeave={leave} onFocus={enter} onBlur={leave} onClick={event => { event.preventDefault(); enter() }}><Status state={state} /></button></PopoverTrigger>
-    <PopoverContent container={portal} className="library-details" onPointerEnter={enter} onPointerLeave={leave} onFocusCapture={enter} onBlurCapture={leave} onOpenAutoFocus={event => event.preventDefault()}>
+    <PopoverTrigger asChild><button className="status-action" aria-label={`${item.title}：${stateLabels[state]}`} onPointerEnter={() => { keyboardInteraction.current = false; enter() }} onPointerLeave={leave} onKeyDown={() => { keyboardInteraction.current = true }} onFocus={event => { if (!restoringFocus.current) { keyboardInteraction.current = event.currentTarget.matches(':focus-visible'); enter() } }} onBlur={leave} onClick={event => { event.preventDefault(); enter() }}><Status state={state} /></button></PopoverTrigger>
+    <PopoverContent container={portal} className="library-details" onKeyDown={() => { keyboardInteraction.current = true }} onPointerEnter={enter} onPointerLeave={leave} onFocusCapture={enter} onBlurCapture={leave} onOpenAutoFocus={event => event.preventDefault()} onCloseAutoFocus={event => { if (!keyboardInteraction.current) event.preventDefault(); restoringFocus.current = true; queueMicrotask(() => { restoringFocus.current = false }) }}>
       <PopoverTitle>{stateLabels[state]}</PopoverTitle>
       {item.status === 'checking' && <p>正在查询书库；尚不能判断是否收录。</p>}
       {item.status === 'missing' && !item.queue && <p>URL 未命中，且已启用的标题检查未找到匹配。</p>}

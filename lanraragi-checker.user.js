@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      AGPL-3.0-only
-// @version      2.0.0-alpha.3
+// @version      2.0.0-alpha.7
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -21387,6 +21387,8 @@
 	function LibraryDetails({ item, portal, server, recheck }) {
 		const [open, setOpen] = (0, import_react.useState)(false);
 		const timer = (0, import_react.useRef)(void 0);
+		const restoringFocus = (0, import_react.useRef)(false);
+		const keyboardInteraction = (0, import_react.useRef)(false);
 		const enter = () => {
 			clearTimeout(timer.current);
 			setOpen(true);
@@ -21405,9 +21407,20 @@
 				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
 					className: "status-action",
 					"aria-label": `${item.title}：${stateLabels[state]}`,
-					onPointerEnter: enter,
+					onPointerEnter: () => {
+						keyboardInteraction.current = false;
+						enter();
+					},
 					onPointerLeave: leave,
-					onFocus: enter,
+					onKeyDown: () => {
+						keyboardInteraction.current = true;
+					},
+					onFocus: (event) => {
+						if (!restoringFocus.current) {
+							keyboardInteraction.current = event.currentTarget.matches(":focus-visible");
+							enter();
+						}
+					},
 					onBlur: leave,
 					onClick: (event) => {
 						event.preventDefault();
@@ -21418,11 +21431,21 @@
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(PopoverContent, {
 				container: portal,
 				className: "library-details",
+				onKeyDown: () => {
+					keyboardInteraction.current = true;
+				},
 				onPointerEnter: enter,
 				onPointerLeave: leave,
 				onFocusCapture: enter,
 				onBlurCapture: leave,
 				onOpenAutoFocus: (event) => event.preventDefault(),
+				onCloseAutoFocus: (event) => {
+					if (!keyboardInteraction.current) event.preventDefault();
+					restoringFocus.current = true;
+					queueMicrotask(() => {
+						restoringFocus.current = false;
+					});
+				},
 				children: [
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PopoverTitle, { children: stateLabels[state] }),
 					item.status === "checking" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "正在查询书库；尚不能判断是否收录。" }),
@@ -23365,9 +23388,11 @@
 		function archives(value) {
 			if (!Array.isArray(value)) throw new Error("标题搜索响应格式异常");
 			return value.map((item) => {
-				if (!item || typeof item !== "object" || typeof item.id !== "string") throw new Error("书库条目格式异常");
+				if (!item || typeof item !== "object") throw new Error("书库条目格式异常");
+				const id = typeof item.id === "string" ? item.id : typeof item.arcid === "string" ? item.arcid : void 0;
+				if (!id) throw new Error("书库条目格式异常");
 				return {
-					id: item.id,
+					id,
 					title: typeof item.title === "string" ? item.title : item.id,
 					tags: typeof item.tags === "string" ? item.tags : void 0,
 					pagecount: typeof item.pagecount === "number" ? item.pagecount : void 0,
@@ -23379,7 +23404,7 @@
 			try {
 				const result = await libraryPool(() => library(`/api/plugins/use?plugin=urlfinder&arg=${encodeURIComponent(item.url)}`, "POST"));
 				if (!result || typeof result !== "object" || result.data != null && typeof result.data !== "object" || !("success" in result) && !result.data) throw new Error("书库响应格式异常");
-				if (result.error || result.data?.error && !/url not found/i.test(result.data.error)) throw new Error("书库查询失败");
+				if ([result.error, result.data?.error].some((error) => error && !/^URL not found in database\.?$/i.test(error))) throw new Error("书库查询失败");
 				if (result.success === true || result.success === 1 || result.data?.id || result.data?.arcid) {
 					const id = typeof result.data?.id === "string" ? result.data.id : typeof result.data?.arcid === "string" ? result.data.arcid : "";
 					return {

@@ -74,15 +74,17 @@ export function createClient(settings: Settings, fresh = false) {
   function archives(value: unknown): Archive[] {
     if (!Array.isArray(value)) throw new Error('标题搜索响应格式异常')
     return value.map(item => {
-      if (!item || typeof item !== 'object' || typeof item.id !== 'string') throw new Error('书库条目格式异常')
-      return { id: item.id, title: typeof item.title === 'string' ? item.title : item.id, tags: typeof item.tags === 'string' ? item.tags : undefined, pagecount: typeof item.pagecount === 'number' ? item.pagecount : undefined, filesize: typeof item.filesize === 'number' ? item.filesize : undefined }
+      if (!item || typeof item !== 'object') throw new Error('书库条目格式异常')
+      const id = typeof item.id === 'string' ? item.id : typeof item.arcid === 'string' ? item.arcid : undefined
+      if (!id) throw new Error('书库条目格式异常')
+      return { id, title: typeof item.title === 'string' ? item.title : item.id, tags: typeof item.tags === 'string' ? item.tags : undefined, pagecount: typeof item.pagecount === 'number' ? item.pagecount : undefined, filesize: typeof item.filesize === 'number' ? item.filesize : undefined }
     })
   }
   async function checkRemote(item: Gallery): Promise<Partial<Gallery>> {
     try {
       const result = await libraryPool(() => library(`/api/plugins/use?plugin=urlfinder&arg=${encodeURIComponent(item.url)}`, 'POST')) as { success?: boolean | number; error?: string; data?: { id?: string; arcid?: string; error?: string; title?: string; tags?: string; pagecount?: number; filesize?: number } }
       if (!result || typeof result !== 'object' || (result.data != null && typeof result.data !== 'object') || (!('success' in result) && !result.data)) throw new Error('书库响应格式异常')
-      if (result.error || (result.data?.error && !/url not found/i.test(result.data.error))) throw new Error('书库查询失败')
+      if ([result.error, result.data?.error].some(error => error && !/^URL not found in database\.?$/i.test(error))) throw new Error('书库查询失败')
       if (result.success === true || result.success === 1 || result.data?.id || result.data?.arcid) {
         const id = typeof result.data?.id === 'string' ? result.data.id : typeof result.data?.arcid === 'string' ? result.data.arcid : ''
         return { status: 'downloaded', hits: id ? archives([{ ...result.data, id, title: result.data?.title || item.title }]) : [], error: undefined }

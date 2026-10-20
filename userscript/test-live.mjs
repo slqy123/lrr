@@ -32,11 +32,11 @@ const boot = (savedPage = false, pendingSearch = false) => {
       if (url.pathname.endsWith('/add')) return failSend ? options.onerror() : partialSend ? respond({ ok: true, added: 0, duplicates: 0 }) : respond({ ok: true, added: JSON.parse(options.data).urls.length - 1, duplicates: 1 })
       if (url.pathname.endsWith('/lookup')) return savedPage ? respond({ items: [] }) : failQueue ? options.onerror() : respond({ items: ['running', '', 'pending', 'running', 'failed', 'dead', '', 'done'].flatMap((status, i) => status ? [{ url: location.origin + `/g/${100 + i}/token/`, status, attempts: 1, max_attempts: 3, error: status === 'dead' ? 'offline download failed' : '' }] : []) })
       if (url.pathname.endsWith('/search') && pendingSearch) { pendingSearch = false; return options.onload({ status: 204, responseText: '' }) }
-      if (url.pathname.endsWith('/search')) return respond({ data: url.searchParams.get('filter') === 'Offline Author,Duplicate Gallery' ? [{ id: 'duplicate', title: 'Duplicate result', pagecount: 44, tags: 'language:chinese,artist:offline' }] : [] })
+      if (url.pathname.endsWith('/search')) return respond({ data: url.searchParams.get('filter') === 'Offline Author,Duplicate Gallery' ? [{ arcid: 'duplicate', title: 'Duplicate result', pagecount: 44, tags: 'language:chinese,artist:offline' }] : [] })
       if (url.pathname.endsWith('/use')) {
         if (index === 6) return options.onerror()
         if (index === 9) return respond({ unexpected: 'invalid response' })
-        return respond(index === 0 || delayed ? { success: 1, data: { id: 'archive', title: 'Existing archive' } } : { success: 0, data: { error: 'URL not found in database.' } })
+        return respond(index === 0 || delayed ? { success: 1, data: { id: 'archive', title: 'Existing archive' } } : { success: 0, error: 'URL not found in database.', data: { error: 'URL not found in database.', total: 0 } })
       }
       options.onerror()
     }, delayed ? 500 : 5)
@@ -131,6 +131,16 @@ const tests = async () => {
   root.querySelector('.gallery-grid .status-action').click(); await wait(80)
   assert(root.querySelector('.library-details a[href*="/reader?id=archive"]'), 'library hover card has actual reader link')
   root.querySelector('.library-details').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true })); await wait(200)
+  assert(!root.querySelector('.library-details'), 'Escape closes library details without focus restoration reopening them')
+  const statusTrigger = root.querySelector('.gallery-grid .status-action')
+  statusTrigger.blur()
+  statusTrigger.dispatchEvent(new PointerEvent('pointerover', { bubbles: true }))
+  await wait(80)
+  assert(root.querySelector('.library-details'), 'pointer hover opens library details')
+  statusTrigger.dispatchEvent(new PointerEvent('pointerout', { bubbles: true, relatedTarget: document.body }))
+  await wait(500)
+  assert(!root.querySelector('.library-details'), 'pointer leave stays closed after trigger focus restoration')
+  assert(root.activeElement !== statusTrigger, 'hover dismissal does not focus or highlight the status trigger')
   failQueue = true
   root.querySelector('[aria-label=重新检查]').click(); await wait(300)
   assert(states()[0] === '已入库' && states()[7] === '查询异常', 'queue lookup failure is unknown, not missing; library hit wins')
