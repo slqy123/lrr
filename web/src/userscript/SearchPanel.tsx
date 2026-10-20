@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useState } from 'react'
-import { Flower2, Search, SlidersHorizontal, Upload } from 'lucide-react'
+import { Check, Flower2, Search, SlidersHorizontal, Upload } from 'lucide-react'
 import { Button } from '../ui/anibt/button'
 import { Input } from '../ui/anibt/input'
 import { Checkbox } from '../ui/anibt/checkbox'
@@ -10,6 +10,10 @@ import { categoryAppearance } from './categories'
 
 const advanced = [['f_sh', '包括已删除画廊'], ['f_sto', '必须有种子'], ['f_sfl', '忽略语言过滤'], ['f_sfu', '忽略上传者过滤'], ['f_sft', '忽略标签过滤']] as const
 const managed = new Set(['f_search', 'f_cats', 'advsearch', 'f_spf', 'f_spt', 'f_srdd', ...advanced.map(([name]) => name)])
+
+function FilterChip({ children, checked, onClick }: { children: React.ReactNode; checked: boolean; onClick: () => void }) {
+  return <button type="button" className={checked ? 'anibt-chip anibt-chip-on' : 'anibt-chip'} aria-pressed={checked} onClick={onClick}><Check size={14} aria-hidden="true" className={checked ? undefined : 'invisible'} />{children}</button>
+}
 
 export function SearchPanel({ page, portal }: { page: GalleryPage; portal: HTMLElement }) {
   const initial = new URLSearchParams(page.fields)
@@ -47,7 +51,7 @@ export function SearchPanel({ page, portal }: { page: GalleryPage; portal: HTMLE
       </div>
       <div className="search-row">
         <Popover open={suggest} onOpenChange={setSuggest}><PopoverAnchor asChild><div className="search-field"><Search size={17} /><Input name={query ? 'f_search' : undefined} aria-label="搜索作品" aria-expanded={suggest} aria-controls="lrr-suggestions" aria-haspopup="dialog" placeholder="搜索标题、作者或标签…" value={query} onFocus={() => setSuggest(true)} onClick={() => setSuggest(true)} onChange={event => setQuery(event.target.value)} /></div></PopoverAnchor>
-          <PopoverContent id="lrr-suggestions" container={portal} align="start" onOpenAutoFocus={event => event.preventDefault()} onCloseAutoFocus={event => event.preventDefault()}><PopoverTitle>快捷筛选</PopoverTitle><div className="flex gap-2">{[['language:chinese', '仅中文'], ['language:japanese', '仅日文']].map(([token, label]) => <Button key={token} type="button" size="sm" aria-pressed={query.split(/\s+/).includes(token)} variant={query.split(/\s+/).includes(token) ? 'default' : 'secondary'} onClick={() => setLanguage(token)}>{label}</Button>)}<Button type="button" size="sm" variant={allAges ? 'default' : 'secondary'} aria-pressed={allAges} onClick={allAgesToggle}>全年龄</Button></div></PopoverContent>
+          <PopoverContent id="lrr-suggestions" container={portal} align="start" onOpenAutoFocus={event => event.preventDefault()} onCloseAutoFocus={event => event.preventDefault()}><PopoverTitle>快捷筛选</PopoverTitle><div className="flex gap-2">{[['language:chinese', '仅中文'], ['language:japanese', '仅日文']].map(([token, label]) => <FilterChip key={token} checked={query.split(/\s+/).includes(token)} onClick={() => setLanguage(token)}>{label}</FilterChip>)}<FilterChip checked={allAges} onClick={allAgesToggle}>全年龄</FilterChip></div></PopoverContent>
         </Popover>
         <Button type="submit">搜索</Button><Button asChild variant="secondary"><a href={page.action}>清空</a></Button>
         <Popover><PopoverTrigger asChild><Button type="button" variant="secondary"><SlidersHorizontal />筛选与工具</Button></PopoverTrigger><PopoverContent container={portal} align="end" className="w-96"><PopoverTitle>高级筛选</PopoverTitle>

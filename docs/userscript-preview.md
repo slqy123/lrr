@@ -45,6 +45,20 @@ The generic fixture uses placeholder covers and synthetic content. It is useful 
 
 Identical builds under identical page, resource, browser, and interaction conditions should render identically. This does not guarantee matching a live site's changed DOM, network resources, real Tampermonkey behavior, or another browser's font/layout behavior. Chromium/browser-harness verification is not Firefox + Tampermonkey verification. Report those as unverified unless separately tested.
 
+## Batch quick-filter comparison
+
+Run the quick-filter scenario through browser-harness once for both builds:
+
+```bash
+LRR_PREVIEW_BEFORE_URL=http://127.0.0.1:<before-port>/saved \
+LRR_PREVIEW_AFTER_URL=http://127.0.0.1:<after-port>/saved \
+browser-harness < userscript/preview-browser.py
+```
+
+The script opens Chinese and all-ages filters, checks their state and fit, and captures close-ups and surrounding context in both themes at 1440px standard and 900px compact layouts. It leaves both tabs at 1440px standard in the dark theme. Screenshots and measurements go to `userscript/dist/comparison/`.
+
+Matching tabs are reused. When restarting the servers changes the URLs, pass `LRR_PREVIEW_BEFORE_TAB` and `LRR_PREVIEW_AFTER_TAB` with the existing target IDs to reuse the same comparison tabs. This scenario expects an initially empty search query. It does not replace visual inspection or automated regression tests.
+
 ## Direct harness usage
 
 `LRR_LIVE_PREVIEW=1 node userscript/test-live.mjs` retains the existing automated-interaction preview behavior. For a stable manual page, use `LRR_LIVE_PREVIEW=manual` instead. Optional `LRR_PREVIEW_SCRIPT` selects a frozen script file and `LRR_PREVIEW_LABEL` labels the printed URL. The comparison command sets these automatically.
