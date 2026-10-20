@@ -173,6 +173,11 @@ const tests = async () => {
   root.querySelector('[aria-label=收起作品详情]').click(); await wait(550)
   assert(!root.querySelector('.gallery-details'), 'closing details prevents late requests from reopening the panel')
   window.slowDetails = false
+  const torrentShortcut = root.querySelector('.card-torrents')
+  assert(torrentShortcut.dataset.slot === 'button' && torrentShortcut.dataset.variant === 'secondary' && torrentShortcut.dataset.size === 'xs', 'card BT shortcut uses the shared compact secondary button')
+  torrentShortcut.scrollIntoView({ block: 'center' }); await wait(30)
+  const torrentBounds = torrentShortcut.getBoundingClientRect()
+  assert(Math.abs(torrentBounds.height - 24) < 1 && root.elementFromPoint(torrentBounds.x + torrentBounds.width / 2, torrentBounds.y + torrentBounds.height / 2)?.closest('.card-torrents') === torrentShortcut, 'compact BT shortcut remains clickable above the card link')
   await openCard(0, '.card-torrents')
   assert(root.querySelector('[role=tab][aria-selected=true]').textContent === 'BT 种子' && root.querySelectorAll('.torrent-row').length === 1, 'BT shortcut loads native torrents inline')
   assert(root.querySelector('.torrent-row').textContent.includes('大小：128 MiB') && root.querySelector('.torrent-row').textContent.includes('做种：4'), 'native torrent metadata parsed')
