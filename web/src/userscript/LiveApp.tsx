@@ -90,11 +90,11 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
             <div className="density-control anibt-well"><Button size="sm" variant={!compact ? 'secondary' : 'ghost'} aria-pressed={!compact} onClick={() => density(false)}>标准</Button><Button size="sm" variant={compact ? 'secondary' : 'ghost'} aria-pressed={compact} onClick={() => density(true)}>紧凑</Button></div>
           </div>
         </div>
-        <div className="gallery-toolbar"><div className="selection-groups">{groups.map(state => {
+        <div className="gallery-toolbar"><div className="selection-groups anibt-well"><label className="group-choice"><Checkbox aria-label="选择全部作品" disabled={sending || !items.length} checked={!items.some(item => selected.has(item.id)) ? false : items.every(item => selected.has(item.id)) ? true : 'indeterminate'} onCheckedChange={() => selectGroup(items.map(item => item.id))} />全选</label>{groups.map(state => {
           const matching = items.filter(item => displayState(item) === state)
           const count = matching.filter(item => selected.has(item.id)).length
           return <label key={state} className="group-choice"><Checkbox aria-label={`选择${stateLabels[state]}`} disabled={sending || !matching.length} checked={!count ? false : count === matching.length ? true : 'indeterminate'} onCheckedChange={() => selectGroup(matching.map(item => item.id))} /><Status state={state} /><span className="muted">{matching.length}</span></label>
-        })}<Button variant="ghost" size="sm" disabled={sending || !items.length} onClick={() => selectGroup(items.map(item => item.id))}>全选</Button></div><Pager page={page} portal={portal} /></div>
+        })}</div><Pager page={page} portal={portal} /></div>
         {items.length ? <GalleryCards items={items} selected={selected} toggle={toggle} disabled={sending} compact={compact} live={{ server: settings.lrrServerUrl, recheck, client, refreshQueue }} /> : <div className="empty-panel anibt-sheet"><BookOpen /><h3>这里还没有故事</h3><p>换个关键词，下一本喜欢的作品也许就在附近。</p><Button asChild variant="secondary"><a href={page.action}>重置筛选</a></Button></div>}
         <div className="bottom-pagination"><Pager page={page} portal={portal} /></div>
       </section>

@@ -35,8 +35,10 @@
 .muted { color: var(--muted-foreground); }
 .density-control { display: flex; padding: 3px; gap: 2px; }
 .gallery-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; }
-.selection-groups { display: flex; align-items: center; gap: 18px; }
+.selection-groups { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 10px 14px; }
 .group-choice { display: flex; align-items: center; gap: 7px; font-size: 12px; cursor: pointer; }
+.group-choice:has([data-slot=checkbox]:disabled) { opacity: .45; cursor: not-allowed; }
+.group-choice:has([data-slot=checkbox]:disabled) .gallery-status { color: var(--muted-foreground); }
 .gallery-status { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; white-space: nowrap; }
 .status-missing { color: var(--anibt-ink2); }
 .status-downloaded { color: var(--anibt-ok); }
