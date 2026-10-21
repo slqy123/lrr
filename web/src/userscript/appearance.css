@@ -1,0 +1,81 @@
+/* Sample provenance and accessibility adjustments: refs/yurulib-logo/palette-research.md. */
+:host([data-palette=festival]) {
+  --background: #fcf5f7;
+  --primary: #ff779a;
+  --primary-foreground: #4b2030;
+  --ring: #b93660;
+  --secondary: #f9dce6;
+  --secondary-foreground: #813c53;
+  --accent: #fce5ed;
+  --accent-foreground: #a33055;
+  --border: #e6c8d3;
+  --input: #b9879a;
+  --anibt-deep2: #efd0dc;
+  --anibt-mark: #b93660;
+  --club-stripe: #ff779a;
+  --club-sun: #fbd074;
+  --club-sun-wash: #f9dce6;
+  --anibt-tape: #ff779a66;
+}
+:host(.dark[data-palette=festival]) {
+  --background: #2d2529;
+  --card: #3a2e34;
+  --primary: #ff779a;
+  --primary-foreground: #4b2030;
+  --ring: #ff9ab5;
+  --secondary: #593b49;
+  --secondary-foreground: #f8cede;
+  --accent: #653c4d;
+  --accent-foreground: #ffd5e2;
+  --muted: #33292f;
+  --muted-foreground: #c9adb9;
+  --border: #70505f;
+  --input: #b88b9e;
+  --anibt-deep2: #523841;
+  --anibt-mark: #ff9ab5;
+  --club-stripe: #ff779a;
+  --club-sun-wash: #593b49;
+  --anibt-tape: #ff779a77;
+}
+.palette-festival i:first-child { background: #ff779a; }
+.palette-festival i:nth-child(2) { background: #f9dce6; }
+.palette-festival i:last-child { background: #fbd074; }
+.appearance-picker { width: min(260px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; }
+.appearance-picker > p { font-size: 12px; margin-block: 6px 12px; }
+.palette-options { display: grid; gap: 6px; margin-top: 10px; }
+.palette-option[data-slot=button] { height: auto; min-height: 48px; padding: 10px; justify-content: flex-start; gap: 12px; white-space: normal; text-align: left; }
+.palette-option[aria-pressed=true] { background: var(--accent); box-shadow: inset 3px 0 0 var(--ring); }
+.palette-swatches { display: flex; flex: none; }
+.palette-swatches i { width: 12px; height: 28px; background: #b82d56; border-block: 1px solid #0002; }
+.palette-swatches i:first-child { border-radius: 4px 0 0 4px; }
+.palette-swatches i:last-child { border-radius: 0 4px 4px 0; background: #d9b96c; }
+.palette-swatches i:nth-child(2) { background: #a9cfc4; }
+.palette-original i:nth-child(2) { background: #f7e7bb; }
+
+/* Short, action-triggered movement keeps long gallery pages calm. */
+@media (prefers-reduced-motion: no-preference) {
+  .live-app [data-slot=button] { transition: translate 150ms ease, background-color 160ms, color 160ms, box-shadow 160ms; }
+  .live-app [data-slot=button]:active:not(:disabled):not([aria-disabled=true]) { translate: 0 1px; }
+  .live-app [data-slot=poster-card] { transition: translate 200ms ease, box-shadow 200ms, outline-color 200ms; }
+  .live-app [data-slot=poster-card]:focus-within { translate: 0 -3px; }
+  .live-app [data-slot=poster-card][data-selected=true] { animation: yuru-select 240ms ease-out; }
+  .live-app [data-slot=checkbox] { transition: background-color 140ms, box-shadow 140ms; }
+  .live-app [data-slot=checkbox][data-state=checked] svg { animation: yuru-check 180ms ease-out; }
+  .live-app .gallery-details { animation: yuru-unfold 220ms ease-out; transform-origin: top; }
+  .live-app .selection-bar, .live-app .preview-feedback { animation: yuru-arrive 240ms cubic-bezier(.2,.8,.3,1); }
+  .live-app .search-field { transition: translate 160ms ease; }
+  .live-app .search-field:focus-within { translate: 0 -1px; }
+  @media (hover: hover) and (pointer: fine) {
+    .live-app [data-slot=button]:hover:not(:disabled):not([aria-disabled=true]) { translate: 0 -2px; }
+    .live-app [data-slot=button]:active:not(:disabled):not([aria-disabled=true]) { translate: 0 1px; }
+    .live-app [data-slot=poster-card]:hover { translate: 0 -4px; }
+    .live-app .brand-wordmark { transition: rotate 240ms ease; }
+    .live-app .brand:hover .brand-wordmark { rotate: -2deg; }
+    .live-app .header-sticker { transition: rotate 200ms ease; }
+    .live-app .header-sticker:hover { rotate: -2deg; }
+  }
+}
+@keyframes yuru-select { 50% { scale: 1.015; } }
+@keyframes yuru-check { from { opacity: .2; scale: .5; } to { opacity: 1; scale: 1; } }
+@keyframes yuru-unfold { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes yuru-arrive { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }

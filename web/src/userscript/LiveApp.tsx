@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Flower2, Settings, Sun, Moon, ExternalLink, RefreshCw, Copy, ArrowRight, Check, BookOpen } from 'lucide-react'
 import { Button } from '../ui/anibt/button'
 import wordmark from './assets/yurulib-wordmark.png'
+import { AppearancePicker } from './AppearancePicker'
 import { Badge, StatusBadge } from '../ui/anibt/badge'
 import { Checkbox } from '../ui/anibt/checkbox'
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '../ui/anibt/popover'
@@ -71,7 +72,7 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
       <nav className="header-nav" aria-label="导航"><Button asChild variant="secondary"><a href={page.action}>发现作品</a></Button>{/^https?:\/\//.test(settings.queueServerUrl) && <Button asChild variant="ghost"><a href={settings.queueServerUrl} target="_blank" rel="noopener noreferrer">队列后台 <ExternalLink size={13} /></a></Button>}
         {!!page.links.length && <Popover><PopoverTrigger asChild><Button variant="ghost">原站导航</Button></PopoverTrigger><PopoverContent container={portal}><PopoverTitle>原站导航</PopoverTitle><nav className="native-links anibt-menu">{page.links.map((link, index) => <a className="anibt-menu-item" key={index} href={link.url}>{link.title}</a>)}</nav></PopoverContent></Popover>}
       </nav>
-      <div className="header-tools"><Button variant="ghost" size="icon" aria-label="切换主题" onClick={() => setTheme(host.classList.contains('dark') ? 'light' : 'dark')}><Sun className="theme-sun" /><Moon className="theme-moon" /></Button><Button variant="ghost" size="icon" aria-label="重新检查" onClick={recheck}><RefreshCw /></Button><Button variant="ghost" size="icon" aria-label="设置" onClick={() => setSettingsOpen(true)}><Settings /></Button><Button variant="ghost" size="sm" onClick={() => restore()}>原站界面 <ExternalLink size={13} /></Button></div>
+      <div className="header-tools"><AppearancePicker host={host} portal={portal} /><Button variant="ghost" size="icon" aria-label="切换主题" onClick={() => setTheme(host.classList.contains('dark') ? 'light' : 'dark')}><Sun className="theme-sun" /><Moon className="theme-moon" /></Button><Button variant="ghost" size="icon" aria-label="重新检查" onClick={recheck}><RefreshCw /></Button><Button variant="ghost" size="icon" aria-label="设置" onClick={() => setSettingsOpen(true)}><Settings /></Button><Button variant="ghost" size="sm" onClick={() => restore()}>原站界面 <ExternalLink size={13} /></Button></div>
     </div></header>
     <main className="page-width main-content">
       {!configured && <div className="connection-notice anibt-sheet" role="status"><span>请填写图库和队列服务地址，查询异常不会计入“未收录”。</span><Button size="sm" onClick={() => setSettingsOpen(true)}>连接设置</Button></div>}

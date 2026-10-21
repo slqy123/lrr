@@ -1,0 +1,28 @@
+import { useEffect, useState } from 'react'
+import { Palette } from 'lucide-react'
+import { Button } from '../ui/anibt/button'
+import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '../ui/anibt/popover'
+
+const palettes = [
+  ['festival', '官方桃粉'],
+  ['original', '原版'],
+] as const
+type PaletteName = typeof palettes[number][0]
+
+export function AppearancePicker({ host, portal }: { host: HTMLElement; portal: HTMLElement }) {
+  const [palette, setPalette] = useState<PaletteName>(() => {
+    try {
+      const saved = GM_getValue<string>('palette', 'festival')
+      return palettes.find(([name]) => name === saved)?.[0] ?? 'festival'
+    } catch { return 'festival' }
+  })
+  const [error, setError] = useState('')
+  useEffect(() => {
+    host.dataset.palette = palette
+    return () => { delete host.dataset.palette }
+  }, [host, palette])
+  return <Popover><PopoverTrigger asChild><Button variant="ghost" size="icon" aria-label="切换配色"><Palette /></Button></PopoverTrigger><PopoverContent container={portal} className="appearance-picker"><PopoverTitle>书架配色</PopoverTitle><div className="palette-options">{palettes.map(([name, title]) => <Button key={name} variant="ghost" className="palette-option" aria-pressed={palette === name} onClick={() => {
+    setPalette(name)
+    try { GM_setValue('palette', name); setError('') } catch { setError('当前配色已应用，但无法保存，请检查 Tampermonkey 权限。') }
+  }}><span className={`palette-swatches palette-${name}`} aria-hidden="true"><i /><i /><i /></span><span><strong>{title}</strong></span></Button>)}</div>{error && <p role="status">{error}</p>}</PopoverContent></Popover>
+}
