@@ -13,16 +13,16 @@ This is not a browser-wide network firewall. Following an external link can leav
 ## Single-version session
 
 ```bash
-make test SAVED_PAGE=/absolute/path/to/saved-page.html
+make test-serve SAVED_PAGE=/absolute/path/to/saved-page.html
 make test-status
 make test-logs
 ```
 
-`make test` builds and syntax-checks the userscript, then starts or restarts `lrr-test-current` on port 29683. It starts an interactive integration session; it does not currently execute automated browser assertions or report a regression pass.
+`make test-serve` builds and syntax-checks the userscript, then starts or restarts `lrr-test-current` on port 29683 for an interactive session. It does not run assertions. Loopback snapshots use their native search form's supported-site action to resolve gallery/navigation URLs, while relative cover resources remain local.
 
 Once per checkout, install `http://127.0.0.1:29683/install.user.js` in the browser containing Tampermonkey. This is a thin loader, not an installed copy of the build: its `@require file:///...` points to the absolute local build path. Enable Tampermonkey's **Allow access to file URLs** and userscript execution permissions. Installation confirmation can be driven through browser-harness; ordinary rebuilds need no installation interaction.
 
-The loader has a stable offline name/namespace/version, matches only its own `/snapshot.html`, limits `@connect` to `127.0.0.1`, and has no update/download URLs. Grants and execution metadata come from the build header. The tracked production build is unchanged. Build-file metadata inside `@require` is not interpreted as loader metadata.
+The loader has a stable offline name/namespace/version, uses a port-specific `@include` regular expression for its own `/snapshot.html`, limits `@connect` to `127.0.0.1`, and has no update/download URLs. Grants and execution metadata come from the build header. The tracked production build is unchanged. Build-file metadata inside `@require` is not interpreted as loader metadata.
 
 After rebuilding `lanraragi-checker.user.js`, refresh the snapshot tab. Tampermonkey reads the changed local file on page load, without a version bump or reinstall for code/style-only development changes. Saving does not automatically refresh the browser. Reinstall the loader only when its metadata changes (for example grants or run timing), or when the checkout/build path moves. Production releases still follow the normal version-bump policy.
 
@@ -31,9 +31,25 @@ Open `http://127.0.0.1:29683/snapshot.html`. In the application's settings, set 
 The local backend returns missing library results and stores submitted queue tasks in memory. Restarting clears backend state; Tampermonkey settings and cache persist. Use explicit recheck after changing backend scenarios.
 
 - `GET /__state`: request metadata, queued tasks, scenario and snapshot digest. Authorization values are never logged.
-- `POST /__scenario?value=normal|library-error|queue-error|send-error`: choose the backend scenario and clear recorded requests and tasks.
+- `POST /__scenario?value=normal|library-error|queue-error|send-error|library-hit|library-hit-queue-error`: choose the backend scenario and clear recorded requests and tasks.
 
 Detail/torrent pages are unavailable unless separately provided; do not treat the list snapshot as coverage of those features.
+
+## Automated browser checks
+
+After installing the current loader and granting Chrome remote debugging access:
+
+```bash
+make test SAVED_PAGE=/absolute/path/to/saved-page.html
+# Reuse an already-running session without another build/restart:
+make test-browser
+```
+
+`make test` starts the session and then runs `userscript/test-browser.py` through browser-harness. `test-quick` is an alias, not separate mock coverage. Missing browser permission, loader, file access, or application injection is a failure, not a skipped pass. The runner reuses and activates the snapshot tab, configures dummy credentials through the actual settings UI, and drives controls through CDP. It does not inject or substitute GM APIs.
+
+Assertions cover nonempty gallery rendering, authenticated library requests, queue authorization isolation, library/queue errors remaining unknown rather than missing, definitive library hits winning over queue errors, selection retention on send failure, successful queue submission/selection clearing, and settings/queue-state persistence across reload. The backend scenario and in-memory tasks are reset; the test changes Tampermonkey settings and ends with queued galleries. Do not run it on a tab being used for a stable visual comparison. Use only the dedicated offline loaders, never production credentials.
+
+To run the same checks against an already-served frozen build, use `make test-browser TEST_ORIGIN=http://127.0.0.1:29684` or port `29685`, after installing that build's loader. These checks are not visual acceptance, clipboard verification, navigation/detail coverage, Firefox verification, or a browser-wide no-egress audit. A newly added assertion runner is not verified until an actual run prints `PASS` and exits successfully.
 
 ## Frozen before/after comparison
 
@@ -53,7 +69,7 @@ PM2 starts two independent servers:
 | before | `http://127.0.0.1:29684/snapshot.html` | `http://127.0.0.1:29684/install.user.js` | Same origin plus `/library` and `/queue` |
 | after | `http://127.0.0.1:29685/snapshot.html` | `http://127.0.0.1:29685/install.user.js` | Same origin plus `/library` and `/queue` |
 
-Install both thin loaders once in Tampermonkey. Their separate names and origin matches isolate settings, cache and injection. Each loader uses a local `@require` pointing directly to its corresponding frozen build. Disable unrelated userscripts on the snapshot origins.
+Install both thin loaders once in Tampermonkey. Their separate names isolate GM settings/cache, and their exact `@include` expressions isolate injection by origin, including the port. Do not replace these with port-bearing `@match` patterns: ports do not provide the required isolation there. Each loader uses a local `@require` pointing directly to its corresponding frozen build. Disable unrelated userscripts on the snapshot origins.
 
 After subsequent edits, capture only `after`, then refresh the existing after tab. No service restart or loader reinstall is needed for code/style changes. The before loader continues to read the untouched baseline. Never recapture before after editing. Keep both files at their stable paths; reinstall the relevant loader if its metadata or absolute path changes. Restart services only when changing the server, page input or resetting backend state.
 

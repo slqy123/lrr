@@ -31,14 +31,14 @@ const server = createServer(async (req, res) => {
         .replace(/^\/\/ @namespace\s+.*$/m, '// @namespace    urn:lrr:offline')
         .replace(/^\/\/ @version\s+.*$/m, '// @version      1.0.0')
         .replace(/^\/\/ @(?:match|include|exclude|require|updateURL|downloadURL|connect)\s+.*\r?\n/gm, '')
-        .replace('// ==/UserScript==', `// @match        ${origin}/snapshot.html\n// @connect      127.0.0.1\n// @require      ${pathToFileURL(scriptPath).href}\n// ==/UserScript==`)
+        .replace('// ==/UserScript==', `// @include      /^http:\\/\\/127\\.0\\.0\\.1:${server.address().port}\\/snapshot\\.html(?:[?#].*)?$/\n// @connect      127.0.0.1\n// @require      ${pathToFileURL(scriptPath).href}\n// ==/UserScript==`)
       res.writeHead(200, { 'Content-Type': 'application/javascript', 'Cache-Control': 'no-store' })
       return res.end(`${loader}\nvoid 0;\n`)
     }
     if (url.pathname === '/__state') return json(res, { scenario, requests, tasks: [...tasks.values()], sha256: digest })
     if (url.pathname === '/__scenario' && req.method === 'POST') {
       const value = url.searchParams.get('value')
-      if (!['normal', 'library-error', 'queue-error', 'send-error'].includes(value)) return json(res, { error: 'Unknown scenario' }, 400)
+      if (!['normal', 'library-error', 'queue-error', 'send-error', 'library-hit', 'library-hit-queue-error'].includes(value)) return json(res, { error: 'Unknown scenario' }, 400)
       scenario = value
       requests.length = 0
       tasks.clear()
@@ -53,8 +53,8 @@ const server = createServer(async (req, res) => {
       const data = body ? JSON.parse(body) : {}
       requests.push({ method: req.method, path: url.pathname, authorization: Boolean(req.headers.authorization) })
       if (url.pathname.startsWith('/queue/') && req.headers.authorization) return json(res, { error: 'Library authorization leaked to queue' }, 400)
-      if ((scenario === 'library-error' && url.pathname.startsWith('/library/')) || (scenario === 'queue-error' && url.pathname.endsWith('/lookup')) || (scenario === 'send-error' && url.pathname.endsWith('/add'))) return json(res, { error: 'Simulated failure' }, 503)
-      if (url.pathname === '/library/api/plugins/use') return json(res, { success: 0, error: 'URL not found in database.' })
+      if ((scenario === 'library-error' && url.pathname.startsWith('/library/')) || (['queue-error', 'library-hit-queue-error'].includes(scenario) && url.pathname.endsWith('/lookup')) || (scenario === 'send-error' && url.pathname.endsWith('/add'))) return json(res, { error: 'Simulated failure' }, 503)
+      if (url.pathname === '/library/api/plugins/use') return json(res, scenario.startsWith('library-hit') ? { success: 1, data: { id: 'offline-archive', title: 'Local library hit' } } : { success: 0, error: 'URL not found in database.' })
       if (url.pathname === '/library/api/search') return json(res, { data: [], recordsFiltered: 0 })
       if (url.pathname === '/queue/api/tasks/lookup') return json(res, { items: (data.urls || []).flatMap(url => tasks.has(url) ? [tasks.get(url)] : []) })
       if (url.pathname === '/queue/add') {

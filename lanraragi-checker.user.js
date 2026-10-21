@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      AGPL-3.0-only
-// @version      2.0.0-alpha.42
+// @version      2.0.0-alpha.43
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -11758,6 +11758,13 @@
 		const list = doc.querySelector(".itg");
 		const form = doc.querySelector("#searchbox form");
 		if (!list || !form || !form.querySelector("[name=f_search]")) return null;
+		const resourceBase = base;
+		const sourceAction = webURL(form.getAttribute("action"), base);
+		if ([
+			"127.0.0.1",
+			"localhost",
+			"[::1]"
+		].includes(new URL(base).hostname) && sourceAction && siteHosts.has(new URL(sourceAction).hostname)) base = sourceAction;
 		const action = webURL(form.getAttribute("action") || new URL(base).pathname, base);
 		if (!action || !sameSite(action, base)) throw new Error("无法识别原站搜索地址");
 		const categoryMask = Number(form.querySelector("[name=f_cats]")?.value || 0);
@@ -11777,7 +11784,7 @@
 			if (!card || !title) throw new Error("无法解析图库标题");
 			const image = card.querySelector(".gl3t img, .glthumb img, img[data-src], img");
 			const source = image?.getAttribute("data-src") || image?.getAttribute("src") || "";
-			const cover = source.startsWith("data:image/") ? source : webURL(source, base) || "";
+			const cover = source.startsWith("data:image/") ? source : webURL(source, resourceBase) || "";
 			const pages = [...card.querySelectorAll("div, span, td")].map((node) => node.textContent?.match(/^\s*(\d+)\s+pages\s*$/i)).find(Boolean);
 			const posted = card.querySelector("[id^=posted_]");
 			const favorite = posted?.getAttribute("onclick")?.match(/popUp\(\s*['"]([^'"]+)['"]/)?.[1];
