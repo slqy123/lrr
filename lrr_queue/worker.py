@@ -8,6 +8,7 @@ import time
 from .config import Settings
 from .lrr_client import JobStatus, LrrClient
 from .models import Status, Task
+from .transitions import begin_attempt, transition_task
 
 log = logging.getLogger(__name__)
 
@@ -65,7 +66,7 @@ class QueueWorker(threading.Thread):
         running = Task.select().where(Task.status == Status.RUNNING.value)
         for task in list(running):
             if task.lrr_job_id is None:
-                self._fail(task.id, task.attempts, task.max_attempts, "running task without job id")
+                self._fail(task, "running task without job id")
                 continue
             try:
                 job = self._lrr.job_status(task.lrr_job_id)
@@ -74,11 +75,11 @@ class QueueWorker(threading.Thread):
                 continue
             if job.state == "finished":
                 if job.archive_id:
-                    self._finish(task.id, job)
+                    self._finish(task, job)
                 else:
-                    self._fail(task.id, task.attempts, task.max_attempts, job.message or "finished without archive id")
+                    self._fail(task, job.message or "finished without archive id")
             elif job.state == "failed":
-                self._fail(task.id, task.attempts, task.max_attempts, job.message or "minion failed")
+                self._fail(task, job.message or "minion failed")
 
     def _dispatch(self) -> None:
         if self.paused:
@@ -90,23 +91,23 @@ class QueueWorker(threading.Thread):
                 return
             archive_id = self._already_present(task.url)
             if archive_id is not None:
-                self._mark_already_present(task.id, archive_id)
+                self._mark_already_present(task, archive_id)
                 continue
             self._wait_for_submit_slot()
             if self._stop.is_set():
                 return
-            attempts = task.attempts + 1
-            (Task.update(attempts=attempts, updated_at=time.time()).where(Task.id == task.id)).execute()
+            if not begin_attempt(task):
+                continue
             try:
                 ok, job_id, error = self._lrr.submit(task.url)
             except Exception as exc:
                 ok, job_id, error = False, None, str(exc)
             self._last_submit = time.time()
             if ok:
-                self._mark_running(task.id, attempts, job_id)
+                self._mark_running(task, job_id)
                 capacity -= 1
             else:
-                self._fail(task.id, attempts, task.max_attempts, error)
+                self._fail(task, error)
 
     def _next_task(self, now: float) -> Task | None:
         due = (Task.status == Status.PENDING.value) | (
@@ -128,75 +129,29 @@ class QueueWorker(threading.Thread):
             log.warning("urlfinder pre-check failed for %s: %s", url, exc)
             return None
 
-    def _mark_already_present(self, task_id: int, archive_id: str) -> None:
-        now = time.time()
-        (
-            Task.update(
-                status=Status.DONE.value,
-                lrr_archive_id=archive_id,
-                error="",
-                updated_at=now,
-                finished_at=now,
-            ).where(Task.id == task_id)
-        ).execute()
-        log.info("task %s already in library (%s), skipped download", task_id, archive_id)
+    def _mark_already_present(self, task: Task, archive_id: str) -> None:
+        if transition_task(task, Status.DONE, lrr_archive_id=archive_id):
+            log.info("task %s already in library (%s), skipped download", task.id, archive_id)
 
-    def _mark_running(self, task_id: int, attempts: int, job_id: int | None) -> None:
-        now = time.time()
-        (
-            Task.update(
-                status=Status.RUNNING.value,
-                lrr_job_id=job_id,
-                attempts=attempts,
-                submitted_at=now,
-                updated_at=now,
-                error="",
-            ).where(Task.id == task_id)
-        ).execute()
-        log.info("task %s submitted -> job %s", task_id, job_id)
+    def _mark_running(self, task: Task, job_id: int | None) -> None:
+        if transition_task(task, Status.RUNNING, lrr_job_id=job_id):
+            log.info("task %s submitted -> job %s", task.id, job_id)
 
-    def _finish(self, task_id: int, job: JobStatus) -> None:
-        now = time.time()
-        (
-            Task.update(
-                status=Status.DONE.value,
-                lrr_archive_id=job.archive_id,
-                title=job.title,
-                error="",
-                updated_at=now,
-                finished_at=now,
-            ).where(Task.id == task_id)
-        ).execute()
-        log.info("task %s done -> %s", task_id, job.archive_id)
+    def _finish(self, task: Task, job: JobStatus) -> None:
+        if transition_task(task, Status.DONE, lrr_archive_id=job.archive_id, title=job.title):
+            log.info("task %s done -> %s", task.id, job.archive_id)
 
-    def _fail(self, task_id: int, attempts: int, max_attempts: int, error: str) -> None:
-        attempts = max(attempts, 1)
-        now = time.time()
-        if is_permanent(error) or attempts >= max_attempts:
-            (
-                Task.update(
-                    status=Status.DEAD.value,
-                    attempts=attempts,
-                    error=error,
-                    updated_at=now,
-                    finished_at=now,
-                ).where(Task.id == task_id)
-            ).execute()
-            log.warning("task %s dead: %s", task_id, error)
-            self._check_breaker()
+    def _fail(self, task: Task, error: str) -> None:
+        attempts = max(task.attempts, 1)
+        if is_permanent(error) or attempts >= task.max_attempts:
+            if transition_task(task, Status.DEAD, attempts=attempts, error=error):
+                log.warning("task %s dead: %s", task.id, error)
+                self._check_breaker()
             return
         delay = min(self._settings.retry_base_sec * (2 ** (attempts - 1)), self._settings.retry_max_sec)
         delay *= 1 + random.uniform(0, self._settings.retry_jitter)
-        (
-            Task.update(
-                status=Status.FAILED.value,
-                attempts=attempts,
-                error=error,
-                next_attempt_at=now + delay,
-                updated_at=now,
-            ).where(Task.id == task_id)
-        ).execute()
-        log.info("task %s failed (attempt %d/%d), retry in %.0fs: %s", task_id, attempts, max_attempts, delay, error)
+        if transition_task(task, Status.FAILED, attempts=attempts, error=error, next_attempt_at=time.time() + delay):
+            log.info("task %s failed (attempt %d/%d), retry in %.0fs: %s", task.id, attempts, task.max_attempts, delay, error)
 
     def _check_breaker(self) -> None:
         if self.paused:

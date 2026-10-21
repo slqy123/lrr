@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import logging
-import time
 
 from peewee import IntegrityError, fn
 
 from .lrr_client import LrrClient
 from .models import Status, Task
 from .schemas import Stats
+from .transitions import transition, transition_task
 
 log = logging.getLogger(__name__)
 
@@ -49,15 +49,14 @@ def get_task(task_id: int) -> Task | None:
 def retry_task(task_id: int) -> Task | None:
     if get_task(task_id) is None:
         return None
-    _reset_to_pending([task_id])
+    transition(Task.id == task_id, Status.PENDING)
     return get_task(task_id)
 
 
 def cancel_task(task_id: int) -> Task | None:
     if get_task(task_id) is None:
         return None
-    now = time.time()
-    (Task.update(status=Status.CANCELLED.value, updated_at=now, finished_at=now).where(Task.id == task_id)).execute()
+    transition(Task.id == task_id, Status.CANCELLED)
     return get_task(task_id)
 
 
@@ -66,31 +65,7 @@ def delete_task(task_id: int) -> bool:
 
 
 def retry_failed() -> int:
-    now = time.time()
-    return (
-        Task.update(
-            status=Status.PENDING.value,
-            attempts=0,
-            next_attempt_at=0.0,
-            error="",
-            updated_at=now,
-            finished_at=None,
-        ).where(Task.status.in_([Status.FAILED.value, Status.DEAD.value]))
-    ).execute()
-
-
-def _reset_to_pending(task_ids: list[int]) -> int:
-    now = time.time()
-    return (
-        Task.update(
-            status=Status.PENDING.value,
-            attempts=0,
-            next_attempt_at=0.0,
-            error="",
-            updated_at=now,
-            finished_at=None,
-        ).where(Task.id.in_(task_ids))
-    ).execute()
+    return transition(Task.status.in_([Status.FAILED.value, Status.DEAD.value]), Status.PENDING)
 
 
 def recheck_with_urlfinder(lrr: LrrClient) -> int:
@@ -105,15 +80,13 @@ def recheck_with_urlfinder(lrr: LrrClient) -> int:
         new_status = Status.DONE.value if found is not None else Status.DEAD.value
         if new_status == task.status:
             continue
-        now = time.time()
-        fields: dict[str, object] = {"status": new_status, "updated_at": now}
+        fields: dict[str, object] = {}
         if new_status == Status.DONE.value:
-            fields["error"] = ""
-            fields["finished_at"] = task.finished_at or now
+            if task.finished_at is not None:
+                fields["finished_at"] = task.finished_at
             if found:
                 fields["lrr_archive_id"] = found
-        (Task.update(**fields).where(Task.id == task.id)).execute()
-        affected += 1
+        affected += transition_task(task, Status(new_status), **fields)
     return affected
 
 
