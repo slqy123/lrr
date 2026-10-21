@@ -1,72 +1,75 @@
-# Userscript preview workflow
+# Userscript tests and previews
 
-## Meaning of “preview”
+Local test and preview HTTP services run under PM2. The production Python service remains managed by systemd. PM2 must be installed locally; do not configure startup persistence for these temporary services.
 
-A preview request means an interactive before/after comparison of the actual built userscript, opened in two browser-harness tabs. Do not author separate preview HTML, CSS, or substitute components. Reuse `userscript/test-live.mjs`: its native-page fixture (or supplied saved page), GM mocks, and Shadow DOM application are shared with integration tests.
+## Read-only page input
 
-## Iteration and pre-commit tests
+Supply an HTML snapshot saved from the real site, with its accompanying resource directory. Keep these local inputs under the ignored `refs/` directory. Do not substitute generated fixture pages or concept prototypes.
 
-By default, assistant verification is limited to `pnpm --dir web build:userscript` (including TypeScript checking), `node --check lanraragi-checker.user.js` and `git diff --check`. A successful preview build already satisfies the build check for unchanged source. Do not automatically run live tests, showcase tests, browser interaction checks or theme/viewport matrices, including before commits. The user handles interactive, visual and full regression verification unless explicitly requesting assistant-run tests.
+The server returns the original HTML bytes, serves local styles and images, and uses HTTP CSP headers to block source scripts, external subresources, forms and page connections. It never injects application or test scripts into the HTML. A SHA-256 digest is logged at startup and checked again on graceful shutdown. Missing resources return 404 rather than falling back to the live site.
 
-Manual test commands remain available: `make test-quick` runs the core live scenario, while `make test` runs the full suite. `make test SAVED_PAGE=/path/to/gallery.html` includes a saved page without repeating the generic live suite. These commands are not part of the assistant's default checks.
+This is not a browser-wide network firewall. Following an external link can leave the snapshot, and other extensions or unrelated browser tabs are outside this server's control. Use an isolated offline browser/network environment when strict no-egress enforcement is required.
 
-## Capture and serve
-
-Run from the repository root:
+## Single-version session
 
 ```bash
-# Before editing: build the current working tree, including existing local changes.
+make test SAVED_PAGE=/absolute/path/to/saved-page.html
+make test-status
+make test-logs
+```
+
+`make test` builds and syntax-checks the userscript, then starts or restarts `lrr-test-current` on port 29683. It starts an interactive integration session; it does not currently execute automated browser assertions or report a regression pass.
+
+Once per checkout, install `http://127.0.0.1:29683/install.user.js` in the browser containing Tampermonkey. This is a thin loader, not an installed copy of the build: its `@require file:///...` points to the absolute local build path. Enable Tampermonkey's **Allow access to file URLs** and userscript execution permissions. Installation confirmation can be driven through browser-harness; ordinary rebuilds need no installation interaction.
+
+The loader has a stable offline name/namespace/version, matches only its own `/snapshot.html`, limits `@connect` to `127.0.0.1`, and has no update/download URLs. Grants and execution metadata come from the build header. The tracked production build is unchanged. Build-file metadata inside `@require` is not interpreted as loader metadata.
+
+After rebuilding `lanraragi-checker.user.js`, refresh the snapshot tab. Tampermonkey reads the changed local file on page load, without a version bump or reinstall for code/style-only development changes. Saving does not automatically refresh the browser. Reinstall the loader only when its metadata changes (for example grants or run timing), or when the checkout/build path moves. Production releases still follow the normal version-bump policy.
+
+Open `http://127.0.0.1:29683/snapshot.html`. In the application's settings, set the library URL to `http://127.0.0.1:29683/library`, the queue URL to `http://127.0.0.1:29683/queue`, and use a dummy API key. Never enter production credentials. GM storage, requests and clipboard operations are provided by Tampermonkey, not page mocks.
+
+The local backend returns missing library results and stores submitted queue tasks in memory. Restarting clears backend state; Tampermonkey settings and cache persist. Use explicit recheck after changing backend scenarios.
+
+- `GET /__state`: request metadata, queued tasks, scenario and snapshot digest. Authorization values are never logged.
+- `POST /__scenario?value=normal|library-error|queue-error|send-error`: choose the backend scenario and clear recorded requests and tasks.
+
+Detail/torrent pages are unavailable unless separately provided; do not treat the list snapshot as coverage of those features.
+
+## Frozen before/after comparison
+
+```bash
 node userscript/preview.mjs before
-
-# Edit production source. Bump userscript/header.txt version before building changed source.
+# Edit production source and bump userscript/header.txt version when applicable.
 node userscript/preview.mjs after
-
-# Serve both frozen builds with identical fixture data.
-node userscript/preview.mjs serve
-
-# Prefer the same saved real page for visual acceptance when available.
-node userscript/preview.mjs serve /absolute/path/to/saved-gallery.html
+node userscript/preview.mjs serve /absolute/path/to/saved-page.html
 ```
 
-Snapshots live in the ignored `userscript/dist/comparison/` directory. Each capture replaces only its named snapshot. Serving does not rebuild or overwrite either snapshot. Do not capture `before` again after editing; if no baseline was captured, disclose that rather than presenting a different revision as the original working tree.
+Capture `before` before editing, including existing local changes. Never replace the baseline after editing. If no baseline was captured, disclose that. Frozen builds are stored in ignored `userscript/dist/comparison/`.
 
-The command prints labeled `before` and `after` URLs and stays running until Ctrl-C. Both use the same page input and mock implementation, but separate loopback ports isolate browser origins. GM settings are in-memory per page and reset on reload. No real library or queue requests are sent. The manual mode does not run automated tests or their state-changing interactions. Ordinary test execution is unchanged.
+PM2 starts two independent servers:
 
-## Browser comparison
+| Build | Snapshot | Install | Backend settings |
+| --- | --- | --- | --- |
+| before | `http://127.0.0.1:29684/snapshot.html` | `http://127.0.0.1:29684/install.user.js` | Same origin plus `/library` and `/queue` |
+| after | `http://127.0.0.1:29685/snapshot.html` | `http://127.0.0.1:29685/install.user.js` | Same origin plus `/library` and `/queue` |
 
-The user performs this comparison by default. The assistant serves the frozen builds when a preview is requested, but only runs browser automation when explicitly requested.
+Install both thin loaders once in Tampermonkey. Their separate names and origin matches isolate settings, cache and injection. Each loader uses a local `@require` pointing directly to its corresponding frozen build. Disable unrelated userscripts on the snapshot origins.
 
-1. Open both printed URLs using browser-harness, one tab per version. Reuse these tabs on subsequent inspections; do not open duplicate comparison tabs.
-2. Keep browser viewport, zoom, theme, fixture, and interaction state identical. Set settings and selections equally in each tab; reload both to reset the mocks.
-3. Check both surrounding layout and close-ups, light/dark themes, and normal/compact viewport sizes. Compare checked/unchecked, hover, focus, expanded, and disabled states where relevant.
-4. Capture browser screenshots without editing the depicted UI. Label intentional differences. Leave both tabs and servers available while the user compares them.
-5. The user runs regression tests as needed. Passing tests or geometry assertions alone do not establish visual fidelity.
-6. After subsequent changes, recapture only `after`, restart the comparison servers, and reload the same tabs with their newly printed URLs. Recheck against the approved appearance before delivery.
+After subsequent edits, capture only `after`, then refresh the existing after tab. No service restart or loader reinstall is needed for code/style changes. The before loader continues to read the untouched baseline. Never recapture before after editing. Keep both files at their stable paths; reinstall the relevant loader if its metadata or absolute path changes. Restart services only when changing the server, page input or resetting backend state.
 
-State the preview source, simulated data and behavior, working interactions, and any remaining visual differences when presenting the comparison. Do not imply that automated tests were run unless they actually were.
+Reuse one browser tab per version. Keep page input, viewport, zoom, theme and interaction state identical. Use actual application screenshots for visual comparisons, not rewritten HTML or parallel preview CSS. The user handles interactive and visual verification by default; browser automation is only run when explicitly requested.
 
-## Fidelity and limits
+Disclose the saved-page source, missing resources, mocked backend behavior, untested interactions and unverified Firefox/Tampermonkey behavior. Serving a snapshot or passing a build does not establish browser compatibility or visual fidelity.
 
-The preview executes the frozen installable `lanraragi-checker.user.js`, including its actual components and styles inside Shadow DOM. The preview and delivered implementation must not use parallel UI implementations.
-
-The generic fixture uses placeholder covers and synthetic content. It is useful for repeatable interactions and error states, not sufficient for final visual acceptance. Prefer a saved real page with local or embedded resources; saved-page preview strips source scripts and blocks external resources, so unavailable covers or fonts must be disclosed. Saved-page GM library and queue responses are simulated as well.
-
-Identical builds under identical page, resource, browser, and interaction conditions should render identically. This does not guarantee matching a live site's changed DOM, network resources, real Tampermonkey behavior, or another browser's font/layout behavior. Chromium/browser-harness verification is not Firefox + Tampermonkey verification. Report those as unverified unless separately tested.
-
-## Batch quick-filter comparison
-
-Run the quick-filter scenario through browser-harness once for both builds:
+## Lifecycle
 
 ```bash
-LRR_PREVIEW_BEFORE_URL=http://127.0.0.1:<before-port>/saved \
-LRR_PREVIEW_AFTER_URL=http://127.0.0.1:<after-port>/saved \
-browser-harness < userscript/preview-browser.py
+make test-status
+make test-logs TEST_APP=lrr-test-before
+make test-logs TEST_APP=lrr-test-after
+make test-stop
 ```
 
-The script uses short post-click waits and settles animations before each screenshot pair. Run it only when the user explicitly requests automated browser comparison. It opens Chinese and all-ages filters, checks their state and fit, and captures close-ups and surrounding context in both themes at 1440px standard and 900px compact layouts. It leaves both tabs at 1440px standard in the dark theme. Screenshots and measurements go to `userscript/dist/comparison/`.
+`test-stop` targets only the three project services; PM2 may report an error for a service that has never been started. Do not use `pm2 stop all`, `pm2 kill`, `pm2 save` or `pm2 startup` for this workflow. Services have fixed ports, no watch mode and no automatic restart. Inspect PM2 logs if a port is occupied or a process stops.
 
-Matching tabs are reused. When restarting the servers changes the URLs, pass `LRR_PREVIEW_BEFORE_TAB` and `LRR_PREVIEW_AFTER_TAB` with the existing target IDs to reuse the same comparison tabs. This scenario expects an initially empty search query. It does not replace visual inspection or automated regression tests.
-
-## Direct harness usage
-
-`LRR_LIVE_PREVIEW=1 node userscript/test-live.mjs` retains the existing automated-interaction preview behavior. For a stable manual page, use `LRR_LIVE_PREVIEW=manual` instead. Optional `LRR_PREVIEW_SCRIPT` selects a frozen script file and `LRR_PREVIEW_LABEL` labels the printed URL. The comparison command sets these automatically.
+Default assistant verification remains the userscript build, `node --check lanraragi-checker.user.js`, and `git diff --check`. Full browser verification must be requested explicitly. The local showcase remains concept exploration, not evidence of real Tampermonkey integration.

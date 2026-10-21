@@ -1,7 +1,8 @@
 PORT ?= 29683
 SAVED_PAGE ?=
+TEST_APP ?= lrr-test-current
 
-.PHONY: dev build watch watch-live watch-preview serve test test-quick
+.PHONY: dev build watch watch-live watch-preview serve test test-quick test-status test-logs test-stop
 
 dev: build
 	$(MAKE) -j2 watch serve
@@ -9,15 +10,21 @@ dev: build
 build:
 	pnpm --dir web build:userscript
 
-test-quick: build
-	LRR_TEST_QUICK=1 node userscript/test-live.mjs
-	node --check lanraragi-checker.user.js
+test-quick: test
 
 test: build
-	node userscript/test-isolation.mjs
-	node userscript/test-showcase.mjs
-	node userscript/test-live.mjs $(if $(SAVED_PAGE),"$(SAVED_PAGE)")
 	node --check lanraragi-checker.user.js
+	@test -n "$(SAVED_PAGE)" && test -f "$(SAVED_PAGE)" || { echo 'Set SAVED_PAGE to a saved real HTML page'; exit 1; }
+	LRR_SAVED_PAGE="$(abspath $(SAVED_PAGE))" pm2 startOrRestart userscript/ecosystem.config.cjs --only lrr-test-current --update-env
+
+test-status:
+	pm2 list
+
+test-logs:
+	pm2 logs $(TEST_APP)
+
+test-stop:
+	pm2 stop lrr-test-current lrr-test-before lrr-test-after
 
 watch:
 	$(MAKE) -j2 watch-live watch-preview

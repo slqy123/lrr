@@ -1,6 +1,6 @@
-import { spawn, spawnSync } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
 import { copyFileSync, existsSync, mkdirSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
@@ -19,19 +19,15 @@ if (['before', 'after'].includes(command)) {
   for (const name of ['before', 'after']) {
     if (!existsSync(snapshot(name))) throw new Error(`Missing ${name} snapshot; run node userscript/preview.mjs ${name} first`)
   }
-  if (savedPage && !existsSync(savedPage)) throw new Error(`Saved page not found: ${savedPage}`)
-  const children = ['before', 'after'].map(name => spawn(process.execPath, [join(root, 'userscript/test-live.mjs'), ...(savedPage ? [savedPage] : [])], {
-    cwd: process.cwd(),
+  if (!savedPage || !existsSync(savedPage)) throw new Error('Supply a saved real HTML page')
+  const result = spawnSync('pm2', ['startOrRestart', join(root, 'userscript/ecosystem.config.cjs'), '--only', 'lrr-test-before,lrr-test-after', '--update-env'], {
+    cwd: root,
     stdio: 'inherit',
-    env: { ...process.env, LRR_LIVE_PREVIEW: 'manual', LRR_PREVIEW_SCRIPT: snapshot(name), LRR_PREVIEW_LABEL: name },
-  }))
-  const stop = () => children.forEach(child => child.kill('SIGTERM'))
-  process.on('SIGINT', stop)
-  process.on('SIGTERM', stop)
-  children.forEach(child => {
-    child.on('error', error => { console.error(error); process.exitCode = 1; stop() })
-    child.on('exit', code => { if (code) { process.exitCode = code; stop() } })
+    env: { ...process.env, LRR_SAVED_PAGE: resolve(savedPage) },
   })
+  if (result.error) throw result.error
+  if (result.status !== 0) process.exit(result.status || 1)
+  console.log('before: http://127.0.0.1:29684/snapshot.html\nafter: http://127.0.0.1:29685/snapshot.html')
 } else {
   console.error(`Usage: node ${join('userscript', 'preview.mjs')} before|after|serve [saved-gallery.html]`)
   process.exitCode = 1
