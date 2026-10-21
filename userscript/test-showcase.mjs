@@ -4,7 +4,7 @@ import { join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 
 const directory = mkdtempSync(join(tmpdir(), 'lrr-showcase-'))
-const script = readFileSync(new URL('../lanraragi-checker.user.js', import.meta.url), 'utf8')
+const script = readFileSync(new URL('./dist/preview.js', import.meta.url), 'utf8')
 const output = resolve('userscript/dist')
 const run = async () => {
   const wait = ms => new Promise(resolve => setTimeout(resolve, ms))

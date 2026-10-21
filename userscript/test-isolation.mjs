@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
 
 const dir = mkdtempSync(join(tmpdir(), 'lrr-isolation-'))
-const script = readFileSync(new URL('../lanraragi-checker.user.js', import.meta.url), 'utf8')
+const script = readFileSync(new URL('./dist/preview.js', import.meta.url), 'utf8')
 const test = async () => {
   const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
   const assert = (value, message) => { if (!value) throw new Error(message) }

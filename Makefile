@@ -1,7 +1,7 @@
 PORT ?= 29683
 SAVED_PAGE ?=
 
-.PHONY: dev build watch serve test test-quick
+.PHONY: dev build watch watch-live watch-preview serve test test-quick
 
 dev: build
 	$(MAKE) -j2 watch serve
@@ -20,7 +20,13 @@ test: build
 	node --check lanraragi-checker.user.js
 
 watch:
+	$(MAKE) -j2 watch-live watch-preview
+
+watch-live:
 	pnpm --dir web exec vite build --config vite.userscript.config.ts --watch
+
+watch-preview:
+	pnpm --dir web exec vite build --config vite.userscript.config.ts --mode preview --watch
 
 serve:
 	python3 -m http.server $(PORT) --bind 127.0.0.1 --directory userscript/dist

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:userscript": "tsc -p tsconfig.userscript.json && vite build --config vite.userscript.config.ts",
+    "build:userscript": "tsc -p tsconfig.userscript.json && vite build --config vite.userscript.config.ts && vite build --config vite.userscript.config.ts --mode preview",
     "preview": "vite preview"
   },
   "devDependencies": {
