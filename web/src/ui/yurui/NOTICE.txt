@@ -1,12 +1,14 @@
-AniBT UI
+yurui
+Derived from AniBT UI.
 Copyright (C) 2026 AniBT
 License: AGPL-3.0-only; see LICENSE in this directory.
 Source: https://github.com/OpenAniBT/ui
 Upstream revision: 0e758b0 (chore: update GitHub repository URL to OpenAniBT/ui)
 
-Vendored files: button.tsx, spinner.tsx, input.tsx, popover.tsx,
+Derived files: button.tsx, spinner.tsx, input.tsx, popover.tsx,
 dialog.tsx, checkbox.tsx, badge.tsx, table.tsx, poster-card.tsx, theme.css.
 Local modifications, 2026-10-20:
+- The local design system is named yurui; component paths and internal style identifiers use yurui.
 - Component imports use local module paths.
 - PopoverContent and DialogContent require explicit portal containers for Shadow DOM isolation.
 - Theme root selectors target :host and :host(.dark).

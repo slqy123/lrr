@@ -1,0 +1,6 @@
+export const galleryDetailsStyles = 'gallery-details yurui-sheet col-span-full min-w-0 overflow-hidden border-t-[3px] border-ring'
+export const detailHeadingStyles = 'flex items-center gap-3 px-[18px] py-[10px] [@media(max-width:700px)]:flex-wrap [@media(max-width:700px)]:gap-[10px] [@media(max-width:700px)]:p-[14px]'
+export const detailHeadingTextStyles = 'flex-1 min-w-0 [&_h3]:m-0 [&_h3]:text-[13px] [&_h3]:font-bold [&_h3]:[overflow-wrap:anywhere] [@media(max-width:700px)]:basis-full'
+export const detailHeadingActionsStyles = 'flex items-center gap-1 ml-auto shrink-0 [&>button:last-child]:ml-2'
+export const detailFooterStyles = 'yurui-stitch-over flex justify-end flex-wrap gap-3 px-[18px] py-2'
+export const detailFeedbackStyles = 'px-5 pt-0 pb-[14px] text-[12px]'

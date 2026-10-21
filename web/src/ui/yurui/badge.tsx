@@ -9,23 +9,23 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "anibt-tag",
-        secondary: "anibt-tag",
-        outline: "anibt-tag bg-transparent inset-ring-1 inset-ring-input",
-        res: "anibt-tag anibt-tag-res",
-        lang: "anibt-tag anibt-tag-lang",
-        success: "anibt-tag anibt-tag-ok",
-        warning: "anibt-tag anibt-tag-warn",
-        destructive: "anibt-tag anibt-tag-danger",
-        sticker: "anibt-sticker",
-        candy: "anibt-sticker anibt-sticker-candy",
-        water: "anibt-sticker anibt-sticker-water",
-        count: "anibt-count",
-        "count-quiet": "anibt-count anibt-count-quiet",
+        default: "yurui-tag",
+        secondary: "yurui-tag",
+        outline: "yurui-tag bg-transparent inset-ring-1 inset-ring-input",
+        res: "yurui-tag yurui-tag-res",
+        lang: "yurui-tag yurui-tag-lang",
+        success: "yurui-tag yurui-tag-ok",
+        warning: "yurui-tag yurui-tag-warn",
+        destructive: "yurui-tag yurui-tag-danger",
+        sticker: "yurui-sticker",
+        candy: "yurui-sticker yurui-sticker-candy",
+        water: "yurui-sticker yurui-sticker-water",
+        count: "yurui-count",
+        "count-quiet": "yurui-count yurui-count-quiet",
       },
       /** Specs and figures take the round face; a word takes the body face. */
       face: {
-        spec: "anibt-num",
+        spec: "yurui-num",
         text: "",
       },
       size: {
@@ -52,7 +52,7 @@ type BadgeProps = React.ComponentProps<"span"> &
 function Badge({ className, variant, face, size, asChild = false, tilt, style, ...props }: BadgeProps) {
   const Comp = asChild ? Slot.Root : "span"
   const tiltStyle =
-    tilt === undefined ? style : ({ ...style, "--anibt-tilt": `${tilt}deg` } as React.CSSProperties)
+    tilt === undefined ? style : ({ ...style, "--yurui-tilt": `${tilt}deg` } as React.CSSProperties)
 
   return (
     <Comp
@@ -65,15 +65,15 @@ function Badge({ className, variant, face, size, asChild = false, tilt, style, .
   )
 }
 
-const statusBadgeVariants = cva("anibt-status", {
+const statusBadgeVariants = cva("yurui-status", {
   variants: {
     tone: {
-      ok: "anibt-status-ok",
-      run: "anibt-status-run",
-      fail: "anibt-status-fail",
-      warn: "anibt-status-warn",
-      mute: "anibt-status-mute",
-      on: "anibt-status-on",
+      ok: "yurui-status-ok",
+      run: "yurui-status-run",
+      fail: "yurui-status-fail",
+      warn: "yurui-status-warn",
+      mute: "yurui-status-mute",
+      on: "yurui-status-on",
     },
   },
   defaultVariants: {
@@ -98,16 +98,16 @@ function StatusBadge({ className, tone, ...props }: StatusBadgeProps) {
   )
 }
 
-const statusDotVariants = cva("anibt-dot", {
+const statusDotVariants = cva("yurui-dot", {
   variants: {
     variant: {
       default: "",
-      ok: "anibt-dot-ok",
-      warn: "anibt-dot-warn",
-      danger: "anibt-dot-danger",
-      time: "anibt-dot-time",
-      hollow: "anibt-dot-hollow",
-      mute: "anibt-dot-mute",
+      ok: "yurui-dot-ok",
+      warn: "yurui-dot-warn",
+      danger: "yurui-dot-danger",
+      time: "yurui-dot-time",
+      hollow: "yurui-dot-hollow",
+      mute: "yurui-dot-mute",
     },
   },
   defaultVariants: {

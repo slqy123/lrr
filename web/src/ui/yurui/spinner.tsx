@@ -22,7 +22,7 @@ const spinnerVariants = cva("inline-grid shrink-0 place-items-center", {
     },
     tone: {
       current: "text-current",
-      mark: "text-anibt-mark",
+      mark: "text-yurui-mark",
     },
   },
   defaultVariants: {

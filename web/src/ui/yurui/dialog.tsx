@@ -55,13 +55,13 @@ function DialogClose(props: React.ComponentProps<typeof DialogPrimitive.Close> &
   return <DialogPrimitive.Close data-slot="dialog-close" {...renderAsChild(props)} />
 }
 
-/** The scrim: the theme's `--anibt-scrim`, fading in and out. */
+/** The scrim: the theme's `--yurui-scrim`, fading in and out. */
 function DialogOverlay({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
   return (
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 z-50 bg-anibt-scrim duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
+        "fixed inset-0 z-50 bg-yurui-scrim duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
         className
       )}
       {...props}
@@ -89,7 +89,7 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "anibt-pop fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col gap-3 overflow-y-auto overscroll-contain p-4 text-[14px] duration-200 outline-none sm:max-w-lg",
+          "yurui-pop fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col gap-3 overflow-y-auto overscroll-contain p-4 text-[14px] duration-200 outline-none sm:max-w-lg",
           "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
           // A title never runs under the close button.
           showCloseButton && "[&>[data-slot=dialog-header]]:pe-12",
@@ -101,7 +101,7 @@ function DialogContent({
         {showCloseButton ? (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="anibt-icobtn anibt-icobtn-ghost absolute top-2 right-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring focus-visible:outline-solid disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+            className="yurui-icobtn yurui-icobtn-ghost absolute top-2 right-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring focus-visible:outline-solid disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
           >
             <XIcon />
             <span className="sr-only">{closeLabel}</span>
@@ -118,7 +118,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="dialog-header"
       className={cn(
-        "anibt-stitch-under -mx-4 -mt-4 flex min-h-12 shrink-0 flex-col justify-center gap-1 bg-secondary px-4 py-3 text-left",
+        "yurui-stitch-under -mx-4 -mt-4 flex min-h-12 shrink-0 flex-col justify-center gap-1 bg-secondary px-4 py-3 text-left",
         className
       )}
       {...props}
@@ -131,7 +131,7 @@ function DialogBody({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-body"
-      className={cn("-m-1 min-h-0 flex-1 overflow-y-auto overscroll-contain p-1 text-anibt-ink2", className)}
+      className={cn("-m-1 min-h-0 flex-1 overflow-y-auto overscroll-contain p-1 text-yurui-ink2", className)}
       {...props}
     />
   )
@@ -181,7 +181,7 @@ function DialogDescription({ className, ...props }: React.ComponentProps<typeof 
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn("text-[13px] leading-normal text-anibt-ink2", className)}
+      className={cn("text-[13px] leading-normal text-yurui-ink2", className)}
       {...props}
     />
   )

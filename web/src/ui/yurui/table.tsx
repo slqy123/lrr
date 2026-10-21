@@ -48,7 +48,7 @@ function TableHeader({
       data-slot="table-header"
       data-sticky={sticky ? "true" : undefined}
       className={cn(
-        "[&_th]:bg-(image:--anibt-stitch) [&_th]:bg-size-[8px_1px] [&_th]:bg-bottom [&_th]:bg-repeat-x [&_tr]:h-auto [&_tr]:bg-none [&_tr]:hover:bg-transparent",
+        "[&_th]:bg-(image:--yurui-stitch) [&_th]:bg-size-[8px_1px] [&_th]:bg-bottom [&_th]:bg-repeat-x [&_tr]:h-auto [&_tr]:bg-none [&_tr]:hover:bg-transparent",
         sticky && "[&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:bg-card",
         className
       )}
@@ -66,7 +66,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
     <tfoot
       data-slot="table-footer"
       className={cn(
-        "font-semibold text-foreground [&_td]:bg-muted [&_td]:bg-(image:--anibt-stitch) [&_td]:bg-size-[8px_1px] [&_td]:bg-top [&_td]:bg-repeat-x [&_tr]:bg-none [&_tr]:hover:bg-transparent",
+        "font-semibold text-foreground [&_td]:bg-muted [&_td]:bg-(image:--yurui-stitch) [&_td]:bg-size-[8px_1px] [&_td]:bg-top [&_td]:bg-repeat-x [&_tr]:bg-none [&_tr]:hover:bg-transparent",
         className
       )}
       {...props}
@@ -79,7 +79,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "h-12 bg-(image:--anibt-stitch) bg-size-[8px_1px] bg-bottom bg-repeat-x transition-colors duration-150 hover:bg-muted data-[state=selected]:bg-accent",
+        "h-12 bg-(image:--yurui-stitch) bg-size-[8px_1px] bg-bottom bg-repeat-x transition-colors duration-150 hover:bg-muted data-[state=selected]:bg-accent",
         className
       )}
       {...props}
@@ -87,7 +87,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   )
 }
 
-const NUMERIC = "data-[numeric=true]:text-right data-[numeric=true]:anibt-num"
+const NUMERIC = "data-[numeric=true]:text-right data-[numeric=true]:yurui-num"
 
 function TableHead({ className, numeric, ...props }: React.ComponentProps<"th"> & { numeric?: boolean }) {
   return (
@@ -110,7 +110,7 @@ function TableCell({ className, numeric, ...props }: React.ComponentProps<"td"> 
       data-slot="table-cell"
       data-numeric={numeric ? "true" : undefined}
       className={cn(
-        "px-3 py-2 align-middle text-[13px] leading-5 text-anibt-ink2 first:pl-4 last:pr-4 [&:has([role=checkbox])]:pr-0",
+        "px-3 py-2 align-middle text-[13px] leading-5 text-yurui-ink2 first:pl-4 last:pr-4 [&:has([role=checkbox])]:pr-0",
         NUMERIC,
         className
       )}
@@ -141,8 +141,8 @@ function TableIdentity({
     <div data-slot="table-identity" className={cn("flex min-w-0 items-center gap-2.5", className)} {...props}>
       {media}
       <div className="flex h-8 min-w-0 flex-col justify-center">
-        <span className="anibt-ell text-[14px] leading-4 font-semibold text-foreground">{title}</span>
-        {meta ? <span className="anibt-ell mt-0.5 text-[12px] leading-4 text-muted-foreground">{meta}</span> : null}
+        <span className="yurui-ell text-[14px] leading-4 font-semibold text-foreground">{title}</span>
+        {meta ? <span className="yurui-ell mt-0.5 text-[12px] leading-4 text-muted-foreground">{meta}</span> : null}
       </div>
     </div>
   )

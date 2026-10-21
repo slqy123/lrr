@@ -140,10 +140,10 @@ function PosterCard({
       data-selected={selected ? "true" : undefined}
       className={cn(
         "group/poster @container/poster relative flex h-full min-w-0 flex-col rounded-[3px] bg-card p-1.5 text-left text-card-foreground",
-        "shadow-[0_0_0_1px_var(--input),var(--anibt-shadow-panel)] transition-[box-shadow,background-color] duration-150",
-        "hover:z-[2] hover:shadow-[0_0_0_1.5px_var(--anibt-time-line),var(--anibt-shadow-lift)] focus-within:z-[2]",
-        "data-[tone]:bg-anibt-time-wash data-[tone]:shadow-[0_0_0_1.5px_var(--anibt-time-line),var(--anibt-shadow-panel)] data-[tone]:hover:shadow-[0_0_0_1.5px_var(--anibt-time-line),var(--anibt-shadow-lift)]",
-        "data-[selected=true]:shadow-[0_0_0_2px_var(--anibt-mark),var(--anibt-shadow-lift)] data-[selected=true]:hover:shadow-[0_0_0_2px_var(--anibt-mark),var(--anibt-shadow-lift)]",
+        "shadow-[0_0_0_1px_var(--input),var(--yurui-shadow-panel)] transition-[box-shadow,background-color] duration-150",
+        "hover:z-[2] hover:shadow-[0_0_0_1.5px_var(--yurui-time-line),var(--yurui-shadow-lift)] focus-within:z-[2]",
+        "data-[tone]:bg-yurui-time-wash data-[tone]:shadow-[0_0_0_1.5px_var(--yurui-time-line),var(--yurui-shadow-panel)] data-[tone]:hover:shadow-[0_0_0_1.5px_var(--yurui-time-line),var(--yurui-shadow-lift)]",
+        "data-[selected=true]:shadow-[0_0_0_2px_var(--yurui-mark),var(--yurui-shadow-lift)] data-[selected=true]:hover:shadow-[0_0_0_2px_var(--yurui-mark),var(--yurui-shadow-lift)]",
         "has-[[data-slot=poster-card-title]_:focus-visible]:outline-2 has-[[data-slot=poster-card-title]_:focus-visible]:outline-offset-2 has-[[data-slot=poster-card-title]_:focus-visible]:outline-ring has-[[data-slot=poster-card-title]_:focus-visible]:outline-solid",
         "@max-[10rem]/poster:p-1",
         className
@@ -178,7 +178,7 @@ function PosterCard({
         {sticker ? (
           <span
             data-slot="poster-card-sticker"
-            className="pointer-events-none absolute top-1.5 left-1.5 z-[25] flex origin-top-left [--anibt-tilt:var(--anibt-poster-tilt,-3deg)] group-hover/poster:[--anibt-tilt:calc(var(--anibt-poster-tilt,-3deg)*-1)] @max-[10rem]/poster:scale-90"
+            className="pointer-events-none absolute top-1.5 left-1.5 z-[25] flex origin-top-left [--yurui-tilt:var(--yurui-poster-tilt,-3deg)] group-hover/poster:[--yurui-tilt:calc(var(--yurui-poster-tilt,-3deg)*-1)] @max-[10rem]/poster:scale-90"
           >
             {sticker}
           </span>
@@ -195,7 +195,7 @@ function PosterCard({
           title={tooltip}
           lang={titleLang}
           className={cn(
-            "anibt-clamp2-fixed m-0 text-[14px] leading-[18px] font-bold text-foreground transition-colors duration-150 group-hover/poster:text-accent-foreground @max-[10rem]/poster:text-[13px] @max-[10rem]/poster:leading-[17px]",
+            "yurui-clamp2-fixed m-0 text-[14px] leading-[18px] font-bold text-foreground transition-colors duration-150 group-hover/poster:text-accent-foreground @max-[10rem]/poster:text-[13px] @max-[10rem]/poster:leading-[17px]",
             titleClassName
           )}
         >
@@ -205,14 +205,14 @@ function PosterCard({
         <p
           data-slot="poster-card-subtitle"
           aria-hidden={subtitle ? undefined : true}
-          className="anibt-ell m-0 h-[18px] text-[12px] leading-[18px] text-muted-foreground @max-[10rem]/poster:hidden"
+          className="yurui-ell m-0 h-[18px] text-[12px] leading-[18px] text-muted-foreground @max-[10rem]/poster:hidden"
         >
           {subtitle}
         </p>
         {meta || status ? (
           <div data-slot="poster-card-foot" className="mt-auto grid min-w-0 gap-0.5 pt-1">
             {meta ? (
-              <div className="flex min-w-0 items-center gap-1.5 overflow-hidden text-[12px] leading-[18px] whitespace-nowrap text-anibt-ink2 @max-[10rem]/poster:gap-1">
+              <div className="flex min-w-0 items-center gap-1.5 overflow-hidden text-[12px] leading-[18px] whitespace-nowrap text-yurui-ink2 @max-[10rem]/poster:gap-1">
                 {meta}
               </div>
             ) : null}
@@ -232,7 +232,7 @@ function PosterCardPlaceholder({ className }: { className?: string }) {
       aria-hidden="true"
       data-slot="poster-card-placeholder"
       className={cn(
-        "absolute inset-0 bg-anibt-deep2 bg-(image:--anibt-dots) bg-size-[16px_16px] bg-position-[0_0,8px_8px]",
+        "absolute inset-0 bg-yurui-deep2 bg-(image:--yurui-dots) bg-size-[16px_16px] bg-position-[0_0,8px_8px]",
         className
       )}
     />
@@ -250,7 +250,7 @@ function PosterCardBadge({
       data-slot="poster-card-badge"
       data-corner={corner}
       className={cn(
-        "absolute top-1.5 z-10 flex h-5 max-w-[calc(100%-16px)] items-center gap-[3px] overflow-hidden rounded-[6px] bg-card px-1.5 font-anibt-display text-[12px] leading-none font-semibold whitespace-nowrap text-foreground shadow-[0_0_0_2px_var(--anibt-sticker-edge),var(--anibt-shadow-sticker)] [&>svg]:size-3",
+        "absolute top-1.5 z-10 flex h-5 max-w-[calc(100%-16px)] items-center gap-[3px] overflow-hidden rounded-[6px] bg-card px-1.5 font-yurui-display text-[12px] leading-none font-semibold whitespace-nowrap text-foreground shadow-[0_0_0_2px_var(--yurui-sticker-edge),var(--yurui-shadow-sticker)] [&>svg]:size-3",
         corner === "end" ? "right-1.5" : "left-1.5",
         // On a narrow cover two opposite badges no longer fit side by side:
         // the end one drops under the start one.
@@ -281,10 +281,10 @@ function PosterCardAction({
       data-slot="poster-card-action"
       aria-pressed={pressed}
       className={cn(
-        "absolute right-0 bottom-0 z-30 flex size-10 cursor-pointer items-center justify-center border-0 bg-transparent text-anibt-ink2 outline-hidden transition-colors duration-150",
-        "before:absolute before:top-1.5 before:left-1.5 before:size-7 before:rounded-[9px] before:bg-card before:shadow-[inset_0_0_0_1px_var(--input),var(--anibt-shadow-sticker)] before:transition-[background-color,box-shadow] before:duration-150 before:content-['']",
-        "hover:text-accent-foreground hover:before:shadow-[inset_0_0_0_1px_var(--anibt-wash-line),var(--anibt-shadow-sticker)]",
-        "aria-pressed:text-accent-foreground aria-pressed:before:bg-accent aria-pressed:before:shadow-[inset_0_0_0_1.5px_var(--anibt-wash-line),var(--anibt-shadow-sticker)]",
+        "absolute right-0 bottom-0 z-30 flex size-10 cursor-pointer items-center justify-center border-0 bg-transparent text-yurui-ink2 outline-hidden transition-colors duration-150",
+        "before:absolute before:top-1.5 before:left-1.5 before:size-7 before:rounded-[9px] before:bg-card before:shadow-[inset_0_0_0_1px_var(--input),var(--yurui-shadow-sticker)] before:transition-[background-color,box-shadow] before:duration-150 before:content-['']",
+        "hover:text-accent-foreground hover:before:shadow-[inset_0_0_0_1px_var(--yurui-wash-line),var(--yurui-shadow-sticker)]",
+        "aria-pressed:text-accent-foreground aria-pressed:before:bg-accent aria-pressed:before:shadow-[inset_0_0_0_1.5px_var(--yurui-wash-line),var(--yurui-shadow-sticker)]",
         "focus-visible:before:outline-2 focus-visible:before:outline-offset-2 focus-visible:before:outline-ring focus-visible:before:outline-solid",
         "[&>svg]:relative [&>svg]:size-3.5",
         className
@@ -307,12 +307,12 @@ function PosterCardRating({ value, className, label = "评分" }: { value: numbe
       data-slot="poster-card-rating"
       aria-label={none ? `${label}：暂无` : `${label} ${value.toFixed(1)}`}
       className={cn(
-        "inline-flex flex-none items-center gap-0.5 font-anibt-display font-medium tabular-nums",
-        none ? "text-muted-foreground" : "text-anibt-ink2",
+        "inline-flex flex-none items-center gap-0.5 font-yurui-display font-medium tabular-nums",
+        none ? "text-muted-foreground" : "text-yurui-ink2",
         className
       )}
     >
-      <StarIcon aria-hidden="true" className={cn("size-3 fill-current", none ? "text-muted-foreground" : "text-anibt-mark")} />
+      <StarIcon aria-hidden="true" className={cn("size-3 fill-current", none ? "text-muted-foreground" : "text-yurui-mark")} />
       {none ? "–" : value.toFixed(1)}
     </span>
   )
@@ -336,16 +336,16 @@ function PosterCardStatus({
       className={cn(
         "inline-flex min-w-0 items-center gap-1 text-[12px] leading-[18px] font-semibold whitespace-nowrap",
         "before:size-1.5 before:flex-none before:rounded-full before:bg-current before:content-['']",
-        tone === "ok" && "text-anibt-ok",
-        (tone === "run" || tone === "next") && "text-anibt-time-ink before:animate-anibt-blink",
-        tone === "wait" && "text-anibt-ink2",
+        tone === "ok" && "text-yurui-ok",
+        (tone === "run" || tone === "next") && "text-yurui-time-ink before:animate-yurui-blink",
+        tone === "wait" && "text-yurui-ink2",
         tone === "none" && "text-muted-foreground before:bg-transparent before:shadow-[inset_0_0_0_1.5px_currentColor]",
         className
       )}
       {...props}
     >
       {/* The word ellipsises on a narrow card; the dot never does. */}
-      <span className="anibt-ell">{children}</span>
+      <span className="yurui-ell">{children}</span>
     </span>
   )
 }
@@ -357,15 +357,15 @@ function PosterCardSkeleton({ className, meta = true }: { className?: string; me
       data-slot="poster-card-skeleton"
       aria-hidden="true"
       className={cn(
-        "@container/poster flex h-full min-w-0 flex-col rounded-[14px] bg-card p-1 shadow-[0_0_0_1px_var(--border),var(--anibt-shadow-panel)] @max-[10rem]/poster:p-[3px]",
+        "@container/poster flex h-full min-w-0 flex-col rounded-[14px] bg-card p-1 shadow-[0_0_0_1px_var(--border),var(--yurui-shadow-panel)] @max-[10rem]/poster:p-[3px]",
         className
       )}
     >
-      <div className="aspect-[2/3] animate-pulse rounded-[10px] bg-anibt-deep2 motion-reduce:animate-none" />
+      <div className="aspect-[2/3] animate-pulse rounded-[10px] bg-yurui-deep2 motion-reduce:animate-none" />
       <div className="flex flex-col gap-1.5 px-1 pt-2.5 pb-1">
-        <div className="h-3 w-11/12 animate-pulse rounded-[6px] bg-anibt-deep2 motion-reduce:animate-none" />
-        <div className="h-3 w-2/3 animate-pulse rounded-[6px] bg-anibt-deep2 motion-reduce:animate-none" />
-        {meta ? <div className="mt-2 h-2.5 w-1/2 animate-pulse rounded-[6px] bg-anibt-deep2 motion-reduce:animate-none" /> : null}
+        <div className="h-3 w-11/12 animate-pulse rounded-[6px] bg-yurui-deep2 motion-reduce:animate-none" />
+        <div className="h-3 w-2/3 animate-pulse rounded-[6px] bg-yurui-deep2 motion-reduce:animate-none" />
+        {meta ? <div className="mt-2 h-2.5 w-1/2 animate-pulse rounded-[6px] bg-yurui-deep2 motion-reduce:animate-none" /> : null}
       </div>
     </div>
   )
@@ -383,7 +383,7 @@ function PosterGrid({ className, children, ...props }: React.ComponentProps<"div
       <div
         className={cn(
           "grid grid-cols-3 gap-2 @min-[37.5rem]/poster-grid:grid-cols-4 @min-[37.5rem]/poster-grid:gap-3 @min-[60rem]/poster-grid:grid-cols-6 @min-[60rem]/poster-grid:gap-4 @min-[85rem]/poster-grid:grid-cols-8",
-          "[&>:nth-child(4n+1)]:[--anibt-poster-tilt:-4deg] [&>:nth-child(4n+2)]:[--anibt-poster-tilt:3deg] [&>:nth-child(4n+3)]:[--anibt-poster-tilt:-2deg] [&>:nth-child(4n+4)]:[--anibt-poster-tilt:4deg]",
+          "[&>:nth-child(4n+1)]:[--yurui-poster-tilt:-4deg] [&>:nth-child(4n+2)]:[--yurui-poster-tilt:3deg] [&>:nth-child(4n+3)]:[--yurui-poster-tilt:-2deg] [&>:nth-child(4n+4)]:[--yurui-poster-tilt:4deg]",
           className
         )}
         {...props}

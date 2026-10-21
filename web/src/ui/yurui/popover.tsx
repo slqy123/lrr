@@ -55,7 +55,7 @@ function PopoverContent({
         align={align}
         sideOffset={sideOffset}
         className={cn(
-          "anibt-pop z-50 flex w-72 max-w-[calc(100vw-1rem)] origin-(--radix-popover-content-transform-origin) flex-col gap-3 p-4 text-[13px] duration-150 outline-hidden",
+          "yurui-pop z-50 flex w-72 max-w-[calc(100vw-1rem)] origin-(--radix-popover-content-transform-origin) flex-col gap-3 p-4 text-[13px] duration-150 outline-hidden",
           "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[side=bottom]:slide-in-from-top-2 data-[side=bottom]:slide-out-to-top-2 data-[side=left]:slide-in-from-right-2 data-[side=left]:slide-out-to-right-2 data-[side=right]:slide-in-from-left-2 data-[side=right]:slide-out-to-left-2 data-[side=top]:slide-in-from-bottom-2 data-[side=top]:slide-out-to-bottom-2",
           className
         )}

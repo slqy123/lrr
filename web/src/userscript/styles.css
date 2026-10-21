@@ -1,13 +1,12 @@
 @import "tailwindcss" source(none);
 @import "tw-animate-css";
-@import "../ui/anibt/theme.css";
-@import "./showcase.css";
-@import "./live.css";
-@import "./club-theme.css";
-@import "./appearance.css";
+@import "../ui/yurui/theme.css";
+@import "../ui/yurui/palettes.css";
+@import "../ui/yurui/materials.css";
+@import "../ui/yurui/motion.css";
 @source "./";
 @source "../preview";
-@source "../ui/anibt";
+@source "../ui/yurui";
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
