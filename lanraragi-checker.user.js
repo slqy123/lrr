@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      AGPL-3.0-only
-// @version      2.0.0-alpha.44
+// @version      2.0.0-alpha.45
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -11515,7 +11515,8 @@
 					onClick: (event) => {
 						if (live && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey && event.button === 0) {
 							event.preventDefault();
-							open(item);
+							if (expanded?.url === item.url) close();
+							else open(item);
 						}
 					}
 				})
