@@ -1,8 +1,9 @@
 .live-app .category-row { flex-wrap: wrap; gap: 6px; }
 .live-app .main-content { padding-top: 28px; }
 .live-app .search-row > a { min-width: 76px; }
-.native-links { display: flex; flex-direction: column; gap: 12px; }
-.native-links a, .library-link { color: var(--accent-foreground); text-decoration: underline; text-underline-offset: 3px; }
+.native-links .anibt-menu-item { height: auto; min-height: 32px; padding-block: 6px; overflow-wrap: anywhere; }
+.native-links .anibt-menu-item:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; background-color: var(--accent); color: var(--accent-foreground); }
+.library-link { color: var(--accent-foreground); text-decoration: underline; text-underline-offset: 3px; }
 .connection-notice { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; margin-bottom: 24px; }
 .collection-overview { display: block; }
 .collection-overview-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; min-width: 0; }
