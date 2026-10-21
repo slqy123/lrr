@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => {
       outDir: fileURLToPath(new URL('../userscript/dist', import.meta.url)),
       minify: false,
       lib: {
-        entry: fileURLToPath(new URL(preview ? './src/userscript/preview.tsx' : './src/userscript/main.tsx', import.meta.url)),
+        entry: fileURLToPath(new URL(preview ? './src/preview/preview.tsx' : './src/userscript/main.tsx', import.meta.url)),
         name: 'LrrChecker',
         formats: ['iife'],
         fileName: () => preview ? 'preview.js' : 'lanraragi-checker.user.js',

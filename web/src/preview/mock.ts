@@ -1,5 +1,5 @@
-import type { Gallery, GalleryState } from './model'
-export { stateLabels, type GalleryState } from './model'
+import type { Gallery, GalleryState } from '../userscript/model'
+export { stateLabels, type GalleryState } from '../userscript/model'
 
 const books = [
   ['放学后的蓝色时刻', 'AFTER SCHOOL', '#79b8ce', '#e4f3ed', 'missing', '同人志', 32],

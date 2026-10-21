@@ -10,8 +10,8 @@ import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '../ui/ani
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/anibt/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/anibt/table'
 import { mockGalleries, stateLabels, type GalleryState } from './mock'
-import { useTheme } from './useTheme'
-import { GalleryCards, Status } from './GalleryCards'
+import { useTheme } from '../userscript/useTheme'
+import { GalleryCards, Status } from '../userscript/GalleryCards'
 
 const groups = ['missing', 'duplicate', 'queued', 'downloaded'] as const
 const categories = ['全部', '同人志', '漫画', '画集']

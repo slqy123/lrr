@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useState } from 'react'
-import { useTheme } from './useTheme'
+import { useTheme } from '../userscript/useTheme'
 import { Button } from '../ui/anibt/button'
 import { Input } from '../ui/anibt/input'
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '../ui/anibt/popover'
