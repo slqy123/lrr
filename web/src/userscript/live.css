@@ -35,7 +35,19 @@
 .card-status-stack .card-native-meta { width: 100%; }
 .card-native-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; color: var(--muted-foreground); font-size: 11px; }
 .card-torrents { z-index: 30; }
-.live-app [data-expanded=true] { box-shadow: 0 0 0 2px var(--ring), var(--anibt-shadow-lift); }
+/* The detail marker stays independent of hover and selection shadows. */
+.live-app [data-slot=poster-card][data-expanded=true]::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: calc(50% - 8px);
+  width: 16px;
+  height: 8px;
+  background: var(--ring);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  pointer-events: none;
+}
+.live-app .gallery-details { border-top: 3px solid var(--ring); }
 .gallery-details { grid-column: 1 / -1; min-width: 0; overflow: hidden; }
 .gallery-details-heading { display: flex; align-items: center; gap: 12px; padding: 10px 18px; }
 .detail-heading-text { flex: 1; min-width: 0; }

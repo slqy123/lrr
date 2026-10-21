@@ -43,6 +43,9 @@
   --popover: var(--card);
   --popover-foreground: var(--foreground);
   --primary: #b82d56;
+  --primary-hover: #a52b4b;
+  --primary-pressed: #94213f;
+  --action-shadow: #87364d;
   --primary-foreground: #fffdf6;
   --secondary: #f7e7bb;
   --secondary-foreground: #665234;
@@ -123,6 +126,9 @@
   --foreground: #f4ecd8;
   --card: #33363a;
   --primary: #efae9e;
+  --primary-hover: #ffc3ac;
+  --primary-pressed: #df9b8b;
+  --action-shadow: #80594f;
   --primary-foreground: #342b2b;
   --secondary: #524938;
   --secondary-foreground: #efdab0;
@@ -270,10 +276,10 @@
 @utility anibt-btn-primary {
   background: var(--primary);
   color: var(--primary-foreground);
-  box-shadow: inset 0 0 0 1.5px var(--primary), 3px 3px 0 var(--club-sun);
+  box-shadow: inset 0 0 0 1.5px var(--primary), 3px 3px 0 var(--action-shadow);
   transition: background-color 120ms, box-shadow 120ms;
-  &:hover { background: var(--primary-hover, var(--accent-foreground)); color: var(--primary-foreground); box-shadow: inset 0 0 0 1.5px var(--primary), 3px 3px 0 var(--action-shadow, var(--anibt-time)); }
-  &:active { background: var(--primary-pressed, var(--primary)); box-shadow: inset 0 0 0 2px var(--primary-foreground); }
+  &:hover { background: var(--primary-hover); color: var(--primary-foreground); box-shadow: inset 0 0 0 1.5px var(--primary), 3px 3px 0 var(--action-shadow); }
+  &:active { background: var(--primary-pressed); box-shadow: inset 0 0 0 2px var(--primary-foreground); }
   &:is(:disabled, [aria-disabled=true]):not([aria-busy=true]) { background: var(--muted); color: var(--muted-foreground); box-shadow: inset 0 0 0 1px var(--border); }
 }
 @utility anibt-btn-on { background: var(--accent); color: var(--accent-foreground); box-shadow: inset 0 0 0 1.5px var(--ring); }
@@ -410,5 +416,20 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+  }
+}
+
+/* Portal controls share the same feedback; nested card actions stay still. */
+@media (prefers-reduced-motion: no-preference) {
+  :is([data-slot=button], [data-slot=dialog-close]) {
+    transition: translate 150ms ease, background-color 160ms, color 160ms, box-shadow 160ms;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    :is([data-slot=button], [data-slot=dialog-close]):hover:not(:disabled):not([aria-disabled=true]):not(:where([data-slot=poster-card] *)) {
+      translate: 0 -2px;
+    }
+  }
+  :is([data-slot=button], [data-slot=dialog-close]):active:not(:disabled):not([aria-disabled=true]):not(:where([data-slot=poster-card] *)) {
+    translate: 0 1px;
   }
 }
