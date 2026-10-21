@@ -1,14 +1,6 @@
-import { cva } from 'class-variance-authority'
-
-export const floatingFeedbackVariants = cva('preview-feedback yurui-pop fixed bottom-[96px] left-1/2 -translate-x-1/2 flex items-center px-[14px] py-[10px] z-[60] text-[13px] max-w-[calc(100%-48px)]', {
-  variants: {
-    variant: {
-      operation: 'gap-[10px]',
-      showcase: 'gap-4',
-    },
-  },
-  defaultVariants: { variant: 'operation' },
-})
+import type { ComponentProps } from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from './utils'
 
 export const statusPanelVariants = cva('flex items-center', {
   variants: {
@@ -23,3 +15,7 @@ export const statusPanelVariants = cva('flex items-center', {
   },
   defaultVariants: { variant: 'empty', surface: 'sheet' },
 })
+
+export function StatusPanel({ className, variant, surface, ...props }: ComponentProps<'div'> & VariantProps<typeof statusPanelVariants>) {
+  return <div data-slot="status-panel" className={cn(statusPanelVariants({ variant, surface }), className)} {...props} />
+}

@@ -1,7 +1,5 @@
 import { cva } from 'class-variance-authority'
 
-export const categoryFilterStyles = 'category-filter yurui-category-filter category-key gap-[6px] border border-transparent px-3 [&>span[aria-hidden]]:w-[1em] [&>span[aria-hidden]]:shrink-0 [&>span[aria-hidden]]:text-center [&>span[aria-hidden]]:text-(--category-foreground) aria-[pressed=false]:text-(--category-foreground) aria-[pressed=false]:opacity-[.45] aria-[pressed=false]:border-input aria-[pressed=false]:border-dashed aria-[pressed=false]:bg-card aria-[pressed=false]:shadow-none'
-
 export const searchPanelVariants = cva('yurui-sheet px-8 pt-7 pb-6 mb-8', {
   variants: {
     variant: {
@@ -42,4 +40,3 @@ export const searchRowVariants = cva('flex items-center gap-[10px] [&>button]:mi
   defaultVariants: { variant: 'live' },
 })
 
-export const searchFieldStyles = 'search-field relative flex-1 [&>svg]:absolute [&>svg]:left-3 [&>svg]:top-1/2 [&>svg]:[transform:translateY(-50%)] [&>svg]:text-muted-foreground [&_input]:pl-[38px]'

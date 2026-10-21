@@ -3,7 +3,7 @@
 @import "../ui/yurui/theme.css";
 @import "../ui/yurui/palettes.css";
 @import "../ui/yurui/materials.css";
-@import "../ui/yurui/motion.css";
+@import "./styles/motion.css";
 @source "./";
 @source "../preview";
 @source "../ui/yurui";

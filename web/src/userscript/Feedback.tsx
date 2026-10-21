@@ -1,17 +1,16 @@
 import { X } from 'lucide-react'
-import { StatusBadge } from '../ui/yurui/badge'
-import { Button } from '../ui/yurui/button'
-import { cn } from '../ui/yurui/utils'
+import { IconButton } from '../ui/yurui/icon-button'
+import { Notice } from '../ui/yurui/notice'
+import { FloatingNotice } from '../ui/yurui/floating-notice'
 
 export type FeedbackMessage = { message: string; tone: 'ok' | 'fail' | 'mute' }
 
 const labels = { ok: '成功', fail: '失败', mute: '提示' }
 
-export function Feedback({ value, className, onClose }: { value: FeedbackMessage | null; className: string; onClose?: () => void }) {
+export function Feedback({ value, className, floating = false, onClose }: { value: FeedbackMessage | null; className?: string; floating?: boolean; onClose?: () => void }) {
   if (!value) return null
-  return <div className={cn('flex items-center gap-[10px] [&>[data-slot=status-badge]]:shrink-0 [&>button]:shrink-0', className)} role="status">
-    <StatusBadge tone={value.tone}>{labels[value.tone]}</StatusBadge>
-    <span className="min-w-0 flex-1 [overflow-wrap:anywhere]">{value.message}</span>
-    {onClose && <Button variant="ghost" size="icon-sm" aria-label="关闭提示" onClick={onClose}><X /></Button>}
-  </div>
+  const Container = floating ? FloatingNotice : Notice
+  return <Container tone={value.tone} label={labels[value.tone]} className={className} action={onClose && <IconButton size="sm" label="关闭提示" onClick={onClose}><X /></IconButton>}>
+    {value.message}
+  </Container>
 }

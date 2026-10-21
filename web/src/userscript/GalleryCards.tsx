@@ -4,7 +4,7 @@ import { categoryAppearance } from './categories'
 import { Button } from '../ui/yurui/button'
 import { Checkbox } from '../ui/yurui/checkbox'
 import { PosterCard } from '../ui/yurui/poster-card'
-import { galleryGridVariants, galleryStatusVariants, cardCategoryRowStyles, cardCategoryStyles, coverSelectStyles, coverPlaceholderStyles, cardDetailStyles, nativeRatingStyles, cardStatusStackStyles, cardNativeMetaStyles, statusActionStyles } from '../ui/yurui/gallery'
+import { galleryGridVariants, galleryStatusVariants, cardCategoryRowStyles, cardCategoryStyles, coverSelectStyles, coverPlaceholderStyles, cardDetailStyles, nativeRatingStyles, cardStatusStackStyles, cardNativeMetaStyles, statusActionStyles } from './styles/gallery'
 import { displayState, stateLabels, type GalleryState, type Gallery } from './model'
 import { GalleryDetails, stateTab, type DetailTab, type LiveGalleryActions } from './GalleryDetails'
 

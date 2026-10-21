@@ -3,7 +3,7 @@ import { cva } from 'class-variance-authority'
 export const nativeRatingStyles = 'inline-block w-[80px] h-4 ml-auto bg-no-repeat shrink-0 [@container_poster_(max-width:170px)]:hidden'
 export const cardStatusStackStyles = 'flex flex-col items-start w-full min-w-0'
 export const cardNativeMetaStyles = 'flex w-full items-center justify-between gap-2 mb-2 text-muted-foreground text-[11px]'
-export const statusActionStyles = 'relative z-30 inline-flex cursor-pointer rounded-[4px] focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4 focus-visible:outline-solid'
+export const statusActionStyles = 'status-action relative z-30 inline-flex cursor-pointer rounded-[4px] focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4 focus-visible:outline-solid'
 
 export const cardCategoryRowStyles = 'flex items-center gap-2 mt-2 mx-[3px] pointer-events-none'
 export const cardCategoryStyles = 'category-key flex flex-1 min-w-0 h-[27px] items-center justify-center rounded-[7px] text-[11px] font-bold whitespace-nowrap'

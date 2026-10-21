@@ -1,9 +1,15 @@
 import * as React from 'react'
 import { useRef, useState } from 'react'
-import { Check, Search, SlidersHorizontal, Upload } from 'lucide-react'
-import { categoryRowVariants, searchRowVariants, searchFieldStyles, searchPanelVariants, searchHeadingVariants, categoryFilterStyles } from '../ui/yurui/search-layout'
+import { Search, SlidersHorizontal, Upload } from 'lucide-react'
+import { categoryRowVariants, searchRowVariants, searchPanelVariants, searchHeadingVariants } from './styles/search-layout'
 import { Button } from '../ui/yurui/button'
+import { FilterChip } from '../ui/yurui/filter-chip'
+import { CategoryButton } from '../ui/yurui/category-button'
 import { Input } from '../ui/yurui/input'
+import { InputGroup } from '../ui/yurui/input-group'
+import { NativeSelect } from '../ui/yurui/native-select'
+import { FormField } from '../ui/yurui/form-field'
+import { FieldGroup } from '../ui/yurui/field-group'
 import { FieldLabel } from '../ui/yurui/field-label'
 import { Checkbox } from '../ui/yurui/checkbox'
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/yurui/dialog'
@@ -17,10 +23,6 @@ const managed = new Set(['f_search', 'f_cats', 'advsearch', 'f_spf', 'f_spt', 'f
 function languageTag(token: string) {
   const match = token.match(/^language:(?:"(chinese|japanese)\$?"|(chinese|japanese))\$?$/i)
   return (match?.[1] || match?.[2])?.toLowerCase()
-}
-
-function FilterChip({ children, checked, onClick }: { children: React.ReactNode; checked: boolean; onClick: () => void }) {
-  return <button type="button" className={checked ? 'yurui-chip yurui-chip-on' : 'yurui-chip'} aria-pressed={checked} onClick={onClick}>{checked && <Check size={14} aria-hidden="true" />}{children}</button>
 }
 
 export function SearchPanel({ page, portal }: { page: GalleryPage; portal: HTMLElement }) {
@@ -56,17 +58,17 @@ export function SearchPanel({ page, portal }: { page: GalleryPage; portal: HTMLE
       <input type="hidden" name="f_srdd" value={jumpRating} disabled={jumpRating === '0'} />
       {advanced.filter(([name]) => flags.has(name)).map(([name]) => <input key={name} type="hidden" name={name} value="on" />)}
       <div className={categoryRowVariants({ variant: 'live' })} role="group" aria-label="作品分类">
-        <Button type="button" size="sm" className={categoryFilterStyles} aria-pressed={mask === 0} variant={mask === 0 ? 'secondary' : 'ghost'} onClick={() => setMask(0)}>全部</Button>
-        {categories.map(([bit, title]) => <Button key={bit} type="button" size="sm" className={categoryFilterStyles} style={categoryAppearance(title).style} aria-pressed={!(mask & bit)} variant={mask & bit ? 'ghost' : 'secondary'} onClick={() => setMask(value => value ^ bit)}><span aria-hidden="true">{mask & bit ? '○' : '✓'}</span>{categoryAppearance(title).label}</Button>)}
+        <CategoryButton checked={mask === 0} indicator={false} onClick={() => setMask(0)}>全部</CategoryButton>
+        {categories.map(([bit, title]) => <CategoryButton key={bit} checked={!(mask & bit)} style={categoryAppearance(title).style} onClick={() => setMask(value => value ^ bit)}>{categoryAppearance(title).label}</CategoryButton>)}
       </div>
       <div className={searchRowVariants({ variant: 'live' })}>
-        <Popover open={suggest} onOpenChange={setSuggest}><PopoverAnchor asChild><div className={searchFieldStyles}><Search size={17} /><Input name={query ? 'f_search' : undefined} aria-label="搜索作品" aria-expanded={suggest} aria-controls="lrr-suggestions" aria-haspopup="dialog" placeholder="搜索标题、作者或标签…" value={query} onFocus={() => setSuggest(true)} onClick={() => setSuggest(true)} onChange={event => setQuery(event.target.value)} /></div></PopoverAnchor>
+        <Popover open={suggest} onOpenChange={setSuggest}><PopoverAnchor asChild><InputGroup className="search-field"><Search size={17} aria-hidden="true" /><Input name={query ? 'f_search' : undefined} aria-label="搜索作品" aria-expanded={suggest} aria-controls="lrr-suggestions" aria-haspopup="dialog" placeholder="搜索标题、作者或标签…" value={query} onFocus={() => setSuggest(true)} onClick={() => setSuggest(true)} onChange={event => setQuery(event.target.value)} /></InputGroup></PopoverAnchor>
           <PopoverContent id="lrr-suggestions" container={portal} align="start" onOpenAutoFocus={event => event.preventDefault()} onCloseAutoFocus={event => event.preventDefault()}><PopoverTitle>快捷筛选</PopoverTitle><div className="flex gap-2">{[['chinese', '仅中文'], ['japanese', '仅日文']].map(([language, label]) => <FilterChip key={language} checked={searchTokens.some(value => languageTag(value) === language)} onClick={() => setLanguage(language)}>{label}</FilterChip>)}<FilterChip checked={allAges} onClick={allAgesToggle}>全年龄</FilterChip></div></PopoverContent>
         </Popover>
         <Button type="submit">搜索</Button><Button asChild variant="secondary"><a href={page.action}>清空</a></Button>
         <Popover open={toolsOpen} onOpenChange={setToolsOpen}><PopoverTrigger asChild><Button ref={toolsTrigger} type="button" variant="secondary"><SlidersHorizontal />筛选与工具</Button></PopoverTrigger><PopoverContent container={portal} align="end" className="w-96" onCloseAutoFocus={event => { if (fileSearch) event.preventDefault() }}><PopoverTitle>高级筛选</PopoverTitle>
-          <div className="flex flex-col gap-[14px] [&>label]:flex [&>label]:flex-col [&>label]:gap-2"><label>最低评分<select className="yurui-input" aria-label="最低评分" value={jumpRating} onChange={event => setJumpRating(event.target.value)}>{[['0', '不限'], ['2', '2 星'], ['3', '3 星'], ['4', '4 星'], ['5', '5 星']].map(([value, title]) => <option key={value} value={value}>{title}</option>)}</select></label>
-          <label>页数范围<div className="flex gap-2"><Input type="number" min="0" max="9999" aria-label="最少页数" placeholder="最少页数" value={minimum} onChange={event => setMinimum(event.target.value)} /><Input type="number" min="0" max="9999" aria-label="最多页数" placeholder="最多页数" value={maximum} onChange={event => setMaximum(event.target.value)} /></div></label>
+          <div className="flex flex-col gap-[14px]"><FormField label="最低评分">{control => <NativeSelect {...control} value={jumpRating} onChange={event => setJumpRating(event.target.value)}>{[['0', '不限'], ['2', '2 星'], ['3', '3 星'], ['4', '4 星'], ['5', '5 星']].map(([value, title]) => <option key={value} value={value}>{title}</option>)}</NativeSelect>}</FormField>
+          <FieldGroup label="页数范围"><div className="flex gap-2"><Input type="number" min="0" max="9999" aria-label="最少页数" placeholder="最少页数" value={minimum} onChange={event => setMinimum(event.target.value)} /><Input type="number" min="0" max="9999" aria-label="最多页数" placeholder="最多页数" value={maximum} onChange={event => setMaximum(event.target.value)} /></div></FieldGroup>
           </div>
           <div className="yurui-stitch-over flex flex-col gap-3 pt-[14px]">{advanced.map(([name, title]) => <FieldLabel key={name}><Checkbox checked={flags.has(name)} onCheckedChange={checked => setFlags(previous => { const next = new Set(previous); if (checked) next.add(name); else next.delete(name); return next })} />{title}</FieldLabel>)}</div>
           <div className="yurui-stitch-over flex flex-wrap gap-2 pt-[14px] [&>button:last-child]:flex-1"><Button type="button" variant="secondary" onClick={() => { setToolsOpen(false); setFileSearch(true) }}><Upload />文件搜索</Button><Button type="submit" form="lrr-search">应用筛选并搜索</Button></div>

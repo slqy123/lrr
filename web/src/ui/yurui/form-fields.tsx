@@ -2,7 +2,7 @@ import type { ComponentProps } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from './utils'
 
-const formFieldsVariants = cva('flex flex-col gap-5 [&>label:not([data-slot=field-label])]:flex [&>label:not([data-slot=field-label])]:flex-col [&>label:not([data-slot=field-label])]:gap-2 [&>label:not([data-slot=field-label])]:text-[13px]', {
+const formFieldsVariants = cva('flex flex-col gap-5', {
   variants: {
     variant: {
       default: 'py-[10px]',

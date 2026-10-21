@@ -5,11 +5,11 @@ import { cn } from './utils'
 export const toolbarVariants = cva('flex items-center gap-3 mb-[22px]', {
   variants: {
     variant: {
-      live: 'flex-wrap justify-start',
-      showcase: 'justify-between',
+      wrap: 'flex-wrap justify-start',
+      spread: 'justify-between',
     },
   },
-  defaultVariants: { variant: 'live' },
+  defaultVariants: { variant: 'wrap' },
 })
 
 export const toolbarGroupVariants = cva('flex flex-wrap items-center', {
@@ -18,8 +18,6 @@ export const toolbarGroupVariants = cva('flex flex-wrap items-center', {
       selection: 'selection-groups yurui-selection-controls yurui-well gap-x-[18px] gap-y-3 px-[14px] py-[10px] max-[1150px]:gap-[10px]',
       summary: 'min-w-0 gap-x-[10px] gap-y-1 text-[12px] text-muted-foreground [overflow-wrap:anywhere]',
       health: 'gap-2',
-      density: 'yurui-well flex-nowrap gap-[2px] p-[3px]',
-      pager: 'yurui-well flex-nowrap gap-[5px] p-[3px] [&>span]:min-w-[18px] [&>span]:text-center [&>span]:text-accent-foreground [&>span]:[font:500_14px/1_var(--font-yurui-display)]',
     },
   },
   defaultVariants: { variant: 'selection' },
@@ -27,6 +25,10 @@ export const toolbarGroupVariants = cva('flex flex-wrap items-center', {
 
 export function ResultStat({ className, ...props }: ComponentProps<'span'>) {
   return <span className={cn('inline-flex items-center gap-[5px] whitespace-nowrap tabular-nums', className)} {...props} />
+}
+
+export function Toolbar({ className, variant, ...props }: ComponentProps<'div'> & VariantProps<typeof toolbarVariants>) {
+  return <div data-slot="toolbar" className={cn(toolbarVariants({ variant }), className)} {...props} />
 }
 
 export function ToolbarGroup({ className, variant, ...props }: ComponentProps<'div'> & VariantProps<typeof toolbarGroupVariants>) {

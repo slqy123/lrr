@@ -2,6 +2,7 @@ import * as React from "react"
 import { StarIcon } from "lucide-react"
 
 import { cn } from "./utils"
+import { Skeleton } from './skeleton'
 
 /**
  * PosterCard — the AniBT 「贴纸手账」 collectible card: one show on a poster
@@ -361,11 +362,11 @@ function PosterCardSkeleton({ className, meta = true }: { className?: string; me
         className
       )}
     >
-      <div className="aspect-[2/3] animate-pulse rounded-[10px] bg-yurui-deep2 motion-reduce:animate-none" />
+      <Skeleton className="aspect-[2/3] rounded-[10px]" />
       <div className="flex flex-col gap-1.5 px-1 pt-2.5 pb-1">
-        <div className="h-3 w-11/12 animate-pulse rounded-[6px] bg-yurui-deep2 motion-reduce:animate-none" />
-        <div className="h-3 w-2/3 animate-pulse rounded-[6px] bg-yurui-deep2 motion-reduce:animate-none" />
-        {meta ? <div className="mt-2 h-2.5 w-1/2 animate-pulse rounded-[6px] bg-yurui-deep2 motion-reduce:animate-none" /> : null}
+        <Skeleton className="h-3 w-11/12" />
+        <Skeleton className="h-3 w-2/3" />
+        {meta ? <Skeleton className="mt-2 h-2.5 w-1/2" /> : null}
       </div>
     </div>
   )
