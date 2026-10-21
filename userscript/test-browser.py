@@ -72,6 +72,9 @@ assert js("typeof window.GM_xmlhttpRequest === 'undefined'"), 'Page-side GM shim
 count = js(f"{ROOT}.querySelectorAll('.status-action').length")
 assert count > 0, 'Snapshot did not produce real gallery cards'
 backend('/__scenario?value=normal', 'POST')
+assert js(f"{ROOT}.querySelector('[aria-label=搜索作品]').value === document.querySelector('#searchbox [name=f_search]').value"), 'Native search query was not preserved'
+assert js(f"Number({ROOT}.querySelector('[name=f_cats]').value) === Number(document.querySelector('#searchbox [name=f_cats]')?.value || 0)"), 'Excluded category mask was not preserved'
+assert js(f"(() => {{ const managed = new Set(['f_search','f_cats','advsearch','f_spf','f_spt','f_srdd','f_sh','f_sto','f_sfl','f_sfu','f_sft']); const native = [...new FormData(document.querySelector('#searchbox form'))].filter(([key,value]) => !managed.has(key) && typeof value === 'string'); const current = [...new FormData({ROOT}.querySelector('#lrr-search'))].filter(([key]) => !managed.has(key)); return JSON.stringify(native) === JSON.stringify(current); }})()"), 'Successful native search fields were not preserved'
 print(f'Running real Tampermonkey checks on {count} galleries at {ORIGIN}', flush=True)
 click_named('设置')
 set_field('图库服务地址', ORIGIN + '/library')
@@ -80,6 +83,20 @@ set_field('队列服务地址', ORIGIN + '/queue')
 click_named('保存并重新检查')
 click_named('重新检查')
 expect_state('未收录')
+card = js(f"(() => {{ const card = {ROOT}.querySelector('.card-detail'); return {{url:card.href, name:card.getAttribute('aria-label')}}; }})()")
+click_named(card['name'], 'link')
+if card['url'] in backend('/__state')['nativePages']:
+    wait_for(lambda: js(f"!!{ROOT}.querySelector('.detail-previews')"), 'Provided detail snapshot did not render')
+else:
+    wait_for(lambda: js(f"{ROOT}.querySelector('.detail-load-error')?.textContent.includes('LRR_NATIVE_PAGES')"), 'Missing detail snapshot was not explicitly reported')
+if js(f"[...{ROOT}.querySelectorAll('.detail-tabs [role=tab]')].some(tab=>tab.textContent === 'BT 种子')"):
+    click_named('BT 种子', 'tab')
+    torrent_url = js(f"{ROOT}.querySelector('.torrent-toolbar a').href")
+    if torrent_url in backend('/__state')['nativePages']:
+        wait_for(lambda: js(f"!!{ROOT}.querySelector('.torrent-row') || {ROOT}.querySelector('.torrent-list').textContent.includes('原站暂无种子')"), 'Provided torrent snapshot did not render')
+    else:
+        wait_for(lambda: js(f"{ROOT}.querySelector('.torrent-list [role=alert]')?.textContent.includes('LRR_NATIVE_PAGES')"), 'Missing torrent snapshot was not explicitly reported')
+click_named('收起作品详情')
 requests = backend('/__state')['requests']
 assert any(r['path'] == '/library/api/plugins/use' and r['authorization'] for r in requests), 'No authenticated library GM request'
 assert any(r['path'] == '/queue/api/tasks/lookup' for r in requests), 'No queue GM request'

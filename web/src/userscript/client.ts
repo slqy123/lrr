@@ -3,6 +3,7 @@ import type { Settings } from './settings'
 import { lookupCache } from './cache'
 import { readTorrents } from './torrents'
 import { readDetails } from './details'
+import { parseTitle } from './title'
 
 class SearchPending extends Error {}
 
@@ -92,10 +93,10 @@ export function createClient(settings: Settings, fresh = false) {
         const id = typeof result.data?.id === 'string' ? result.data.id : typeof result.data?.arcid === 'string' ? result.data.arcid : ''
         return { status: 'downloaded', hits: id ? archives([{ ...result.data, id, title: result.data?.title || item.title }]) : [], error: undefined }
       }
-      if (result.success !== false && result.success !== 0) throw new Error('无法判断书库查询结果')
-      const title = item.title.match(/\]([^\[\]()]+)/)?.[1]?.trim()
-      if (!settings.enableAltSearch || !item.author || !title || title === item.author) return { status: 'missing', hits: [], error: undefined }
-      const search = `${item.author},${title}`
+      if ((result.success !== false && result.success !== 0) || ![result.error, result.data?.error].some(error => typeof error === 'string' && /^URL not found in database\.?$/i.test(error))) throw new Error('无法判断书库查询结果')
+      const { author, title } = parseTitle(item.title)
+      if (!settings.enableAltSearch || !author || !title || title === author) return { status: 'missing', hits: [], error: undefined }
+      const search = `${author},${title}`
       if (!searches.has(search)) searches.set(search, searchPool(async () => {
         const path = `/api/search?${new URLSearchParams({ filter: search, start: '0', groupby_tanks: 'false' })}`
         let response: { data?: unknown; recordsFiltered?: number }
@@ -152,18 +153,30 @@ export function createClient(settings: Settings, fresh = false) {
     if (response?.ok !== true || !Number.isInteger(response.added) || !Number.isInteger(response.duplicates) || response.added! < 0 || response.duplicates! < 0 || response.added! + response.duplicates! !== urls.length) throw new Error('队列未确认整批接收，选择已保留')
     return response as { added: number; duplicates: number }
   }
+  const offline = ['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname)
+  async function nativeHTML(url: URL, signal?: AbortSignal) {
+    if (offline) {
+      try {
+        return await request(location.origin, `/__native?${new URLSearchParams({ url: url.href })}`, 'GET', undefined, {}, settings.requestTimeoutMs, true, signal) as string
+      } catch (error) {
+        if (error instanceof Error && error.message === 'HTTP 404') throw new Error('未提供此详情或种子的本地快照，请配置 LRR_NATIVE_PAGES')
+        throw error
+      }
+    }
+    return await request(url.origin, url.pathname + url.search, 'GET', undefined, {}, settings.requestTimeoutMs, true, signal) as string
+  }
   async function torrents(href: string, signal?: AbortSignal) {
     const url = new URL(href, location.href)
-    if (url.origin !== location.origin || url.pathname !== '/gallerytorrents.php') throw new Error('无效的原站种子地址')
-    const html = await request(url.origin, url.pathname + url.search, 'GET', undefined, {}, settings.requestTimeoutMs, true, signal) as string
+    if ((!offline && url.origin !== location.origin) || !['http:', 'https:'].includes(url.protocol) || url.pathname !== '/gallerytorrents.php') throw new Error('无效的原站种子地址')
+    const html = await nativeHTML(url, signal)
     return readTorrents(html, url.href)
   }
   async function details(href: string, signal?: AbortSignal) {
     const url = new URL(href, location.href)
     const sites = ['e-hentai.org', 'exhentai.org', 'g.e-hentai.org']
-    if (!['http:', 'https:'].includes(url.protocol) || (url.origin !== location.origin && !(sites.includes(url.hostname) && sites.includes(location.hostname))) || !/^\/g\/\d+\/[a-zA-Z0-9]+\/$/.test(url.pathname)) throw new Error('无效的原站作品地址')
-    const html = await request(url.origin, url.pathname, 'GET', undefined, {}, settings.requestTimeoutMs, true, signal) as string
+    if (!['http:', 'https:'].includes(url.protocol) || (url.origin !== location.origin && !(sites.includes(url.hostname) && (offline || sites.includes(location.hostname)))) || !/^\/g\/\d+\/[a-zA-Z0-9]+\/$/.test(url.pathname)) throw new Error('无效的原站作品地址')
+    const html = await nativeHTML(url, signal)
     return readDetails(html, url.href)
   }
-  return { check, lookup, send, torrents, details, dispose: () => controller.abort() }
+  return { check, lookup, send, torrents, details, dispose: () => { controller.abort(); void cache.then(store => store.flush()) } }
 }

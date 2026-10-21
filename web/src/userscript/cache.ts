@@ -19,7 +19,16 @@ export async function lookupCache(settings: Settings) {
       }
     }
   } catch {}
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const flush = () => {
+    if (timer === undefined) return
+    clearTimeout(timer)
+    timer = undefined
+    window.removeEventListener('pagehide', flush)
+    if (context) { try { GM_setValue(key, { context, entries: [...entries.values()] }) } catch {} }
+  }
   return {
+    flush,
     get(url: string): Result | undefined {
       const entry = entries.get(url)
       return entry && Date.now() - entry.timestamp < lifetime ? entry.result : undefined
@@ -29,7 +38,10 @@ export async function lookupCache(settings: Settings) {
       entries.delete(url)
       entries.set(url, { url, result, timestamp: Date.now() })
       if (entries.size > 2000) entries.delete(entries.keys().next().value!)
-      if (context) { try { GM_setValue(key, { context, entries: [...entries.values()] }) } catch {} }
+      if (timer === undefined) {
+        timer = setTimeout(flush, 100)
+        window.addEventListener('pagehide', flush, { once: true })
+      }
     },
   }
 }

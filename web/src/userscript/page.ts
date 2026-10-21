@@ -1,4 +1,5 @@
 import type { Gallery } from './model'
+import { parseTitle } from './title'
 
 export const categories = [
   [2, '同人志'], [4, '漫画'], [8, '画师 CG'], [16, '游戏 CG'], [512, '西方作品'],
@@ -72,7 +73,7 @@ export function readPage(doc: Document = document, base = location.href): Galler
     const rating = ratingNode ? doc.defaultView?.getComputedStyle(ratingNode) : undefined
     galleries.set(canonical, {
       id: Number(match[1]), url: canonical, title,
-      author: title.match(/\[((?!汉化|漢化|DL版|中国翻訳)[^\]]+)\]/)?.[1] || '',
+      author: parseTitle(title).author,
       category: card.querySelector('.cs, .cn')?.textContent?.trim() || '未分类',
       pages: pages ? Number(pages[1]) : null, cover,
       language: /中国翻訳|中文|汉化|漢化|Chinese/i.test(title) ? '中文' : '',

@@ -8,7 +8,7 @@ export function useGalleries(page: GalleryPage) {
   const [revision, setRevision] = useState(0)
   const [queueRevision, setQueueRevision] = useState(0)
   const [items, setItems] = useState(page.galleries)
-  const client = useMemo(() => createClient(settings, revision > 0), [settings, revision])
+  const client = useMemo(() => createClient(settings, revision > 0), [settings, revision, page])
   useEffect(() => {
     let active = true
     setItems(page.galleries.map(item => ({ ...item, status: 'checking', hits: [], error: undefined, queue: undefined })))

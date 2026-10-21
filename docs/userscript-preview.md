@@ -30,10 +30,21 @@ Open `http://127.0.0.1:29683/snapshot.html`. In the application's settings, set 
 
 The local backend returns missing library results and stores submitted queue tasks in memory. Restarting clears backend state; Tampermonkey settings and cache persist. Use explicit recheck after changing backend scenarios.
 
-- `GET /__state`: request metadata, queued tasks, scenario and snapshot digest. Authorization values are never logged.
+- `GET /__state`: request metadata, queued tasks, scenario, available native-page URLs and snapshot digest. Authorization values are never logged.
 - `POST /__scenario?value=normal|library-error|queue-error|send-error|library-hit|library-hit-queue-error`: choose the backend scenario and clear recorded requests and tasks.
 
-Detail/torrent pages are unavailable unless separately provided; do not treat the list snapshot as coverage of those features.
+Detail/torrent requests on loopback always use the local `/__native` endpoint, never the live site. Missing snapshots produce an explicit unavailable-resource error; do not treat a list-only snapshot as coverage of these features.
+
+To supply separately saved native pages, pass `NATIVE_PAGES=/absolute/path/to/native-pages.json` to `make test-serve` or `make test`. The JSON object maps complete original HTTPS URLs to local HTML paths relative to the list snapshot's directory:
+
+```json
+{
+  "https://exhentai.org/g/123/token/": "details/123.html",
+  "https://exhentai.org/gallerytorrents.php?gid=123&t=token": "details/123-torrents.html"
+}
+```
+
+Only supported-site gallery and torrent URLs are accepted. HTML files must remain inside the list snapshot directory; files are read without modification. Direct invocation of the server accepts the manifest path as `LRR_NATIVE_PAGES`. Manifest changes require restarting the session. Native external images remain subject to CSP and may be unavailable; supplying HTML does not establish image or visual coverage.
 
 ## Automated browser checks
 
@@ -47,9 +58,11 @@ make test-browser
 
 `make test` starts the session and then runs `userscript/test-browser.py` through browser-harness. `test-quick` is an alias, not separate mock coverage. Missing browser permission, loader, file access, or application injection is a failure, not a skipped pass. The runner reuses and activates the snapshot tab, configures dummy credentials through the actual settings UI, and drives controls through CDP. It does not inject or substitute GM APIs.
 
-Assertions cover nonempty gallery rendering, authenticated library requests, queue authorization isolation, library/queue errors remaining unknown rather than missing, definitive library hits winning over queue errors, selection retention on send failure, successful queue submission/selection clearing, and settings/queue-state persistence across reload. The backend scenario and in-memory tasks are reset; the test changes Tampermonkey settings and ends with queued galleries. Do not run it on a tab being used for a stable visual comparison. Use only the dedicated offline loaders, never production credentials.
+`make test-core` runs browser-independent checks against the production TypeScript modules using Node's native type stripping and module hooks (Node 22.15+ with type stripping enabled, or a current Node release). It covers title parsing, ambiguous urlfinder failures, concurrency, search deduplication/204 retry, authorization isolation, cache batching/context/bypass, disposal, local-only native requests, and page/client lifecycle. The hook lifecycle test uses a small hook scheduler, not React DOM; browser integration remains necessary.
 
-To run the same checks against an already-served frozen build, use `make test-browser TEST_ORIGIN=http://127.0.0.1:29684` or port `29685`, after installing that build's loader. These checks are not visual acceptance, clipboard verification, navigation/detail coverage, Firefox verification, or a browser-wide no-egress audit. A newly added assertion runner is not verified until an actual run prints `PASS` and exits successfully.
+Browser assertions check the first card's detail panel and its torrent tab when present: provided HTML must render, or absent snapshots must produce the explicit unavailable-resource message. They also cover native query/category/successful-field preservation, nonempty gallery rendering, authenticated library requests, queue authorization isolation, library/queue errors remaining unknown rather than missing, definitive library hits winning over queue errors, selection retention on send failure, successful queue submission/selection clearing, and settings/queue-state persistence across reload. The backend scenario and in-memory tasks are reset; the test changes Tampermonkey settings and ends with queued galleries. Do not run it on a tab being used for a stable visual comparison. Use only the dedicated offline loaders, never production credentials.
+
+To run the same checks against an already-served frozen build, use `make test-browser TEST_ORIGIN=http://127.0.0.1:29684` or port `29685`, after installing that build's loader. These checks are not visual acceptance, clipboard verification, full navigation/detail coverage, Firefox verification, or a browser-wide no-egress audit. Detail/torrent success coverage requires separately saved native pages; list-only runs verify their missing-resource behavior instead. A newly added assertion runner is not verified until an actual run prints `PASS` and exits successfully.
 
 ## Frozen before/after comparison
 

@@ -2,8 +2,9 @@ PORT ?= 29683
 SAVED_PAGE ?=
 TEST_APP ?= lrr-test-current
 TEST_ORIGIN ?= http://127.0.0.1:29683
+NATIVE_PAGES ?=
 
-.PHONY: dev build watch watch-live watch-preview serve test test-quick test-serve test-browser test-status test-logs test-stop
+.PHONY: dev build watch watch-live watch-preview serve test test-quick test-core test-serve test-browser test-status test-logs test-stop
 
 dev: build
 	$(MAKE) -j2 watch serve
@@ -13,8 +14,11 @@ build:
 
 test-quick: test
 
-test: test-serve
+test: test-core test-serve
 	$(MAKE) test-browser
+
+test-core:
+	node --test userscript/test-core.mjs
 
 test-browser:
 	LRR_TEST_ORIGIN="$(TEST_ORIGIN)" browser-harness < userscript/test-browser.py
@@ -22,7 +26,7 @@ test-browser:
 test-serve: build
 	node --check lanraragi-checker.user.js
 	@test -n "$(SAVED_PAGE)" && test -f "$(SAVED_PAGE)" || { echo 'Set SAVED_PAGE to a saved real HTML page'; exit 1; }
-	LRR_SAVED_PAGE="$(abspath $(SAVED_PAGE))" pm2 startOrRestart userscript/ecosystem.config.cjs --only lrr-test-current --update-env
+	LRR_NATIVE_PAGES="$(if $(NATIVE_PAGES),$(abspath $(NATIVE_PAGES)),)" LRR_SAVED_PAGE="$(abspath $(SAVED_PAGE))" pm2 startOrRestart userscript/ecosystem.config.cjs --only lrr-test-current --update-env
 
 test-status:
 	pm2 list

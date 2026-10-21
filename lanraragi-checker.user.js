@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      AGPL-3.0-only
-// @version      2.0.0-alpha.43
+// @version      2.0.0-alpha.44
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -10294,7 +10294,21 @@
 				].includes(entry.result?.status) && Array.isArray(entry.result.hits)) entries.set(entry.url, entry);
 			}
 		} catch {}
+		let timer;
+		const flush = () => {
+			if (timer === void 0) return;
+			clearTimeout(timer);
+			timer = void 0;
+			window.removeEventListener("pagehide", flush);
+			if (context) try {
+				GM_setValue(key, {
+					context,
+					entries: [...entries.values()]
+				});
+			} catch {}
+		};
 		return {
+			flush,
 			get(url) {
 				const entry = entries.get(url);
 				return entry && Date.now() - entry.timestamp < lifetime ? entry.result : void 0;
@@ -10312,12 +10326,10 @@
 					timestamp: Date.now()
 				});
 				if (entries.size > 2e3) entries.delete(entries.keys().next().value);
-				if (context) try {
-					GM_setValue(key, {
-						context,
-						entries: [...entries.values()]
-					});
-				} catch {}
+				if (timer === void 0) {
+					timer = setTimeout(flush, 100);
+					window.addEventListener("pagehide", flush, { once: true });
+				}
 			}
 		};
 	}
@@ -10462,6 +10474,34 @@
 		};
 	}
 	//#endregion
+	//#region src/userscript/title.ts
+	var metadata = /^(?:(?:chinese|japanese|english|digital|uncensored)(?:\b|$)|中文|汉化|漢化|中国翻訳|DL版|翻訳|翻译|無修正)/i;
+	function parseTitle(value) {
+		let remaining = value.trim();
+		let author = "";
+		while (remaining.startsWith("[") || remaining.startsWith("(")) {
+			const opening = remaining[0];
+			const closing = opening === "[" ? "]" : ")";
+			let depth = 0;
+			let end = -1;
+			for (let index = 0; index < remaining.length; index++) {
+				if (remaining[index] === opening) depth++;
+				if (remaining[index] === closing && --depth === 0) {
+					end = index;
+					break;
+				}
+			}
+			if (end < 0) break;
+			const prefix = remaining.slice(1, end).trim();
+			if (opening === "[" && !author && !metadata.test(prefix)) author = prefix;
+			remaining = remaining.slice(end + 1).trim();
+		}
+		return {
+			author,
+			title: remaining.replace(/(?:\s*\[[^\]]*\])+\s*$/, "").trim()
+		};
+	}
+	//#endregion
 	//#region src/userscript/client.ts
 	var SearchPending = class extends Error {};
 	function copyLinks(text) {
@@ -10575,14 +10615,14 @@
 						error: void 0
 					};
 				}
-				if (result.success !== false && result.success !== 0) throw new Error("无法判断书库查询结果");
-				const title = item.title.match(/\]([^\[\]()]+)/)?.[1]?.trim();
-				if (!settings.enableAltSearch || !item.author || !title || title === item.author) return {
+				if (result.success !== false && result.success !== 0 || ![result.error, result.data?.error].some((error) => typeof error === "string" && /^URL not found in database\.?$/i.test(error))) throw new Error("无法判断书库查询结果");
+				const { author, title } = parseTitle(item.title);
+				if (!settings.enableAltSearch || !author || !title || title === author) return {
 					status: "missing",
 					hits: [],
 					error: void 0
 				};
-				const search = `${item.author},${title}`;
+				const search = `${author},${title}`;
 				if (!searches.has(search)) searches.set(search, searchPool(async () => {
 					const path = `/api/search?${new URLSearchParams({
 						filter: search,
@@ -10683,10 +10723,24 @@
 			if (response?.ok !== true || !Number.isInteger(response.added) || !Number.isInteger(response.duplicates) || response.added < 0 || response.duplicates < 0 || response.added + response.duplicates !== urls.length) throw new Error("队列未确认整批接收，选择已保留");
 			return response;
 		}
+		const offline = [
+			"127.0.0.1",
+			"localhost",
+			"[::1]"
+		].includes(location.hostname);
+		async function nativeHTML(url, signal) {
+			if (offline) try {
+				return await request(location.origin, `/__native?${new URLSearchParams({ url: url.href })}`, "GET", void 0, {}, settings.requestTimeoutMs, true, signal);
+			} catch (error) {
+				if (error instanceof Error && error.message === "HTTP 404") throw new Error("未提供此详情或种子的本地快照，请配置 LRR_NATIVE_PAGES");
+				throw error;
+			}
+			return await request(url.origin, url.pathname + url.search, "GET", void 0, {}, settings.requestTimeoutMs, true, signal);
+		}
 		async function torrents(href, signal) {
 			const url = new URL(href, location.href);
-			if (url.origin !== location.origin || url.pathname !== "/gallerytorrents.php") throw new Error("无效的原站种子地址");
-			return readTorrents(await request(url.origin, url.pathname + url.search, "GET", void 0, {}, settings.requestTimeoutMs, true, signal), url.href);
+			if (!offline && url.origin !== location.origin || !["http:", "https:"].includes(url.protocol) || url.pathname !== "/gallerytorrents.php") throw new Error("无效的原站种子地址");
+			return readTorrents(await nativeHTML(url, signal), url.href);
 		}
 		async function details(href, signal) {
 			const url = new URL(href, location.href);
@@ -10695,8 +10749,8 @@
 				"exhentai.org",
 				"g.e-hentai.org"
 			];
-			if (!["http:", "https:"].includes(url.protocol) || url.origin !== location.origin && !(sites.includes(url.hostname) && sites.includes(location.hostname)) || !/^\/g\/\d+\/[a-zA-Z0-9]+\/$/.test(url.pathname)) throw new Error("无效的原站作品地址");
-			return readDetails(await request(url.origin, url.pathname, "GET", void 0, {}, settings.requestTimeoutMs, true, signal), url.href);
+			if (!["http:", "https:"].includes(url.protocol) || url.origin !== location.origin && !(sites.includes(url.hostname) && (offline || sites.includes(location.hostname))) || !/^\/g\/\d+\/[a-zA-Z0-9]+\/$/.test(url.pathname)) throw new Error("无效的原站作品地址");
+			return readDetails(await nativeHTML(url, signal), url.href);
 		}
 		return {
 			check,
@@ -10704,7 +10758,10 @@
 			send,
 			torrents,
 			details,
-			dispose: () => controller.abort()
+			dispose: () => {
+				controller.abort();
+				cache.then((store) => store.flush());
+			}
 		};
 	}
 	//#endregion
@@ -11807,7 +11864,7 @@
 				id: Number(match[1]),
 				url: canonical,
 				title,
-				author: title.match(/\[((?!汉化|漢化|DL版|中国翻訳)[^\]]+)\]/)?.[1] || "",
+				author: parseTitle(title).author,
 				category: card.querySelector(".cs, .cn")?.textContent?.trim() || "未分类",
 				pages: pages ? Number(pages[1]) : null,
 				cover,
@@ -12407,7 +12464,11 @@
 		const [revision, setRevision] = (0, import_react.useState)(0);
 		const [queueRevision, setQueueRevision] = (0, import_react.useState)(0);
 		const [items, setItems] = (0, import_react.useState)(page.galleries);
-		const client = (0, import_react.useMemo)(() => createClient(settings, revision > 0), [settings, revision]);
+		const client = (0, import_react.useMemo)(() => createClient(settings, revision > 0), [
+			settings,
+			revision,
+			page
+		]);
 		(0, import_react.useEffect)(() => {
 			let active = true;
 			setItems(page.galleries.map((item) => ({

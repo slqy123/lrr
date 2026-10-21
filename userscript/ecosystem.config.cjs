@@ -15,6 +15,7 @@ module.exports = {
     autorestart: false,
     time: true,
     env: {
+      LRR_NATIVE_PAGES: process.env.LRR_NATIVE_PAGES || '',
       LRR_PREVIEW_LABEL: name,
       LRR_PREVIEW_PORT: String(29683 + index),
       LRR_PREVIEW_SCRIPT: join(root, name === 'current' ? 'lanraragi-checker.user.js' : `userscript/dist/comparison/${name}.user.js`),
