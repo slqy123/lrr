@@ -31,38 +31,46 @@
   --primary-hover: #f5acc0;
   --primary-pressed: #e58ba5;
   --action-shadow: #ca91a5;
+  --selection-highlight: var(--ring);
+  --selection-ink: var(--card);
+  --selection-shadow: var(--action-shadow);
 }
 :host(.dark[data-palette=festival]) {
-  --background: #2c272b;
-  --card: #373035;
-  --foreground: #f3e7ec;
+  --background: #2c292e;
+  --card: #38343a;
+  --foreground: #f2e8ec;
   --primary: #e9a0b7;
   --ring: #e9a0b7;
-  --secondary: #493740;
-  --secondary-foreground: #f3e0e8;
-  --accent: #563b48;
-  --accent-foreground: #f2bfd2;
-  --muted: #322b30;
-  --muted-foreground: #c5afba;
-  --border: #614b57;
-  --input: #ad8194;
-  --anibt-ink2: #d8c1cc;
-  --anibt-deep2: #493a42;
+  --secondary: #443b43;
+  --secondary-foreground: #eee0e7;
+  --accent: #5a424e;
+  --accent-foreground: #edb9cb;
+  --muted: #332f35;
+  --muted-foreground: #c4b5bd;
+  --border: #65535e;
+  --input: #a38b98;
+  --anibt-ink2: #dacbd2;
+  --anibt-deep2: #473d45;
   --anibt-mark: #e9a0b7;
-  --anibt-wash2: #654958;
-  --anibt-wash-line: #ad8194;
-  --club-stripe: #cb8ca3;
-  --club-sun: #775363;
-  --club-sun-wash: #493740;
-  --club-ink: #f3e0e8;
-  --club-grid: #c5afba10;
-  --anibt-tape: #cb8ca355;
-  --anibt-tape-stripe: #37303555;
-  --interaction-hover: #59414d;
-  --interaction-pressed: #654958;
+  --anibt-wash2: #5c4854;
+  --anibt-wash-line: #a38b98;
+  --club-stripe: #bf91a3;
+  --club-sun: #69545e;
+  --club-sun-wash: #493c44;
+  --club-ink: #eee0e7;
+  --club-grid: #c4b5bd12;
+  --anibt-tape: #bf91a355;
+  --anibt-tape-stripe: #38343a55;
+  --interaction-hover: #51434d;
+  --interaction-pressed: #5c4854;
   --primary-hover: #efb0c4;
   --primary-pressed: #db8ea7;
-  --action-shadow: #815268;
+  --action-shadow: #765364;
+  --anibt-dot-a: #e9a0b718;
+  --anibt-dot-b: #89c5bb10;
+  --selection-highlight: var(--primary);
+  --selection-ink: var(--primary-foreground);
+  --selection-shadow: var(--action-shadow);
 }
 
 /* Keep each action in one hue family throughout its interaction states. */
@@ -111,15 +119,15 @@
   box-shadow: 0 0 0 1.5px var(--input), var(--anibt-shadow-lift);
 }
 
-/* Separate selection from the pink paper edges without tinting the cover. */
+/* Separate selection from the card edge without tinting the cover. */
 .gallery-grid [data-slot=poster-card][data-selected=true] {
-  box-shadow: 0 0 0 2px var(--card), 0 0 0 5px var(--anibt-time-ink), var(--anibt-shadow-lift);
+  box-shadow: 0 0 0 2px var(--card), 0 0 0 5px var(--selection-highlight, var(--anibt-time-ink)), var(--anibt-shadow-lift);
 }
 .gallery-grid .cover-select [data-slot=checkbox][data-state=checked]:enabled,
 .selection-groups [data-slot=checkbox]:is([data-state=checked], [data-state=indeterminate]):enabled {
-  background: var(--anibt-time-ink);
-  color: var(--card);
-  box-shadow: inset 0 0 0 1.5px var(--anibt-time-ink), 2px 2px 0 var(--anibt-time-line);
+  background: var(--selection-highlight, var(--anibt-time-ink));
+  color: var(--selection-ink, var(--card));
+  box-shadow: inset 0 0 0 1.5px var(--selection-highlight, var(--anibt-time-ink)), 2px 2px 0 var(--selection-shadow, var(--anibt-time-line));
 }
 
 /* Short, action-triggered movement keeps long gallery pages calm. */

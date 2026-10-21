@@ -4,8 +4,8 @@ import { Button } from '../ui/anibt/button'
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '../ui/anibt/popover'
 
 const palettes = [
-  ['festival', '官方桃粉'],
-  ['original', '原版'],
+  ['festival', '桃粉'],
+  ['original', '奶油'],
 ] as const
 type PaletteName = typeof palettes[number][0]
 
