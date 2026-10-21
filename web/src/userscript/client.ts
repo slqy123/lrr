@@ -2,10 +2,12 @@ import type { Archive, Gallery } from './model'
 import type { Settings } from './settings'
 import { lookupCache } from './cache'
 import { readTorrents } from './torrents'
-import { readDetails } from './details'
+import { readDetails, type GallerySummary } from './details'
 import { parseTitle } from './title'
 
 class SearchPending extends Error {}
+
+const detailCache = new Map<string, GallerySummary>()
 
 type Response = { status: number; responseText: string }
 declare function GM_xmlhttpRequest(options: {
@@ -175,8 +177,13 @@ export function createClient(settings: Settings, fresh = false) {
     const url = new URL(href, location.href)
     const sites = ['e-hentai.org', 'exhentai.org', 'g.e-hentai.org']
     if (!['http:', 'https:'].includes(url.protocol) || (url.origin !== location.origin && !(sites.includes(url.hostname) && (offline || sites.includes(location.hostname)))) || !/^\/g\/\d+\/[a-zA-Z0-9]+\/$/.test(url.pathname)) throw new Error('无效的原站作品地址')
+    if (controller.signal.aborted || signal?.aborted) throw new Error('检查已取消')
+    const saved = detailCache.get(url.href)
+    if (saved) return saved
     const html = await nativeHTML(url, signal)
-    return readDetails(html, url.href)
+    const summary = readDetails(html, url.href)
+    if (!controller.signal.aborted && !signal?.aborted) detailCache.set(url.href, summary)
+    return summary
   }
   return { check, lookup, send, torrents, details, dispose: () => { controller.abort(); void cache.then(store => store.flush()) } }
 }

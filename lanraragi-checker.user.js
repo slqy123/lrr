@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      AGPL-3.0-only
-// @version      2.0.0-alpha.45
+// @version      2.0.0-alpha.46
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -10504,6 +10504,7 @@
 	//#endregion
 	//#region src/userscript/client.ts
 	var SearchPending = class extends Error {};
+	var detailCache = /* @__PURE__ */ new Map();
 	function copyLinks(text) {
 		GM_setClipboard(text);
 	}
@@ -10750,7 +10751,12 @@
 				"g.e-hentai.org"
 			];
 			if (!["http:", "https:"].includes(url.protocol) || url.origin !== location.origin && !(sites.includes(url.hostname) && (offline || sites.includes(location.hostname))) || !/^\/g\/\d+\/[a-zA-Z0-9]+\/$/.test(url.pathname)) throw new Error("无效的原站作品地址");
-			return readDetails(await nativeHTML(url, signal), url.href);
+			if (controller.signal.aborted || signal?.aborted) throw new Error("检查已取消");
+			const saved = detailCache.get(url.href);
+			if (saved) return saved;
+			const summary = readDetails(await nativeHTML(url, signal), url.href);
+			if (!controller.signal.aborted && !signal?.aborted) detailCache.set(url.href, summary);
+			return summary;
 		}
 		return {
 			check,
