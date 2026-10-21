@@ -8,11 +8,6 @@ import { cn } from "./utils"
 /**
  * Popover — AniBT 「贴纸手账」: a small panel anchored to its trigger.
  *
- * The floating tier (`anibt-pop`): paper, a 1px edge and the pop shadow on
- * radius 14, 16px of padding, 288 wide. `PopoverHeader` / `PopoverTitle` /
- * `PopoverDescription` give it a 14/700 title over a 12px muted line. Pickers
- * that fill it edge to edge (a command list) pass `className="p-0"`.
- *
  * Export names and props are shadcn's, so this file can replace
  * `components/ui/popover.tsx`.
  */

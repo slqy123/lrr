@@ -1,7 +1,8 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
-import { BookHeart, Flower2, Settings, Sun, Moon, ExternalLink, RefreshCw, Copy, ArrowRight, Check, BookOpen } from 'lucide-react'
+import { Flower2, Settings, Sun, Moon, ExternalLink, RefreshCw, Copy, ArrowRight, Check, BookOpen } from 'lucide-react'
 import { Button } from '../ui/anibt/button'
+import { ClubEmblem } from './ClubEmblem'
 import { Badge, StatusBadge } from '../ui/anibt/badge'
 import { Checkbox } from '../ui/anibt/checkbox'
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '../ui/anibt/popover'
@@ -66,7 +67,7 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
   const checkingCount = items.filter(item => displayState(item) === 'checking').length
   return <div className="surface anibt-ground showcase live-app">
     <header className="site-header"><div className="page-width header-inner">
-      <a className="brand" href={page.action}><span className="brand-mark"><BookHeart size={24} /></span><span>Yuru<b>Lib</b><small>今日もゆるっと、好きな作品を。</small></span></a>
+      <a className="brand" href={page.action}><span className="brand-mark"><ClubEmblem /></span><span>Yuru<b>Lib</b><small>今日もゆるっと、好きな作品を。</small></span></a>
       <nav className="header-nav" aria-label="导航"><Button asChild variant="secondary"><a href={page.action}>发现作品</a></Button>{/^https?:\/\//.test(settings.queueServerUrl) && <Button asChild variant="ghost"><a href={settings.queueServerUrl} target="_blank" rel="noopener noreferrer">队列后台 <ExternalLink size={13} /></a></Button>}
         {!!page.links.length && <Popover><PopoverTrigger asChild><Button variant="ghost">原站导航</Button></PopoverTrigger><PopoverContent container={portal}><PopoverTitle>原站导航</PopoverTitle><nav className="native-links anibt-menu">{page.links.map((link, index) => <a className="anibt-menu-item" key={index} href={link.url}>{link.title}</a>)}</nav></PopoverContent></Popover>}
       </nav>

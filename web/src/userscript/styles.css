@@ -3,6 +3,7 @@
 @import "../ui/anibt/theme.css";
 @import "./showcase.css";
 @import "./live.css";
+@import "./club-theme.css";
 @source "./";
 @source "../preview";
 @source "../ui/anibt";
@@ -37,7 +38,6 @@
   text-align: left;
   direction: ltr;
   --spacing: 4px;
-  --font-anibt-display: "LRR Fredoka", ui-rounded, var(--font-sans);
 }
 
 .surface {

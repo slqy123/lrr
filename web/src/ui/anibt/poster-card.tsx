@@ -7,13 +7,6 @@ import { cn } from "./utils"
  * PosterCard — the AniBT 「贴纸手账」 collectible card: one show on a poster
  * wall (a timetable, a season, search results, a group's works).
  *
- * A paper face with the panel edge and 4px round a 2:3 cover. The cover sits
- * in a sleeve — a gloss across its top-left and a faint rim — and a sheen runs
- * across it under the pointer while the whole card lifts 4px and tips −0.6°.
- * A die-cut `sticker` (the airtime) is stuck on the cover's corner; corner
- * `badges` are square paper stickers; `coverAction` is the subscribe key in
- * the bottom-right corner.
- *
  * **Fixed height.** The title is at most two lines and always reserves two;
  * the full title rides in `title=`. The subtitle is one line, reserved even
  * when empty, and dropped on a narrow card; meta and status sit at the foot.
@@ -129,7 +122,7 @@ function PosterCard({
 }: PosterCardProps) {
   const tooltip = titleTooltip ?? (typeof title === "string" ? title : undefined)
   const stretched =
-    "outline-hidden after:absolute after:inset-0 after:z-20 after:rounded-[14px] after:content-[''] @max-[10rem]/poster:after:rounded-[12px]"
+    "outline-hidden after:absolute after:inset-0 after:z-20 after:rounded-[3px] after:content-['']"
   const linkedTitle = link
     ? React.cloneElement(link, { className: cn(stretched, link.props.className), children: title })
     : href
@@ -146,13 +139,13 @@ function PosterCard({
       data-tone={tone}
       data-selected={selected ? "true" : undefined}
       className={cn(
-        "group/poster @container/poster relative flex h-full min-w-0 flex-col rounded-[14px] bg-card p-1 text-left text-card-foreground",
-        "shadow-[0_0_0_1px_var(--border),var(--anibt-shadow-panel)] transition-[translate,rotate,box-shadow,background-color] duration-300 ease-anibt-spring",
-        "hover:z-[2] hover:shadow-[0_0_0_1px_var(--anibt-wash-line),var(--anibt-shadow-lift)] focus-within:z-[2] motion-safe:hover:-translate-y-1 motion-safe:hover:-rotate-[0.6deg]",
+        "group/poster @container/poster relative flex h-full min-w-0 flex-col rounded-[3px] bg-card p-1.5 text-left text-card-foreground",
+        "shadow-[0_0_0_1px_var(--input),var(--anibt-shadow-panel)] transition-[box-shadow,background-color] duration-150",
+        "hover:z-[2] hover:shadow-[0_0_0_1.5px_var(--anibt-time-line),var(--anibt-shadow-lift)] focus-within:z-[2]",
         "data-[tone]:bg-anibt-time-wash data-[tone]:shadow-[0_0_0_1.5px_var(--anibt-time-line),var(--anibt-shadow-panel)] data-[tone]:hover:shadow-[0_0_0_1.5px_var(--anibt-time-line),var(--anibt-shadow-lift)]",
         "data-[selected=true]:shadow-[0_0_0_2px_var(--anibt-mark),var(--anibt-shadow-lift)] data-[selected=true]:hover:shadow-[0_0_0_2px_var(--anibt-mark),var(--anibt-shadow-lift)]",
         "has-[[data-slot=poster-card-title]_:focus-visible]:outline-2 has-[[data-slot=poster-card-title]_:focus-visible]:outline-offset-2 has-[[data-slot=poster-card-title]_:focus-visible]:outline-ring has-[[data-slot=poster-card-title]_:focus-visible]:outline-solid",
-        "@max-[10rem]/poster:rounded-[12px] @max-[10rem]/poster:p-[3px]",
+        "@max-[10rem]/poster:p-1",
         className
       )}
       {...props}
@@ -160,13 +153,7 @@ function PosterCard({
       <div data-slot="poster-card-art" className="relative flex-none">
         <div
           data-slot="poster-card-cover"
-          className={cn(
-            "group/cover @container/poster-cover relative aspect-[2/3] overflow-hidden rounded-[10px] @max-[10rem]/poster:rounded-[9px]",
-            // The sleeve: a gloss across the top-left and a faint rim.
-            "before:pointer-events-none before:absolute before:inset-0 before:z-[12] before:rounded-[inherit] before:bg-(image:--anibt-sleeve) before:shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--anibt-sticker-edge)_28%,transparent)] before:content-['']",
-            // The sheen that runs across it under the pointer.
-            "after:pointer-events-none after:absolute after:inset-0 after:z-[13] after:-translate-x-[120%] after:bg-(image:--anibt-sheen) after:content-[''] motion-safe:group-hover/poster:after:translate-x-[120%] motion-safe:group-hover/poster:after:transition-[translate] motion-safe:group-hover/poster:after:duration-700 motion-safe:group-hover/poster:after:ease-anibt-out"
-          )}
+          className="group/cover @container/poster-cover relative aspect-[2/3] overflow-hidden rounded-[1px] bg-muted"
         >
           {imageFallback ?? <PosterCardPlaceholder />}
           {image ??
@@ -182,7 +169,7 @@ function PosterCard({
                 loading={priority ? "eager" : "lazy"}
                 fetchPriority={priority ? "high" : undefined}
                 decoding="async"
-                className="absolute inset-0 block size-full object-cover"
+                className="absolute inset-0 block size-full object-contain"
               />
             ) : null)}
           {badges}
@@ -201,7 +188,7 @@ function PosterCard({
 
       <div
         data-slot="poster-card-body"
-        className="flex min-w-0 flex-1 flex-col gap-0.5 px-1 pt-2 pb-0.5 @max-[10rem]/poster:px-[3px] @max-[10rem]/poster:pt-1.5"
+        className="mt-2 flex min-w-0 flex-1 flex-col gap-0.5 border-t border-dashed border-input px-1 pt-2 pb-1 @max-[10rem]/poster:px-[3px] @max-[10rem]/poster:pt-1.5"
       >
         <Heading
           data-slot="poster-card-title"

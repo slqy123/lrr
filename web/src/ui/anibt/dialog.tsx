@@ -10,11 +10,6 @@ import { Button } from "./button"
 /**
  * Dialog — AniBT 「贴纸手账」: the one container for "one record".
  *
- * The surface is the floating panel (`anibt-pop`): paper, a 1px edge and the
- * pop shadow on radius 14, over the theme's scrim. `DialogHeader` is A's 48px
- * bar across the top, parted from the body by the dashed stitch; the close
- * button is a quiet 32px icon square inside that bar.
- *
  * Scrolling has one convention: the content is a flex column capped at the
  * viewport, `DialogHeader` and `DialogFooter` stay put, and `DialogBody` is the
  * region that scrolls. A dialog without a body still reaches its footer,
@@ -123,7 +118,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="dialog-header"
       className={cn(
-        "anibt-stitch-under -mx-4 -mt-4 flex min-h-12 shrink-0 flex-col justify-center gap-1 px-4 py-3 text-left",
+        "anibt-stitch-under -mx-4 -mt-4 flex min-h-12 shrink-0 flex-col justify-center gap-1 bg-secondary px-4 py-3 text-left",
         className
       )}
       {...props}

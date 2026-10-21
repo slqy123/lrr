@@ -10,7 +10,9 @@ Local modifications, 2026-10-20:
 - Component imports use local module paths.
 - PopoverContent and DialogContent require explicit portal containers for Shadow DOM isolation.
 - Theme root selectors target :host and :host(.dark).
-- Theme font imports are replaced by bundled Latin font registration under a private family name.
+- Theme and component materials use a local matte stationery design with warm paper, flat ink colors, ticket labels and offset print shadows.
+- Controls share theme recipes; poster cards use unglazed, uncropped covers and ruled metadata sections.
+- Display typography uses system rounded/CJK families.
 
 Fredoka is bundled under the SIL Open Font License; see Fredoka-LICENSE.txt.
 The local showcase illustrations are generated SVGs, not AniBT brand artwork.

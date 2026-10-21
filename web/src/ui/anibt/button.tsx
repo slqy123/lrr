@@ -5,45 +5,16 @@ import { Slot } from "radix-ui"
 import { cn } from "./utils"
 import { Spinner } from "./spinner"
 
-/**
- * Button — AniBT 「贴纸手账」.
- *
- * The variant and size names are shadcn's, so this file can replace
- * `components/ui/button.tsx` and every shadcn component that imports
- * `buttonVariants` keeps compiling. Each variant is one A paint, owned by an
- * `anibt-btn-*` recipe from `@anibt/theme`:
- *
- * - `default` — candy: the one filled action on a view. Pink gradient, white
- *   ink, a gloss on the top half, a deeper edge; hover lifts it and pops a ✦,
- *   press pushes it onto its edge.
- * - `secondary` / `outline` — raised: paper with an input-coloured ring and a
- *   1.5px bottom edge; hover lifts it and turns label and ring pink.
- * - `ghost` — quiet: nothing until the pointer is on it, then the pink wash.
- * - `destructive` — danger: red tint, red ink, red edge, the raised lift.
- * - `link` — the pink word, underlined on hover.
- * - `field` — a picker trigger (combobox) that reads as a field, not a key.
- *
- * Sizes are A's control heights: 32 (`default`), 28 (`sm`), 36 (`lg`), and
- * the matching icon squares; `xs` / `icon-xs` (24) exist for shadcn parity.
- *
- * States, the same in 白樱 and 夜樱 because every colour is a token:
- * focus-visible is a 2px ring-colour outline 2px outside the box (it never
- * replaces the paint's own edge); disabled is flat muted; `loading` sets
- * `aria-busy`, blocks interaction and overlays a spinner without resizing
- * the button — every disabled paint is gated on `not-aria-busy`, so work in
- * flight keeps its colour.
- */
-
 const LINK = "bg-transparent text-accent-foreground hover:underline hover:underline-offset-4"
 
 const DISABLED_FLAT =
   "disabled:not-aria-busy:bg-muted aria-disabled:not-aria-busy:bg-muted"
 
 const FIELD =
-  "bg-card font-normal text-foreground inset-ring-1 inset-ring-input hover:inset-ring-anibt-wash-line aria-expanded:inset-ring-[1.5px] aria-expanded:inset-ring-ring disabled:not-aria-busy:bg-muted"
+  "anibt-field font-normal aria-expanded:outline-2 aria-expanded:outline-ring disabled:not-aria-busy:bg-muted"
 
 const buttonVariants = cva(
-  "relative inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[10px] text-[13px] leading-none font-semibold whitespace-nowrap outline-hidden select-none aria-busy:cursor-wait disabled:pointer-events-none disabled:not-aria-busy:text-muted-foreground disabled:not-aria-busy:shadow-none aria-disabled:pointer-events-none aria-disabled:not-aria-busy:text-muted-foreground aria-disabled:not-aria-busy:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring focus-visible:outline-solid aria-invalid:outline-2 aria-invalid:outline-anibt-danger-fill aria-invalid:outline-solid [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "relative inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[3px_10px_3px_3px] text-[13px] leading-none font-bold whitespace-nowrap outline-hidden select-none aria-busy:cursor-wait disabled:pointer-events-none disabled:not-aria-busy:text-muted-foreground disabled:not-aria-busy:shadow-none aria-disabled:pointer-events-none aria-disabled:not-aria-busy:text-muted-foreground aria-disabled:not-aria-busy:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring focus-visible:outline-solid aria-invalid:outline-2 aria-invalid:outline-anibt-danger-fill aria-invalid:outline-solid [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {

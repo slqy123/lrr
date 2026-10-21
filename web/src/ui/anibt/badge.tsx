@@ -4,27 +4,6 @@ import { Slot } from "radix-ui"
 
 import { cn } from "./utils"
 
-/**
- * Badge, StatusBadge and StatusDot — the AniBT 「贴纸手账」 label family.
- *
- * `Badge`:
- * - tags (20px, radius 6): `default` (neutral — a spec, a category), `res`
- *   (blue: resolution, format, time — in the round face), `lang` (pink:
- *   language, subtitles), and the status words `success` / `warning` /
- *   `destructive` (mint / amber / red, no dot).
- * - stickers (die-cut white rim, tilted by `tilt`): `sticker`, and the filled
- *   `candy` and `water`. A label stuck on — use sparingly.
- * - counts (20px pill): `count` (candy) and `count-quiet` (neutral).
- * - `secondary` and `outline` exist only so code written against shadcn's
- *   badge keeps compiling; both are the neutral tag.
- *
- * `StatusBadge` is a state with its word and a 6px dot: ok (mint), run (blue,
- * the dot blinks), fail (red), warn (amber), mute (grey), on (pink). The word
- * is required — colour never speaks alone.
- *
- * `StatusDot` is the label-less 6px dot beside copy that already says the
- * state (a legend, a rail count). It is `aria-hidden`.
- */
 const badgeVariants = cva(
   "inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring focus-visible:outline-solid [&>svg]:pointer-events-none [&>svg]:size-3",
   {
@@ -32,7 +11,7 @@ const badgeVariants = cva(
       variant: {
         default: "anibt-tag",
         secondary: "anibt-tag",
-        outline: "anibt-tag",
+        outline: "anibt-tag bg-transparent inset-ring-1 inset-ring-input",
         res: "anibt-tag anibt-tag-res",
         lang: "anibt-tag anibt-tag-lang",
         success: "anibt-tag anibt-tag-ok",
