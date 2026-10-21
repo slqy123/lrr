@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Lanraragi Checker + Panel
+// @name         YuruLib
 // @namespace    https://github.com/slqy123/lrr
-// @description  在 ExHentai/E-Hentai 列表页查重 Lanraragi 库并标记，附设置与选品面板
+// @description  ExHentai/E-Hentai gallery browser with LANraragi library and queue integration
 // @match        https://exhentai.org/*
 // @match        https://e-hentai.org/*
 // @match        https://g.e-hentai.org/*
@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      AGPL-3.0-only
-// @version      2.0.0-alpha.46
+// @version      2.0.0-alpha.47
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -685,7 +685,7 @@
 	* This source code is licensed under the ISC license.
 	* See the LICENSE file in the root directory of this source tree.
 	*/
-	var __iconData$24 = {
+	var __iconData$25 = {
 		name: "arrow-right",
 		size: 24,
 		node: [["path", {
@@ -696,8 +696,29 @@
 			key: "xquz4c"
 		}]]
 	};
+	__iconData$25.node;
+	var ArrowRight = createLucideIcon(__iconData$25);
+	//#endregion
+	//#region node_modules/.pnpm/lucide-react@1.59.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/icons/book-heart.mjs
+	/**
+	* @license lucide-react v1.59.0 - ISC
+	*
+	* This source code is licensed under the ISC license.
+	* See the LICENSE file in the root directory of this source tree.
+	*/
+	var __iconData$24 = {
+		name: "book-heart",
+		size: 24,
+		node: [["path", {
+			d: "M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20",
+			key: "k3hazp"
+		}], ["path", {
+			d: "M8.62 9.8A2.25 2.25 0 1 1 12 6.836a2.25 2.25 0 1 1 3.38 2.966l-2.626 2.856a.998.998 0 0 1-1.507 0z",
+			key: "9v40y5"
+		}]]
+	};
 	__iconData$24.node;
-	var ArrowRight = createLucideIcon(__iconData$24);
+	var BookHeart = createLucideIcon(__iconData$24);
 	//#endregion
 	//#region node_modules/.pnpm/lucide-react@1.59.0_@types+react@19.3.0_react@19.3.1/node_modules/lucide-react/dist/esm/icons/book-open.mjs
 	/**
@@ -11994,13 +12015,13 @@
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
 						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 							className: "eyebrow",
-							children: "YOUR NEXT FAVORITE"
+							children: "ごらく部へようこそ"
 						}),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h1", { children: ["今天，也有新的心动 ", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Flower2, { size: 22 })] }),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "在一页页故事里，遇见喜欢的世界。" })
+						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h1", { children: ["今日も、ゆるっと作品探し！ ", /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Flower2, { size: 22 })] }),
+						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "部室で見つけたお気に入り、書架にしまおう。" })
 					] }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 						className: "anibt-sticker anibt-sticker-water header-sticker",
-						children: "小小书架 · 大大世界 ✦"
+						children: "アッカリーン♪"
 					})]
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("form", {
@@ -12679,11 +12700,11 @@
 								href: page.action,
 								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 									className: "brand-mark",
-									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Flower2, { size: 24 })
+									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BookHeart, { size: 24 })
 								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
-									"LRR ",
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Gallery" }),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: "把喜欢的故事，收进书架。" })
+									"Yuru",
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Lib" }),
+									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: "今日もゆるっと、好きな作品を。" })
 								] })]
 							}),
 							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("nav", {
@@ -12925,7 +12946,7 @@
 						}),
 						/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("footer", {
 							className: "page-footer",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Flower2, { size: 14 }), "为每一次心动，留一个位置。"] }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Flower2, { size: 14 }), "アッカリーン♪ 今日もお気に入りを見つけよう。"] }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
 								"AniBT UI · ",
 								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", {
 									href: "https://github.com/OpenAniBT/ui",

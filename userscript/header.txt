@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Lanraragi Checker + Panel
+// @name         YuruLib
 // @namespace    https://github.com/slqy123/lrr
-// @description  在 ExHentai/E-Hentai 列表页查重 Lanraragi 库并标记，附设置与选品面板
+// @description  ExHentai/E-Hentai gallery browser with LANraragi library and queue integration
 // @match        https://exhentai.org/*
 // @match        https://e-hentai.org/*
 // @match        https://g.e-hentai.org/*
@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      AGPL-3.0-only
-// @version      2.0.0-alpha.46
+// @version      2.0.0-alpha.47
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==

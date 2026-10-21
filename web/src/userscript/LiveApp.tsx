@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
-import { Flower2, Settings, Sun, Moon, ExternalLink, RefreshCw, Copy, ArrowRight, Check, BookOpen } from 'lucide-react'
+import { BookHeart, Flower2, Settings, Sun, Moon, ExternalLink, RefreshCw, Copy, ArrowRight, Check, BookOpen } from 'lucide-react'
 import { Button } from '../ui/anibt/button'
 import { Badge, StatusBadge } from '../ui/anibt/badge'
 import { Checkbox } from '../ui/anibt/checkbox'
@@ -66,7 +66,7 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
   const checkingCount = items.filter(item => displayState(item) === 'checking').length
   return <div className="surface anibt-ground showcase live-app">
     <header className="site-header"><div className="page-width header-inner">
-      <a className="brand" href={page.action}><span className="brand-mark"><Flower2 size={24} /></span><span>LRR <b>Gallery</b><small>把喜欢的故事，收进书架。</small></span></a>
+      <a className="brand" href={page.action}><span className="brand-mark"><BookHeart size={24} /></span><span>Yuru<b>Lib</b><small>今日もゆるっと、好きな作品を。</small></span></a>
       <nav className="header-nav" aria-label="导航"><Button asChild variant="secondary"><a href={page.action}>发现作品</a></Button>{/^https?:\/\//.test(settings.queueServerUrl) && <Button asChild variant="ghost"><a href={settings.queueServerUrl} target="_blank" rel="noopener noreferrer">队列后台 <ExternalLink size={13} /></a></Button>}
         {!!page.links.length && <Popover><PopoverTrigger asChild><Button variant="ghost">原站导航</Button></PopoverTrigger><PopoverContent container={portal}><PopoverTitle>原站导航</PopoverTitle><nav className="native-links anibt-menu">{page.links.map((link, index) => <a className="anibt-menu-item" key={index} href={link.url}>{link.title}</a>)}</nav></PopoverContent></Popover>}
       </nav>
@@ -98,7 +98,7 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
         {items.length ? <GalleryCards items={items} selected={selected} toggle={toggle} disabled={sending} compact={compact} live={{ server: settings.lrrServerUrl, recheck, client, refreshQueue }} /> : <div className="empty-panel anibt-sheet"><BookOpen /><h3>这里还没有故事</h3><p>换个关键词，下一本喜欢的作品也许就在附近。</p><Button asChild variant="secondary"><a href={page.action}>重置筛选</a></Button></div>}
         <div className="bottom-pagination"><Pager page={page} portal={portal} /></div>
       </section>
-      <footer className="page-footer"><span><Flower2 size={14} />为每一次心动，留一个位置。</span><span>AniBT UI · <a href="https://github.com/OpenAniBT/ui">AGPL-3.0-only</a> · <a href="https://github.com/slqy123/lrr">对应源码</a></span></footer>
+      <footer className="page-footer"><span><Flower2 size={14} />アッカリーン♪ 今日もお気に入りを見つけよう。</span><span>AniBT UI · <a href="https://github.com/OpenAniBT/ui">AGPL-3.0-only</a> · <a href="https://github.com/slqy123/lrr">对应源码</a></span></footer>
     </main>
     {selected.size > 0 && <aside className="selection-bar anibt-pop" aria-label="批量操作"><span className="selected-count"><Check size={17} />已选择 <Badge asChild variant="count"><strong>{selected.size}</strong></Badge> 部</span><Button variant="ghost" size="sm" disabled={sending} onClick={() => setSelected(new Set())}>取消选择</Button><span className="selection-divider anibt-stitch-side" aria-hidden="true" /><Button variant="secondary" disabled={sending} onClick={() => { try { copyLinks(items.filter(item => selected.has(item.id)).map(item => item.url).join('\n')); setFeedback({ tone: 'ok', message: `已复制 ${selected.size} 个链接。` }) } catch { setFeedback({ tone: 'fail', message: '无法写入剪贴板，选择已保留。' }) } }}><Copy />复制链接</Button><Button loading={sending} onClick={() => void send()}>发送队列 <ArrowRight /></Button></aside>}
     <Feedback value={feedback} className="preview-feedback anibt-pop" onClose={() => setFeedback(null)} />

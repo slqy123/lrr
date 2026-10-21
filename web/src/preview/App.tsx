@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useState } from 'react'
-import { BookOpen, Copy, CircleAlert, Search, SlidersHorizontal, Flower2, Settings, Sun, Moon, ArrowRight, ChevronLeft, ChevronRight, RefreshCw, Check, Upload, X, Pause, Play, ExternalLink } from 'lucide-react'
+import { BookOpen, BookHeart, Copy, CircleAlert, Search, SlidersHorizontal, Flower2, Settings, Sun, Moon, ArrowRight, ChevronLeft, ChevronRight, RefreshCw, Check, Upload, X, Pause, Play, ExternalLink } from 'lucide-react'
 import { Button } from '../ui/anibt/button'
 import { Input } from '../ui/anibt/input'
 import { Badge } from '../ui/anibt/badge'
@@ -72,7 +72,7 @@ export function App({ host, portal, restore }: { host: HTMLElement; portal: HTML
   return <div className="surface anibt-ground showcase">
     <header className="site-header">
       <div className="page-width header-inner">
-        <a className="brand" href="#" onClick={event => { event.preventDefault(); setView('gallery') }}><span className="brand-mark"><Flower2 size={24} /></span><span>LRR <b>Gallery</b><small>把喜欢的故事，收进书架。</small></span></a>
+        <a className="brand" href="#" onClick={event => { event.preventDefault(); setView('gallery') }}><span className="brand-mark"><BookHeart size={24} /></span><span>Yuru<b>Lib</b><small>今日もゆるっと、好きな作品を。</small></span></a>
         <nav className="header-nav" aria-label="样板页面">
           <Button variant={view === 'gallery' ? 'secondary' : 'ghost'} onClick={() => setView('gallery')}>发现作品</Button>
           <Button variant={view === 'queue' ? 'secondary' : 'ghost'} onClick={() => setView('queue')}>队列后台 <Badge variant="count-quiet">8</Badge></Button>
@@ -88,7 +88,7 @@ export function App({ host, portal, restore }: { host: HTMLElement; portal: HTML
       <div className="preview-strip"><span><Badge variant="candy">DESIGN PREVIEW</Badge> 交互样板 · 原创示意封面 · 所有操作仅模拟</span><label>状态预览 <select aria-label="状态预览" value={scene} onChange={event => setScene(event.target.value as Scene)}><option value="normal">正常</option><option value="loading">加载中</option><option value="empty">空结果</option><option value="error">失败</option></select></label></div>
       {view === 'gallery' ? <>
         <section className="search-panel anibt-sheet">
-          <div className="section-heading"><div><span className="eyebrow">YOUR NEXT FAVORITE</span><h1>今天，也有新的心动 <Flower2 size={22} /></h1><p>在一页页故事里，遇见喜欢的世界。</p></div><span className="anibt-sticker anibt-sticker-water header-sticker">小小书架 · 大大世界 ✦</span></div>
+          <div className="section-heading"><div><span className="eyebrow">ごらく部へようこそ</span><h1>今日も、ゆるっと作品探し！ <Flower2 size={22} /></h1><p>部室で見つけたお気に入り、書架にしまおう。</p></div><span className="anibt-sticker anibt-sticker-water header-sticker">アッカリーン♪</span></div>
           <div className="category-row" role="group" aria-label="作品分类">{categories.map(value => <Button key={value} size="sm" variant={category === value ? 'default' : 'ghost'} aria-pressed={category === value} onClick={() => setCategory(value)}>{value}</Button>)}</div>
           <form className="search-row" onSubmit={event => { event.preventDefault(); setSearch(query); setPage(1) }}>
             <div className="search-field"><Search size={17} /><Input aria-label="搜索作品" placeholder="搜索标题、作者，发现下一本喜欢的作品…" value={query} onChange={event => setQuery(event.target.value)} /></div>
@@ -114,7 +114,7 @@ export function App({ host, portal, restore }: { host: HTMLElement; portal: HTML
         {scene !== 'normal' ? <div className="empty-panel"><h3>{scene === 'loading' ? '正在整理任务…' : scene === 'error' ? '暂时无法连接队列' : '还没有任务'}</h3><Button variant="secondary" onClick={() => setScene('normal')}>恢复示例</Button></div> : <Table><TableHeader><TableRow><TableHead>作品</TableHead><TableHead>状态</TableHead><TableHead>进度</TableHead><TableHead>添加时间</TableHead><TableHead className="text-right">操作</TableHead></TableRow></TableHeader><TableBody>{tasks.filter(task => queueFilter === '全部任务' || task.taskState === queueFilter).map(task => <TableRow key={task.id}><TableCell><div className="task-identity"><img src={task.cover} alt="" /><div><strong>{task.title}</strong><small>{task.author} · {task.pages} 页</small></div></div></TableCell><TableCell><Badge variant={task.taskState === '已完成' ? 'success' : task.taskState === '下载失败' ? 'destructive' : 'lang'}>{task.taskState}</Badge></TableCell><TableCell>{task.taskState === '下载中' ? <div className="progress-track"><span /></div> : task.taskState === '已完成' ? '100%' : '—'}</TableCell><TableCell className="muted">今天 14:32</TableCell><TableCell className="text-right"><Button variant="ghost" size="sm" disabled={task.taskState === '已完成' || task.taskState === '已取消'} onClick={() => setTasks(tasks.map(value => value.id === task.id ? { ...value, taskState: task.taskState === '下载失败' ? '等待中' : '已取消' } : value))}>{task.taskState === '下载失败' ? '重试' : '取消'}</Button></TableCell></TableRow>)}</TableBody></Table>}
         </div>
       </section>}
-      <footer className="page-footer"><span><Flower2 size={14} />为每一次心动，留一个位置。</span><span>AniBT UI · <a href="https://github.com/OpenAniBT/ui">AGPL-3.0-only</a> · <a href="https://github.com/slqy123/lrr">对应源码</a></span></footer>
+      <footer className="page-footer"><span><Flower2 size={14} />アッカリーン♪ 今日もお気に入りを見つけよう。</span><span>AniBT UI · <a href="https://github.com/OpenAniBT/ui">AGPL-3.0-only</a> · <a href="https://github.com/slqy123/lrr">对应源码</a></span></footer>
     </main>
     {selected.size > 0 && view === 'gallery' && <aside className="selection-bar anibt-pop" aria-label="批量操作"><span className="selected-count"><Check size={17} />已选择 <Badge asChild variant="count"><strong>{selected.size}</strong></Badge> 部</span><Button variant="ghost" size="sm" disabled={sending} onClick={() => setSelected(new Set())}>取消选择</Button><span className="selection-divider anibt-stitch-side" aria-hidden="true" /><Button variant="secondary" disabled={sending} onClick={() => setFeedback(`已模拟复制 ${selected.size} 个链接，未修改剪贴板。`)}><Copy />复制链接</Button><Button loading={sending} onClick={send}>发送队列 <ArrowRight /></Button></aside>}
     {feedback && <div className="preview-feedback anibt-pop" role="status">{feedback}<Button variant="ghost" size="icon-sm" aria-label="关闭提示" onClick={() => setFeedback('')}><X /></Button></div>}
