@@ -2,6 +2,14 @@
 
 Local test and preview HTTP services run under PM2. The production Python service remains managed by systemd. PM2 must be installed locally; do not configure startup persistence for these temporary services.
 
+## Manual development on the real site
+
+`make dev` builds and watches the production userscript and serves build files at `http://127.0.0.1:29682`. This is a static file server, not an API backend. Use the real site with a dedicated development Tampermonkey loader and production library/queue settings. A loader using the previous static-server port must be updated to port 29682; local `file:///...` requirements are unaffected. Keep its name/namespace distinct from the offline loaders so GM settings and cache remain separate. Disable the installed release script when the development loader is active on the same site.
+
+Ports 29683–29685 are reserved for mock test/preview services. Development and mock sessions can run concurrently and do not stop one another. Do not configure a real-site development loader with the mock `/library` or `/queue` URLs. Offline loaders run only on their local snapshot URL and must use mock endpoints and dummy credentials, never production services.
+
+If an old snapshot tab polls `/queue/api/tasks/lookup` after its mock server has stopped, close that tab or restart `make test-serve`; do not point it at the development static server. Switching workflows does not require changing the real-site loader's production settings.
+
 ## Read-only page input
 
 Supply an HTML snapshot saved from the real site, with its accompanying resource directory. Keep these local inputs under the ignored `refs/` directory. Do not substitute generated fixture pages or concept prototypes.

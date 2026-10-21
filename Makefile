@@ -1,4 +1,4 @@
-PORT ?= 29683
+PORT ?= 29682
 SAVED_PAGE ?=
 TEST_APP ?= lrr-test-current
 TEST_ORIGIN ?= http://127.0.0.1:29683
@@ -25,7 +25,6 @@ test-browser:
 
 test-serve: build
 	node --check lanraragi-checker.user.js
-	@flock -n userscript/dist/serve-29683.lock true || { echo 'Port 29683 is reserved by make dev/serve; stop it before starting the test backend.'; exit 1; }
 	@test -n "$(SAVED_PAGE)" && test -f "$(SAVED_PAGE)" || { echo 'Set SAVED_PAGE to a saved real HTML page'; exit 1; }
 	LRR_NATIVE_PAGES="$(if $(NATIVE_PAGES),$(abspath $(NATIVE_PAGES)),)" LRR_SAVED_PAGE="$(abspath $(SAVED_PAGE))" pm2 startOrRestart userscript/ecosystem.config.cjs --only lrr-test-current --update-env
 
@@ -52,9 +51,6 @@ watch-preview:
 	flock -n -E 0 userscript/dist/watch-preview.lock pnpm --dir web exec vite build --config vite.userscript.config.ts --mode preview --watch
 
 serve:
+	@case "$(PORT)" in 29683|29684|29685) echo 'Ports 29683–29685 are reserved for mock tests/previews; use PORT=29682 or another port.'; exit 1;; esac
 	@mkdir -p userscript/dist
-	flock -n -E 0 userscript/dist/serve-$(PORT).lock sh -ec '\
-		if [ "$(PORT)" = 29683 ]; then \
-			pm2 stop lrr-test-current >/dev/null 2>&1 || true; \
-		fi; \
-		exec python3 -m http.server $(PORT) --bind 127.0.0.1 --directory userscript/dist'
+	flock -n -E 0 userscript/dist/serve-$(PORT).lock python3 -m http.server $(PORT) --bind 127.0.0.1 --directory userscript/dist
