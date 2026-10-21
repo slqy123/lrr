@@ -58,8 +58,9 @@
 .category-key { @apply anibt-btn-raised; --category-foreground: var(--category-light, var(--accent-foreground)); color: var(--category-foreground); }
 .category-key:hover, .category-key:active { color: var(--category-foreground); }
 :host(.dark) .category-key { --category-foreground: var(--category-dark, var(--accent-foreground)); }
-.category-filter { gap: 6px; padding-inline: 13px; }
-.category-filter[aria-pressed=false] { color: var(--muted-foreground); border: 1px dashed var(--input); padding-inline: 12px; background: var(--card); box-shadow: none; }
+.category-filter { gap: 6px; border: 1px solid transparent; padding-inline: 12px; }
+.category-filter > span[aria-hidden] { width: 1em; flex-shrink: 0; text-align: center; }
+.category-filter[aria-pressed=false] { color: var(--muted-foreground); border-color: var(--input); border-style: dashed; background: var(--card); box-shadow: none; }
 .card-detail { position: absolute; inset: 0; z-index: 20; cursor: pointer; border-radius: 14px; background: transparent; }
 .card-detail:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
 .meta-dot { color: var(--input); }
