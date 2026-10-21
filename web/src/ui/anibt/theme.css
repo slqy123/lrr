@@ -272,8 +272,8 @@
   color: var(--primary-foreground);
   box-shadow: inset 0 0 0 1.5px var(--primary), 3px 3px 0 var(--club-sun);
   transition: background-color 120ms, box-shadow 120ms;
-  &:hover { background: var(--accent-foreground); color: var(--primary-foreground); box-shadow: inset 0 0 0 1.5px var(--primary), 3px 3px 0 var(--anibt-time); }
-  &:active { background: var(--primary); box-shadow: inset 0 0 0 2px var(--primary-foreground); }
+  &:hover { background: var(--primary-hover, var(--accent-foreground)); color: var(--primary-foreground); box-shadow: inset 0 0 0 1.5px var(--primary), 3px 3px 0 var(--action-shadow, var(--anibt-time)); }
+  &:active { background: var(--primary-pressed, var(--primary)); box-shadow: inset 0 0 0 2px var(--primary-foreground); }
   &:is(:disabled, [aria-disabled=true]):not([aria-busy=true]) { background: var(--muted); color: var(--muted-foreground); box-shadow: inset 0 0 0 1px var(--border); }
 }
 @utility anibt-btn-on { background: var(--accent); color: var(--accent-foreground); box-shadow: inset 0 0 0 1.5px var(--ring); }
