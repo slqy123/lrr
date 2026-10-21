@@ -1,5 +1,5 @@
-import { useEffect, useId, useRef, useState } from 'react'
-import { Copy, Download, ExternalLink, Link, RefreshCw, X } from 'lucide-react'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import { ChevronDown, ChevronUp, Copy, Download, ExternalLink, Link, RefreshCw, X } from 'lucide-react'
 import { Button } from '../ui/anibt/button'
 import { Badge } from '../ui/anibt/badge'
 import { Feedback, type FeedbackMessage } from './Feedback'
@@ -7,6 +7,9 @@ import { copyLinks, type createClient } from './client'
 import { displayState, type Gallery } from './model'
 import type { Torrent } from './torrents'
 import type { GallerySummary, PreviewPage } from './details'
+import { categoryAppearance } from './categories'
+
+const tagGroupLabels: Record<string, string> = { language: '语言', parody: '原作', character: '角色', group: '社团', artist: '作者', male: '男性', female: '女性', mixed: '混合', other: '其他', location: '地点', cosplayer: '角色扮演者', reclass: '重新分类', temp: '临时' }
 
 export type DetailTab = 'detail' | 'torrents' | 'state'
 export interface LiveGalleryActions {
@@ -19,6 +22,59 @@ export interface LiveGalleryActions {
 export function stateTab(item: Gallery) {
   const state = displayState(item)
   return state === 'downloaded' ? '书库' : state === 'duplicate' ? '重复作品' : state === 'queued' ? '队列' : undefined
+}
+
+function TagGroup({ group }: { group: GallerySummary['tagGroups'][number] }) {
+  const container = useRef<HTMLDivElement>(null)
+  const [expanded, setExpanded] = useState(false)
+  const [hiddenCount, setHiddenCount] = useState(0)
+  const label = tagGroupLabels[group.name] || group.name
+  useLayoutEffect(() => {
+    const list = container.current!
+    const tags = [...list.querySelectorAll<HTMLAnchorElement>('a')]
+    const button = list.querySelector<HTMLButtonElement>('button')!
+    const count = button.querySelector('span')!
+    let width = -1
+    const fit = () => {
+      width = list.clientWidth
+      tags.forEach(tag => { tag.hidden = false })
+      button.hidden = true
+      if (expanded) { button.hidden = false; return }
+      const tops = tags.map(tag => Math.round(tag.getBoundingClientRect().top))
+      const rows = [...new Set(tops)]
+      if (rows.length <= 2) { setHiddenCount(0); return }
+      const limit = rows[1] + 1
+      let visible = tops.findIndex(top => top > limit)
+      tags.slice(visible).forEach(tag => { tag.hidden = true })
+      button.hidden = false
+      count.textContent = `+${tags.length - visible}`
+      while (visible > 0 && button.getBoundingClientRect().top > limit) {
+        tags[--visible].hidden = true
+        count.textContent = `+${tags.length - visible}`
+      }
+      setHiddenCount(tags.length - visible)
+    }
+    fit()
+    const observer = new ResizeObserver(() => { if (list.clientWidth !== width) fit() })
+    observer.observe(list)
+    return () => observer.disconnect()
+  }, [group, expanded])
+  return <div><dt><span>{label}</span><small>{group.tags.length}</small></dt><dd><div className="detail-tags" ref={container}>
+    {group.tags.map(tag => <Badge key={tag.url} asChild face="text"><a href={tag.url} target="_blank" rel="noopener noreferrer">{tag.title}</a></Badge>)}
+    <button type="button" className="detail-tags-toggle" hidden={!expanded && !hiddenCount} aria-expanded={expanded} aria-label={expanded ? `收起${label}标签` : `展开${label}其余 ${hiddenCount} 个标签`} title={expanded ? '收起标签' : `展开其余 ${hiddenCount} 个标签`} onClick={() => setExpanded(value => !value)}><span hidden={expanded}>+{hiddenCount}</span>{expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}</button>
+  </div></dd></div>
+}
+
+function GalleryInformation({ summary }: { summary: GallerySummary }) {
+  const facts = summary.facts.filter(fact => fact.label !== '语言' || !summary.tagGroups.some(group => group.name === 'language'))
+  return <>
+    {(facts.length > 0 || summary.tagGroups.length > 0) && <div className="detail-columns">
+      {facts.length > 0 && <section className="detail-info"><h4>画廊资料</h4><dl className="detail-facts">{facts.map((fact, index) => <div key={index}><dt>{fact.label}</dt><dd>{fact.url ? <a className="library-link" href={fact.url} target="_blank" rel="noopener noreferrer">{fact.label === '分类' ? categoryAppearance(fact.value).label : fact.value}</a> : fact.value}</dd></div>)}</dl></section>}
+      {facts.length > 0 && summary.tagGroups.length > 0 && <div className="detail-column-divider anibt-stitch-side" aria-hidden="true" />}
+      {summary.tagGroups.length > 0 && <section className="detail-tag-section"><h4>作品标签 <span className="muted">{summary.tagGroups.reduce((total, group) => total + group.tags.length, 0)}</span></h4><dl className="detail-tag-groups" aria-label="作品标签">{summary.tagGroups.map((group, index) => <TagGroup key={`${group.name}-${index}`} group={group} />)}</dl></section>}
+    </div>}
+    {summary.description && <p className="detail-description anibt-stitch-over">{summary.description}</p>}
+  </>
 }
 
 function PagePreview({ page }: { page: PreviewPage }) {
@@ -101,9 +157,7 @@ export function GalleryDetails({ item, tab: requestedTab, changeTab, close, live
     <div className="detail-content" id={`${id}-content`} role="tabpanel" aria-labelledby={`${id}-${tab}`}>
       {tab === 'detail' && <div className="detail-summary">
         {detailError ? <div className="detail-load-error"><p role="alert">{detailError}</p><Button variant="ghost" size="sm" onClick={() => setDetailRevision(value => value + 1)}><RefreshCw size={14} />重试详情</Button></div> : !summary ? <p className="muted" role="status">正在加载作品详情…</p> : <>
-          <dl className="detail-facts">{(summary.author || item.author) && <div><dt>作者</dt><dd>{summary.author || item.author}</dd></div>}{summary.parody && <div><dt>原作</dt><dd>{summary.parody}</dd></div>}{summary.filesize && <div><dt>文件大小</dt><dd>{summary.filesize}</dd></div>}</dl>
-          {!!summary.tags.length && <nav className="detail-tags" aria-label="作品标签">{summary.tags.map(tag => <Badge key={tag.url} asChild face="text"><a href={tag.url} target="_blank" rel="noopener noreferrer">{tag.title}</a></Badge>)}</nav>}
-          {summary.description && <p className="detail-description muted" title={summary.description}>{summary.description}</p>}
+          <GalleryInformation summary={summary} />
           <div className="detail-previews anibt-stitch-over" aria-label="前五页图片预览">{summary.previews.map(page => <PagePreview key={page.url} page={page} />)}<div className="detail-preview-more"><a className="library-link" href={item.url} target="_blank" rel="noopener noreferrer">查看全部{summary.pages !== undefined ? ` ${summary.pages} 页` : ''} <ExternalLink size={12} /></a><span className="muted">{summary.previews.length ? `按原站顺序预览前 ${summary.previews.length} 页` : '未能读取图片预览，请打开详情页查看'}</span></div></div>
         </>}
         {item.status === 'checking' && <p role="status">正在检查书库，尚不能判断是否收录。</p>}

@@ -40,7 +40,7 @@ const boot = (savedPage = false, pendingSearch = false) => {
           const image = window.legacyDetails ? `<img src="/placeholder.png" data-src="/page-${page}.png" alt="Page ${page}">` : `<div title="Page ${page}" style="width:200px;height:${page === 4 ? 141 : 282}px;background:transparent url(/sprite-${gid}.png) -${index * 200}px 0 no-repeat"></div>`
           return `<a href="/s/token/${gid}-${page}">${image}</a>`
         }).join('')
-        const text = window.invalidDetails ? '<h1>Login required</h1>' : `<h1 id="gn">Gallery ${gid}</h1><div id="gdd"><table><tr><td>File Size:</td><td>56.46 MiB</td></tr><tr><td>Length:</td><td>${count} pages</td></tr></table></div><div id="taglist"><table><tr><td>artist:</td><td><a href="/tag/artist:author">Author ${gid}</a></td></tr><tr><td>parody:</td><td><a href="/tag/parody:series">Original series</a></td></tr><tr><td>language:</td><td><a href="/tag/language:chinese">chinese</a></td></tr></table></div><div id="gdt">${window.noPreviews ? '' : pages}</div><div id="cdiv"><div class="c1"><div><a name="ulcomment"></a>Uploader Comment</div><div class="c6">Uploader summary<br>Translation credits</div></div><div class="c1"><div class="c6">Reader comment must not become uploader summary</div></div></div><scr${'ipt'}>window.detailInjected=true</scr${'ipt'}>`
+        const text = window.invalidDetails ? '<h1>Login required</h1>' : `<h1 id="gn">Gallery ${gid}</h1><div id="gdc"><a href="/misc">Misc</a></div><div id="gdn"><a href="/uploader/Offline">Offline Uploader</a></div><div id="gdd"><table><tr><td>Posted:</td><td>2026-10-21 06:15</td></tr><tr><td>Parent:</td><td><a href="/g/99/parent/">Parent gallery</a></td></tr><tr><td>Visible:</td><td>Yes</td></tr><tr><td>Language:</td><td>Chinese</td></tr><tr><td>Favorited:</td><td>37 times</td></tr><tr><td>File Size:</td><td>56.46 MiB</td></tr><tr><td>Length:</td><td>${count} pages</td></tr></table></div><span id="rating_label">Average: 4.00</span><span id="rating_count">6</span><div id="taglist"><table><tr><td>artist:</td><td><a href="/tag/artist:author">Author ${gid}</a></td></tr><tr><td>parody:</td><td><a href="/tag/parody:series">Original series</a></td></tr><tr><td>language:</td><td><a href="/tag/language:chinese">chinese</a></td></tr><tr><td>other:</td><td>${Array.from({ length: 72 }, (_, index) => `<a href="/tag/other:layout_${index}">${index % 5 === 0 ? 'long_example_for_wrapping' : 'layout'} ${index + 1}</a>`).join('')}</td></tr></table></div><div id="gdt">${window.noPreviews ? '' : pages}</div><div id="cdiv"><div class="c1"><div><a name="ulcomment"></a>Uploader Comment</div><div class="c6">Uploader summary<br>Translation credits</div></div><div class="c1"><div class="c6">Reader comment must not become uploader summary</div></div></div><scr${'ipt'}>window.detailInjected=true</scr${'ipt'}>`
         return options.onload({ status: 200, responseText: text })
       }
       if (url.pathname === '/gallerytorrents.php') {
@@ -131,7 +131,19 @@ const tests = async () => {
   assert(detailSurface.borderTopWidth === '0px' && detailSurface.borderRadius === sheetSurface.borderRadius && detailSurface.boxShadow === sheetSurface.boxShadow, 'inline details reuse the shared paper edge and radius without a second border')
   assert(detailTabs().join(',') === '详情,BT 种子,书库', 'downloaded gallery has only the library state tab')
   assert(root.querySelector('[role=tab][aria-selected=true]').textContent === '详情' && root.querySelector('.detail-summary'), 'card opens compact details without navigating')
-  assert(root.querySelector('.detail-facts').textContent.includes('56.46 MiB') && root.querySelector('.detail-facts').textContent.includes('Original series'), 'native filesize and metadata shown')
+  assert(root.querySelector('.detail-facts').textContent.includes('56.46 MiB') && root.querySelector('.detail-tag-groups').textContent.includes('Original series'), 'native filesize and grouped metadata shown')
+  const facts = root.querySelector('.detail-facts')
+  assert(['Offline Uploader', '2026-10-21 06:15', '37 times', '4.00', '6 人评分'].every(value => facts.textContent.includes(value)), 'native uploader, posted time, favorites and rating shown')
+  assert(facts.querySelector('a[href$="/g/99/parent/"]') && !facts.textContent.includes('语言'), 'parent link preserved and language is not duplicated')
+  const tags = root.querySelector('.detail-tag-groups > div:last-child .detail-tags')
+  const visibleTags = [...tags.querySelectorAll('a')].filter(tag => !tag.hidden)
+  assert(visibleTags.length < 72 && new Set(visibleTags.map(tag => Math.round(tag.getBoundingClientRect().top))).size <= 2, 'tag preview fits at most two rows without discarding data')
+  const toggle = tags.querySelector('button')
+  assert(toggle.getBoundingClientRect().top <= Math.max(...visibleTags.map(tag => tag.getBoundingClientRect().top)) + 1, 'expand control stays within preview rows')
+  toggle.click(); await wait(30)
+  assert([...tags.querySelectorAll('a')].every(tag => !tag.hidden) && toggle.getAttribute('aria-expanded') === 'true', 'tag group expands all native tags')
+  toggle.click(); await wait(30)
+  assert([...tags.querySelectorAll('a')].some(tag => tag.hidden) && toggle.getAttribute('aria-expanded') === 'false', 'tag group collapses independently')
   assert(root.querySelector('.detail-description').textContent === 'Uploader summary Translation credits' && !window.detailInjected, 'only uploader text extracted without executing native scripts')
   assert(root.querySelectorAll('.detail-preview-page').length === 5, 'default preview is exactly the first five native pages')
   assert([...root.querySelectorAll('.detail-preview-page')].every((node, index) => node.href.endsWith(`/100-${index + 1}`)), 'native preview order starts at page one without deduplication')
@@ -171,7 +183,7 @@ const tests = async () => {
   window.noPreviews = false; window.slowDetails = true; await openCard(0)
   assert(root.querySelector('.detail-summary [role=status]'), 'details have an explicit loading state')
   window.slowDetails = false; await openCard(1); await wait(550)
-  assert(window.abortedDetails > 0 && root.querySelector('.detail-facts').textContent.includes('Author 101'), 'changing gallery aborts details and rejects late results')
+  assert(window.abortedDetails > 0 && root.querySelector('.detail-tag-groups').textContent.includes('Author 101'), 'changing gallery aborts details and rejects late results')
   window.slowDetails = true; await openCard(0)
   root.querySelector('[aria-label=收起作品详情]').click(); await wait(550)
   assert(!root.querySelector('.gallery-details'), 'closing details prevents late requests from reopening the panel')

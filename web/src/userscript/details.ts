@@ -5,11 +5,9 @@ export interface PreviewPage {
   sprite?: { image: string; width: number; height: number; position: string; size: string }
 }
 export interface GallerySummary {
-  filesize?: string
+  facts: { label: string; value: string; url?: string }[]
   pages?: number
-  author: string
-  parody: string
-  tags: { title: string; url: string }[]
+  tagGroups: { name: string; tags: { title: string; url: string }[] }[]
   description: string
   previews: PreviewPage[]
 }
@@ -24,8 +22,22 @@ export function readDetails(html: string, base: string): GallerySummary {
     const url = new URL(value, base)
     return ['http:', 'https:'].includes(url.protocol) ? url.href : undefined
   }
-  const fields = new Map([...doc.querySelectorAll('#gdd tr')].map(row => [row.children[0]?.textContent?.trim(), row.children[1]?.textContent?.trim()]))
-  const groups = new Map([...doc.querySelectorAll('#taglist tr')].map(row => [row.children[0]?.textContent?.trim().replace(/:$/, ''), [...row.querySelectorAll('a')].map(link => link.textContent?.trim()).filter(Boolean).join(' / ')]))
+  const fields = new Map([...doc.querySelectorAll('#gdd tr')].map(row => [row.children[0]?.textContent?.trim().replace(/:$/, ''), row.children[1]]))
+  const labels: Record<string, string> = { Posted: '发布时间', Parent: '父画廊', Visible: '可见性', Language: '语言', 'File Size': '文件大小', Length: '页数', Favorited: '收藏' }
+  const facts: GallerySummary['facts'] = []
+  for (const [selector, label] of [['#gdc', '分类'], ['#gdn', '上传者']]) {
+    const node = doc.querySelector(selector)
+    const value = node?.textContent?.trim()
+    if (value) facts.push({ label, value, url: webURL(node?.querySelector('a[href]')?.getAttribute('href') || null) })
+  }
+  for (const [name, node] of fields) {
+    const value = node?.textContent?.replace(/\s+/g, ' ').trim()
+    if (!name || !value) continue
+    facts.push({ label: labels[name] || name, value, url: name === 'Parent' ? webURL(node?.querySelector('a[href]')?.getAttribute('href') || null) : undefined })
+  }
+  const rating = doc.querySelector('#rating_label')?.textContent?.trim()
+  const ratingCount = doc.querySelector('#rating_count')?.textContent?.trim()
+  if (rating || ratingCount) facts.push({ label: '评分', value: [rating?.replace(/^Average:\s*/i, '').replace(/^Not Yet Rated$/i, '尚无评分'), ratingCount ? `${ratingCount} 人评分` : ''].filter(Boolean).join(' · ') })
   const galleryId = new URL(base).pathname.match(/^\/g\/(\d+)\//)?.[1]
   const previews = [...doc.querySelectorAll<HTMLAnchorElement>('#gdt a[href]')].filter(link => {
     const url = webURL(link.getAttribute('href'))
@@ -47,17 +59,19 @@ export function readDetails(html: string, base: string): GallerySummary {
   })
   const comment = doc.querySelector('[name=ulcomment]')?.closest('.c1')?.querySelector('.c6')
   comment?.querySelectorAll('br').forEach(br => br.replaceWith('\n'))
-  const length = fields.get('Length:')?.match(/^(\d+)\s+pages?$/i)
+  const length = fields.get('Length')?.textContent?.trim().match(/^([\d,]+)\s+pages?$/i)
   return {
-    filesize: fields.get('File Size:') || undefined,
-    pages: length ? Number(length[1]) : undefined,
-    author: [groups.get('group'), groups.get('artist')].filter(Boolean).join(' / '),
-    parody: groups.get('parody') || '',
-    tags: [...doc.querySelectorAll<HTMLAnchorElement>('#taglist a[href]')].flatMap(link => {
-      const url = webURL(link.getAttribute('href'))
-      const title = link.textContent?.trim()
-      return url && title ? [{ title, url }] : []
-    }).slice(0, 6),
+    facts,
+    pages: length ? Number(length[1].replaceAll(',', '')) : undefined,
+    tagGroups: [...doc.querySelectorAll('#taglist tr')].flatMap(row => {
+      const name = row.children[0]?.textContent?.trim().replace(/:$/, '') || 'other'
+      const tags = [...row.querySelectorAll<HTMLAnchorElement>('a[href]')].flatMap(link => {
+        const url = webURL(link.getAttribute('href'))
+        const title = link.textContent?.trim()
+        return url && title ? [{ title, url }] : []
+      })
+      return tags.length ? [{ name, tags }] : []
+    }),
     description: comment?.textContent?.replace(/\s+/g, ' ').trim() || '',
     previews,
   }
