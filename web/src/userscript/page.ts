@@ -14,6 +14,7 @@ export interface GalleryPage {
   previous?: string
   next?: string
   summary: string
+  resultStats?: { total: string; approximate: boolean; filtered?: string }
   summaryLinks: { title: string; url: string }[]
   links: { title: string; url: string }[]
 }
@@ -85,15 +86,19 @@ export function readPage(doc: Document = document, base = location.href): Galler
   if (!galleries.size && (list.querySelector('.glink, .gl1t, .gl1e') || list.querySelector('a[href*="/g/"]') || (list.textContent?.trim() && !/no (?:hits|results)|nothing found/i.test(list.textContent)))) throw new Error('无法解析原站列表')
   const summary = doc.querySelector('.searchtext')?.cloneNode(true) as HTMLElement | undefined
   summary?.querySelectorAll('a').forEach(link => link.remove())
+  const summaryText = summary?.textContent?.replace(/\[\s*\]/g, '').replace(/\s+/g, ' ').trim() || `${galleries.size} 个画廊`
+  const resultCounts = summaryText.match(/^Found\s+(about\s+)?([\d,]+)\s+results?\.\s*(?:Filtered\s+([\d,]+)\s+galler(?:y|ies)\s+from this page\.)?$/i)
   return {
     galleries: [...galleries.values()], action, categoryMask,
     fields: [...new FormData(form)].filter((entry): entry is [string, string] => typeof entry[1] === 'string'),
     previous: webURL(doc.querySelector('#uprev, #dprev')?.getAttribute('href') || null, base),
     next: webURL(doc.querySelector('#unext, #dnext')?.getAttribute('href') || null, base),
-    summary: summary?.textContent?.replace(/\[\s*\]/g, '').trim() || `${galleries.size} 个画廊`,
+    summary: resultCounts ? `${resultCounts[1] ? '约 ' : ''}${resultCounts[2]} 个结果${resultCounts[3] ? ` · 本页已过滤 ${resultCounts[3]} 项` : ''}` : summaryText,
+    resultStats: resultCounts ? { total: resultCounts[2], approximate: !!resultCounts[1], filtered: resultCounts[3] } : undefined,
     summaryLinks: [...doc.querySelectorAll<HTMLAnchorElement>('.searchtext a[href]')].flatMap(link => {
       const url = webURL(link.getAttribute('href'), base)
-      return url ? [{ title: link.textContent?.trim() || '原站筛选操作', url }] : []
+      const title = link.textContent?.trim() || '原站筛选操作'
+      return url ? [{ title: /^Disable Filters$/i.test(title) ? '关闭原站过滤' : title, url }] : []
     }),
     links: [...doc.querySelectorAll<HTMLAnchorElement>('#nb a[href]')].flatMap(link => {
       const url = webURL(link.getAttribute('href'), base)

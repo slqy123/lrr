@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useRef, useState } from 'react'
-import { Check, Flower2, Search, SlidersHorizontal, Upload } from 'lucide-react'
+import { Check, Search, SlidersHorizontal, Upload } from 'lucide-react'
 import { Button } from '../ui/anibt/button'
 import { Input } from '../ui/anibt/input'
 import { Checkbox } from '../ui/anibt/checkbox'
@@ -46,7 +46,7 @@ export function SearchPanel({ page, portal }: { page: GalleryPage; portal: HTMLE
   }
   const fileAction = new URL('/image_lookup.php', new URL(page.action).hostname === 'exhentai.org' ? 'https://upld.exhentai.org' : 'https://upld.e-hentai.org').href
   return <section className="search-panel anibt-sheet">
-    <div className="section-heading"><div><span className="eyebrow">ごらく部へようこそ</span><h1>今日も、ゆるっと作品探し！ <Flower2 size={22} /></h1><p>部室で見つけたお気に入り、書架にしまおう。</p></div><span className="anibt-sticker anibt-sticker-water header-sticker">アッカリーン♪</span></div>
+    <div className="section-heading"><h1>搜索作品</h1></div>
     <form id="lrr-search" action={page.action} method="get">
       {page.fields.filter(([name]) => !managed.has(name)).map(([name, value], index) => <input key={`${name}-${index}`} type="hidden" name={name} value={value} />)}
       <input type="hidden" name="f_cats" value={mask} /><input type="hidden" name="advsearch" value="1" />

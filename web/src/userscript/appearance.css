@@ -74,14 +74,15 @@
     &:is(:disabled, [aria-disabled=true]):not([aria-busy=true]) { background: var(--muted); color: var(--muted-foreground); box-shadow: inset 0 0 0 1px var(--border); }
   }
   .anibt-btn-raised, .category-key {
-    &:hover { background: var(--interaction-hover); color: var(--secondary-foreground); }
-    &:active { background: var(--interaction-pressed); color: var(--secondary-foreground); box-shadow: inset 0 0 0 1.5px var(--input); }
+    &:hover { background: var(--interaction-hover); color: var(--category-foreground, var(--secondary-foreground)); }
+    &:active { background: var(--interaction-pressed); color: var(--category-foreground, var(--secondary-foreground)); box-shadow: inset 0 0 0 1.5px var(--input); }
   }
   [data-slot=button][data-state=open] { background: var(--accent); color: var(--accent-foreground); box-shadow: inset 0 0 0 1.5px var(--ring); }
   .category-filter {
-    color: var(--secondary-foreground);
-    &[aria-pressed=true] { background: var(--accent); color: var(--accent-foreground); box-shadow: inset 0 0 0 1.5px var(--ring); }
-    &[aria-pressed=false]:hover { background: var(--interaction-hover); color: var(--secondary-foreground); }
+    color: var(--category-foreground);
+    &[aria-pressed=true] { background: var(--accent); color: var(--category-foreground); box-shadow: inset 0 0 0 1.5px var(--ring); }
+    &[aria-pressed=false] { color: var(--muted-foreground); }
+    &[aria-pressed=false]:hover { background: var(--interaction-hover); color: var(--muted-foreground); }
     &[aria-pressed=true]:hover { background: var(--interaction-hover); }
     &:active { background: var(--interaction-pressed); }
   }
@@ -100,6 +101,15 @@
 .palette-swatches i:last-child { border-radius: 0 4px 4px 0; background: #d9b96c; }
 .palette-swatches i:nth-child(2) { background: #a9cfc4; }
 .palette-original i:nth-child(2) { background: #f7e7bb; }
+
+.gallery-grid [data-slot=poster-card-cover],
+.gallery-grid [data-slot=poster-card-placeholder] {
+  background: var(--card);
+}
+
+.gallery-grid [data-slot=poster-card]:not([data-selected=true]):hover {
+  box-shadow: 0 0 0 1.5px var(--input), 4px 5px 0 var(--input);
+}
 
 /* Separate selection from the pink paper edges without tinting the cover. */
 .gallery-grid [data-slot=poster-card][data-selected=true] {
@@ -131,8 +141,6 @@
     .live-app [data-slot=poster-card]:hover { translate: 0 -4px; }
     .live-app .brand-wordmark { transition: rotate 240ms ease; }
     .live-app .brand:hover .brand-wordmark { rotate: -2deg; }
-    .live-app .header-sticker { transition: rotate 200ms ease; }
-    .live-app .header-sticker:hover { rotate: -2deg; }
   }
 }
 @keyframes yuru-select { 50% { scale: 1.015; } }

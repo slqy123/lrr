@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
-import { Flower2, Settings, Sun, Moon, ExternalLink, RefreshCw, Copy, ArrowRight, Check, BookOpen } from 'lucide-react'
+import { Flower2, Settings, Sun, Moon, ExternalLink, RefreshCw, Copy, ArrowRight, Check, BookOpen, Search, Filter, FilterX, Grid2X2, Grid3X3 } from 'lucide-react'
 import { Button } from '../ui/anibt/button'
 import wordmark from './assets/yurulib-wordmark.png'
 import { AppearancePicker } from './AppearancePicker'
@@ -68,7 +68,7 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
   const checkingCount = items.filter(item => displayState(item) === 'checking').length
   return <div className="surface anibt-ground showcase live-app">
     <header className="site-header"><div className="page-width header-inner">
-      <a className="brand" href={page.action}><img className="brand-wordmark" src={wordmark} alt="YuruLib" width={480} height={160} /><small>今日もゆるっと、好きな作品を。</small></a>
+      <a className="brand" href={page.action}><img className="brand-wordmark" src={wordmark} alt="YuruLib" width={480} height={160} /></a>
       <nav className="header-nav" aria-label="导航"><Button asChild variant="secondary"><a href={page.action}>发现作品</a></Button>{/^https?:\/\//.test(settings.queueServerUrl) && <Button asChild variant="ghost"><a href={settings.queueServerUrl} target="_blank" rel="noopener noreferrer">队列后台 <ExternalLink size={13} /></a></Button>}
         {!!page.links.length && <Popover><PopoverTrigger asChild><Button variant="ghost">原站导航</Button></PopoverTrigger><PopoverContent container={portal}><PopoverTitle>原站导航</PopoverTitle><nav className="native-links anibt-menu">{page.links.map((link, index) => <a className="anibt-menu-item" key={index} href={link.url}>{link.title}</a>)}</nav></PopoverContent></Popover>}
       </nav>
@@ -80,23 +80,32 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
       <section aria-label="作品画廊">
         <div className="collection-heading collection-overview">
           <div className="collection-overview-row">
-            <h2><span className="anibt-tape">发现作品</span><Badge className="collection-total" variant="count-quiet">{items.length}</Badge></h2>
+            <h2><span className="anibt-tape">发现作品</span></h2>
             <span className="collection-rule anibt-stitch" aria-hidden="true" />
           </div>
-          <div className="collection-meta">
-            <p className="collection-summary">{page.summary} {page.summaryLinks.map((link, index) => <a className="library-link" key={index} href={link.url}>{link.title}</a>)}</p>
-            {(errorCount > 0 || checkingCount > 0) && <div className="collection-health" role="status">
-              {errorCount > 0 && <StatusBadge tone="fail">{stateLabels.error} {errorCount}</StatusBadge>}
-              {checkingCount > 0 && <StatusBadge tone="run">{stateLabels.checking} {checkingCount}</StatusBadge>}
-            </div>}
-            <div className="density-control anibt-well"><Button size="sm" variant={!compact ? 'secondary' : 'ghost'} aria-pressed={!compact} onClick={() => density(false)}>标准</Button><Button size="sm" variant={compact ? 'secondary' : 'ghost'} aria-pressed={compact} onClick={() => density(true)}>紧凑</Button></div>
-          </div>
         </div>
-        <div className="gallery-toolbar"><div className="selection-groups anibt-well"><label className="group-choice"><Checkbox aria-label="选择全部作品" disabled={sending || !items.length} checked={!items.some(item => selected.has(item.id)) ? false : items.every(item => selected.has(item.id)) ? true : 'indeterminate'} onCheckedChange={() => selectGroup(items.map(item => item.id))} />全选</label>{groups.map(state => {
+        <div className="gallery-toolbar">
+          <div className="selection-groups anibt-well"><label className="group-choice"><Checkbox aria-label="选择全部作品" disabled={sending || !items.length} checked={!items.some(item => selected.has(item.id)) ? false : items.every(item => selected.has(item.id)) ? true : 'indeterminate'} onCheckedChange={() => selectGroup(items.map(item => item.id))} />全选</label>{groups.map(state => {
           const matching = items.filter(item => displayState(item) === state)
           const count = matching.filter(item => selected.has(item.id)).length
           return <label key={state} className="group-choice"><Checkbox aria-label={`选择${stateLabels[state]}`} disabled={sending || !matching.length} checked={!count ? false : count === matching.length ? true : 'indeterminate'} onCheckedChange={() => selectGroup(matching.map(item => item.id))} /><Status state={state} /><span className="muted">{matching.length}</span></label>
-        })}</div><Pager page={page} portal={portal} /></div>
+        })}</div>
+          <div className="collection-summary" aria-label="搜索结果">
+            {page.resultStats ? <>
+              <span className="result-stat" title={`${page.resultStats.approximate ? '约 ' : ''}${page.resultStats.total} 个搜索结果`} aria-label={`${page.resultStats.approximate ? '约 ' : ''}${page.resultStats.total} 个搜索结果`}><Search size={15} aria-hidden="true" /><span>{page.resultStats.total}</span></span>
+              {page.resultStats.filtered !== undefined && <span className="result-stat" title={`原站本页已过滤 ${page.resultStats.filtered} 项`} aria-label={`原站本页已过滤 ${page.resultStats.filtered} 项`}><Filter size={15} aria-hidden="true" /><span>{page.resultStats.filtered}</span></span>}
+            </> : <span>{page.summary}</span>}
+            {page.summaryLinks.map((link, index) => link.title === '关闭原站过滤' ? <Button key={index} asChild variant="ghost" size="icon-sm"><a href={link.url} title={link.title} aria-label={link.title}><FilterX aria-hidden="true" /></a></Button> : <a className="library-link" key={index} href={link.url}>{link.title}</a>)}
+          </div>
+          {(errorCount > 0 || checkingCount > 0) && <div className="collection-health" role="status">
+            {errorCount > 0 && <StatusBadge tone="fail">{stateLabels.error} {errorCount}</StatusBadge>}
+            {checkingCount > 0 && <StatusBadge tone="run">{stateLabels.checking} {checkingCount}</StatusBadge>}
+          </div>}
+          <div className="gallery-view-tools">
+            <div className="density-control anibt-well" role="group" aria-label="显示密度"><Button size="icon-sm" variant={!compact ? 'secondary' : 'ghost'} title="标准布局" aria-label="标准布局" aria-pressed={!compact} onClick={() => density(false)}><Grid2X2 aria-hidden="true" /></Button><Button size="icon-sm" variant={compact ? 'secondary' : 'ghost'} title="紧凑布局" aria-label="紧凑布局" aria-pressed={compact} onClick={() => density(true)}><Grid3X3 aria-hidden="true" /></Button></div>
+            <Pager page={page} portal={portal} />
+          </div>
+        </div>
         {items.length ? <GalleryCards items={items} selected={selected} toggle={toggle} disabled={sending} compact={compact} live={{ server: settings.lrrServerUrl, recheck, client, refreshQueue }} /> : <div className="empty-panel anibt-sheet"><BookOpen /><h3>这里还没有故事</h3><p>换个关键词，下一本喜欢的作品也许就在附近。</p><Button asChild variant="secondary"><a href={page.action}>重置筛选</a></Button></div>}
         <div className="bottom-pagination"><Pager page={page} portal={portal} /></div>
       </section>

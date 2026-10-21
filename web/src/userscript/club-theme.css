@@ -12,7 +12,6 @@
   box-shadow: 2px 2px 0 var(--club-sun);
 }
 .club-emblem { width: 42px; height: 42px; }
-.live-app .brand small { letter-spacing: .5px; }
 .live-app .brand {
   flex-direction: column;
   align-items: flex-start;
@@ -25,7 +24,6 @@
   width: 160px;
   height: auto;
 }
-.live-app .brand small { margin-top: 0; }
 .live-app .header-inner { min-height: 90px; }
 .live-app .search-panel {
   position: relative;
@@ -43,8 +41,8 @@
   clip-path: polygon(0 0, 100% 0, 96% 25%, 100% 50%, 96% 75%, 100% 100%, 0 100%, 4% 75%, 0 50%, 4% 25%);
   pointer-events: none;
 }
-.live-app .section-heading h1 { letter-spacing: 1px; }
-.live-app .eyebrow { color: var(--anibt-time-ink); letter-spacing: 3px; }
+.live-app .section-heading h1 { margin: 0; font-size: 18px; }
+.live-app .search-panel .category-row { margin-top: 16px; }
 .live-app .collection-heading h2 .anibt-tape {
   background: var(--club-sun-wash);
   color: var(--foreground);

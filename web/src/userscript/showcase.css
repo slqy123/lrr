@@ -55,9 +55,9 @@
 .cover-select { position: relative; z-index: 30; display: flex; flex: none; pointer-events: auto; }
 .cover-select [data-slot=checkbox] { width: 27px; height: 27px; }
 .cover-select [data-slot=checkbox] svg { width: 14px; height: 14px; }
-.category-key { @apply anibt-btn-raised; color: var(--category-light, var(--accent-foreground)); }
-.category-key:hover, .category-key:active { color: var(--category-light, var(--accent-foreground)); }
-:host(.dark) .category-key { color: var(--category-dark, var(--accent-foreground)); }
+.category-key { @apply anibt-btn-raised; --category-foreground: var(--category-light, var(--accent-foreground)); color: var(--category-foreground); }
+.category-key:hover, .category-key:active { color: var(--category-foreground); }
+:host(.dark) .category-key { --category-foreground: var(--category-dark, var(--accent-foreground)); }
 .category-filter { gap: 6px; padding-inline: 13px; }
 .category-filter[aria-pressed=false] { color: var(--muted-foreground); border: 1px dashed var(--input); padding-inline: 12px; background: var(--card); box-shadow: none; }
 .card-detail { position: absolute; inset: 0; z-index: 20; cursor: pointer; border-radius: 14px; background: transparent; }
