@@ -66,7 +66,9 @@ Only supported-site gallery and torrent URLs are accepted. HTML files must remai
 
 ## Automated browser checks
 
-After installing the current loader and granting Chrome remote debugging access:
+Assistant browser testing uses Chromium + Tampermonkey only. The user handles Firefox testing; Firefox checks are not an assistant acceptance requirement.
+
+After installing the current loader and granting Chromium remote debugging access:
 
 ```bash
 make test SAVED_PAGE=/absolute/path/to/saved-page.html
@@ -106,7 +108,7 @@ After subsequent edits, capture only `after`, then refresh the existing after ta
 
 Reuse one browser tab per version. Keep page input, viewport, zoom, theme and interaction state identical. Use actual application screenshots for visual comparisons, not rewritten HTML or parallel preview CSS. The user handles interactive and visual verification by default; browser automation is only run when explicitly requested.
 
-Disclose the saved-page source, missing resources, mocked backend behavior, untested interactions and unverified Firefox/Tampermonkey behavior. Serving a snapshot or passing a build does not establish browser compatibility or visual fidelity.
+Disclose the saved-page source, missing resources, mocked backend behavior, untested interactions and unverified Chromium/Tampermonkey behavior. Firefox testing is handled by the user. Serving a snapshot or passing a build does not establish browser compatibility or visual fidelity.
 
 ## Explicit concept exploration
 

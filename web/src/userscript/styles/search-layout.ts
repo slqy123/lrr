@@ -33,7 +33,7 @@ export const categoryRowVariants = cva('flex mb-[14px]', {
 export const searchRowVariants = cva('flex items-center gap-[10px] [&>button]:min-w-[76px]', {
   variants: {
     variant: {
-      live: '[&>a]:min-w-[76px]',
+      live: '[&>a]:min-w-[76px] [@media(max-width:700px)]:flex-wrap [@media(max-width:700px)]:[&>.search-field]:basis-full',
       showcase: '',
     },
   },

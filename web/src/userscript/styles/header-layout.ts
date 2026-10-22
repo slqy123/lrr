@@ -24,7 +24,7 @@ export const siteHeaderVariants = cva('bg-card', {
   defaultVariants: { variant: 'live' },
 })
 
-export const headerInnerVariants = cva(`${pageWidthStyles} flex items-center gap-9 [@media(max-width:1150px)]:gap-5`, {
+export const headerInnerVariants = cva(`${pageWidthStyles} flex items-center gap-9 [@media(max-width:1150px)]:flex-wrap [@media(max-width:1150px)]:gap-5 [@media(max-width:1150px)]:py-3`, {
   variants: {
     variant: {
       live: 'min-h-[90px] [@media(max-width:700px)]:min-h-[76px]',

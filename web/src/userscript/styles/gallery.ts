@@ -14,8 +14,8 @@ export const cardDetailStyles = 'card-detail absolute inset-0 z-20 cursor-pointe
 export const galleryGridVariants = cva('gallery-grid yurui-gallery-skin grid', {
   variants: {
     compact: {
-      false: 'grid-cols-6 gap-x-[18px] gap-y-6 [@media(max-width:1150px)]:grid-cols-5',
-      true: 'grid-cols-8 gap-x-3 gap-y-[18px] [@media(max-width:1150px)]:grid-cols-6',
+      false: 'grid-cols-6 gap-x-[18px] gap-y-6 [@media(max-width:1150px)]:grid-cols-5 [@media(max-width:700px)]:grid-cols-3 [@media(max-width:450px)]:grid-cols-2',
+      true: 'grid-cols-8 gap-x-3 gap-y-[18px] [@media(max-width:1150px)]:grid-cols-6 [@media(max-width:700px)]:grid-cols-4 [@media(max-width:450px)]:grid-cols-3',
     },
   },
   defaultVariants: { compact: false },
