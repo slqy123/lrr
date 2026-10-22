@@ -1,9 +1,8 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
-import { ChevronDown, ChevronUp, Copy, Download, ExternalLink, Link, RefreshCw, X } from 'lucide-react'
+import { Star, ChevronDown, ChevronUp, Copy, Download, ExternalLink, Link, RefreshCw, X } from 'lucide-react'
 import { Button } from '../ui/yurui/button'
 import { IconButton } from '../ui/yurui/icon-button'
 import { TabsList, TabsPanel } from '../ui/yurui/tabs'
-import { Separator } from '../ui/yurui/separator'
 import { TextLink } from '../ui/yurui/text-link'
 import { DescriptionList, DescriptionItem } from '../ui/yurui/description-list'
 import { Badge } from '../ui/yurui/badge'
@@ -70,14 +69,28 @@ function TagGroup({ group }: { group: GallerySummary['tagGroups'][number] }) {
   </div></DescriptionItem>
 }
 
-function GalleryInformation({ summary }: { summary: GallerySummary }) {
-  const facts = summary.facts.filter(fact => fact.label !== '语言' || !summary.tagGroups.some(group => group.name === 'language'))
+function GalleryInformation({ summary, item }: { summary: GallerySummary; item: Gallery }) {
+  const author = summary.facts.find(fact => fact.label === '上传者')
+  const posted = summary.facts.find(fact => fact.label === '发布时间')
+  const metrics = summary.facts.filter(fact => ['页数', '文件大小', '评分'].includes(fact.label))
+  const notes = summary.facts.filter(fact => !metrics.includes(fact) && !['分类', '上传者', '发布时间'].includes(fact.label) && (fact.label !== '语言' || !summary.tagGroups.some(group => group.name === 'language')))
   return <>
-    {(facts.length > 0 || summary.tagGroups.length > 0) && <div className="detail-columns">
-      {facts.length > 0 && <section className="detail-info"><h4>画廊资料</h4><DescriptionList className="detail-facts">{facts.map((fact, index) => <DescriptionItem key={index} term={fact.label}>{fact.url ? <TextLink href={fact.url} target="_blank" rel="noopener noreferrer">{fact.label === '分类' ? categoryAppearance(fact.value).label : fact.value}</TextLink> : fact.value}</DescriptionItem>)}</DescriptionList></section>}
-      {facts.length > 0 && summary.tagGroups.length > 0 && <Separator orientation="vertical" className="detail-column-divider" />}
-      {summary.tagGroups.length > 0 && <section className="detail-tag-section"><h4>作品标签 <span className="text-muted-foreground">{summary.tagGroups.reduce((total, group) => total + group.tags.length, 0)}</span></h4><DescriptionList variant="grouped" className="detail-tag-groups" aria-label="作品标签">{summary.tagGroups.map((group, index) => <TagGroup key={`${group.name}-${index}`} group={group} />)}</DescriptionList></section>}
-    </div>}
+    <div className="detail-editorial">
+      <div className="detail-cover">{item.cover ? <img src={item.cover} alt={`${item.title}封面`} onError={event => { event.currentTarget.hidden = true }} /> : <span>暂无封面</span>}</div>
+      <div className="detail-story">
+        <div className="detail-genre">{categoryAppearance(item.category).label}</div>
+        <h3>{item.title}</h3>
+        {author && <p className="detail-byline">由 {author.url ? <TextLink href={author.url} target="_blank" rel="noopener noreferrer">{author.value}</TextLink> : author.value} 上传</p>}
+        {metrics.length > 0 && <dl className="detail-metrics" aria-label="作品参数">{metrics.map(fact => {
+          const [value, count] = fact.value.split(' · ')
+          const score = fact.label === '评分' ? Number.parseFloat(value) : NaN
+          return <div key={fact.label}><dt>{count || fact.label}</dt><dd>{Number.isFinite(score) ? <span className="detail-rating-stars" role="img" aria-label={`${score} / 5`} title={`${score} / 5`}>{Array.from({ length: 5 }, (_, index) => <span key={index}><Star aria-hidden="true" /><span style={{ width: `${Math.max(0, Math.min(1, score - index)) * 100}%` }}><Star aria-hidden="true" /></span></span>)}</span> : value.replace(/\bpages\b/i, '页')}</dd></div>
+        })}</dl>}
+        {posted && <p className="detail-published">发布于 <time dateTime={posted.value.replace(' ', 'T')}>{posted.value}</time></p>}
+        <div className="detail-notes">{notes.map(fact => <span key={fact.label}>{fact.url ? <TextLink href={fact.url} target="_blank" rel="noopener noreferrer">{fact.label}：{fact.value}</TextLink> : fact.label === '父画廊' && fact.value === 'None' ? '无父画廊' : fact.label === '可见性' && /^(Yes|No)$/.test(fact.value) ? (fact.value === 'Yes' ? '公开可见' : '不可见') : `${fact.label}：${fact.label === '收藏' && fact.value === 'Once' ? '1 次' : fact.value}`}</span>)}</div>
+      </div>
+    </div>
+    {summary.tagGroups.length > 0 && <section className="detail-tag-section"><h4>作品标签 <span className="text-muted-foreground">{summary.tagGroups.reduce((total, group) => total + group.tags.length, 0)}</span></h4><DescriptionList variant="grouped" className="detail-tag-groups" aria-label="作品标签">{summary.tagGroups.map((group, index) => <TagGroup key={`${group.name}-${index}`} group={group} />)}</DescriptionList></section>}
     {summary.description && <p className="detail-description">{summary.description}</p>}
   </>
 }
@@ -145,7 +158,7 @@ export function GalleryDetails({ item, tab: requestedTab, changeTab, close, live
   const tabs: { key: DetailTab; label: string }[] = [{ key: 'detail', label: '详情' }, ...(torrentLink ? [{ key: 'torrents' as const, label: 'BT 种子' }] : []), ...(stateLabel ? [{ key: 'state' as const, label: stateLabel }] : [])]
   return <section className="gallery-details" aria-label={`${item.title}详情`} onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); close(true) } }}>
     <header ref={heading} className="detail-heading">
-      <div className="detail-heading-text"><h3>{item.title}</h3></div>
+      <div className="detail-heading-text">{tab === 'detail' ? '作品档案' : item.title}</div>
       <div className="detail-heading-actions">
         {item.links?.filter(link => link !== torrentLink).map((link, index) => <Button key={index} asChild variant="ghost" size="sm"><a href={link.url} target="_blank" rel="noopener noreferrer">{link.title} <ExternalLink size={13} /></a></Button>)}
         <Button asChild variant="ghost" size="sm"><a href={item.url} target="_blank" rel="noopener noreferrer">打开详情页 <ExternalLink size={13} /></a></Button>
@@ -156,7 +169,7 @@ export function GalleryDetails({ item, tab: requestedTab, changeTab, close, live
     <TabsPanel className="detail-content" id={`${id}-content`} aria-labelledby={`${id}-${tab}`}>
       {tab === 'detail' && <div className="detail-summary">
         {detailError ? <div className="detail-load-error"><p role="alert">{detailError}</p><Button variant="ghost" size="sm" onClick={() => setDetailRevision(value => value + 1)}><RefreshCw size={14} />重试详情</Button></div> : !summary ? <p className="text-muted-foreground" role="status">正在加载作品详情…</p> : <>
-          <GalleryInformation summary={summary} />
+          <GalleryInformation summary={summary} item={item} />
           <div className="detail-previews" aria-label="前五页图片预览">{summary.previews.map(page => <PagePreview key={page.url} page={page} />)}<div className="detail-preview-more"><TextLink href={item.url} target="_blank" rel="noopener noreferrer">查看全部{summary.pages !== undefined ? ` ${summary.pages} 页` : ''} <ExternalLink size={12} /></TextLink><span className="text-muted-foreground">{summary.previews.length ? `按原站顺序预览前 ${summary.previews.length} 页` : '未能读取图片预览，请打开详情页查看'}</span></div></div>
         </>}
         {item.status === 'checking' && <p role="status">正在检查书库，尚不能判断是否收录。</p>}
