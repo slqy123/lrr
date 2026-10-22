@@ -32,7 +32,8 @@ export default defineConfig(({ mode }) => {
         formats: ['iife'],
         fileName: () => preview ? 'preview.js' : 'lanraragi-checker.user.js',
       },
-      rollupOptions: {
+      rolldownOptions: {
+        checks: { moduleLevelDirective: false },
         output: { banner: preview ? '' : readFileSync(new URL('../userscript/header.txt', import.meta.url), 'utf8') },
       },
     },
