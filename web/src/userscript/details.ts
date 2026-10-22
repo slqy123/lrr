@@ -4,11 +4,14 @@ export interface PreviewPage {
   image?: string
   sprite?: { image: string; width: number; height: number; position: string; size: string }
 }
+export type CommentContent = string | { tag: 'p' | 'br' | 'strong' | 'em' | 'u' | 's' | 'blockquote' | 'ul' | 'ol' | 'li' | 'pre' | 'code' | 'a'; href?: string; children: CommentContent[] }
+
 export interface GallerySummary {
   facts: { label: string; value: string; url?: string }[]
   pages?: number
   tagGroups: { name: string; tags: { title: string; url: string }[] }[]
   description: string
+  descriptionContent?: CommentContent[]
   previews: PreviewPage[]
 }
 
@@ -19,8 +22,10 @@ export function readDetails(html: string, base: string): GallerySummary {
   if (!doc.querySelector('#gdd') || !doc.querySelector('#gdt')) throw new Error('无法解析作品详情，请打开原站确认是否需要登录')
   const webURL = (value: string | null) => {
     if (!value) return
-    const url = new URL(value, base)
-    return ['http:', 'https:'].includes(url.protocol) ? url.href : undefined
+    try {
+      const url = new URL(value, base)
+      return ['http:', 'https:'].includes(url.protocol) ? url.href : undefined
+    } catch { return }
   }
   const fields = new Map([...doc.querySelectorAll('#gdd tr')].map(row => [row.children[0]?.textContent?.trim().replace(/:$/, ''), row.children[1]]))
   const labels: Record<string, string> = { Posted: '发布时间', Parent: '父画廊', Visible: '可见性', Language: '语言', 'File Size': '文件大小', Length: '页数', Favorited: '收藏' }
@@ -58,7 +63,23 @@ export function readDetails(html: string, base: string): GallerySummary {
     return page
   })
   const comment = doc.querySelector('[name=ulcomment]')?.closest('.c1')?.querySelector('.c6')
-  comment?.querySelectorAll('br').forEach(br => br.replaceWith('\n'))
+  const readComment = (node: Node): CommentContent[] => {
+    if (node.nodeType === Node.TEXT_NODE) return [node.textContent || '']
+    if (!(node instanceof Element) || ['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'TEMPLATE'].includes(node.tagName)) return []
+    const children = [...node.childNodes].flatMap(readComment)
+    const tag = node.tagName.toLowerCase()
+    if (tag === 'a') {
+      const href = webURL(node.getAttribute('href'))
+      return href ? [{ tag: 'a', href, children }] : children
+    }
+    const aliases: Record<string, string> = { div: 'p', b: 'strong', i: 'em', strike: 's' }
+    const normalized = aliases[tag] || tag
+    if (['p', 'br', 'strong', 'em', 'u', 's', 'blockquote', 'ul', 'ol', 'li', 'pre', 'code'].includes(normalized)) {
+      return [{ tag: normalized as Exclude<CommentContent, string>['tag'], children }]
+    }
+    return children
+  }
+  const descriptionContent = comment ? [...comment.childNodes].flatMap(readComment) : []
   const length = fields.get('Length')?.textContent?.trim().match(/^([\d,]+)\s+pages?$/i)
   return {
     facts,
@@ -72,7 +93,8 @@ export function readDetails(html: string, base: string): GallerySummary {
       })
       return tags.length ? [{ name, tags }] : []
     }),
-    description: comment?.textContent?.replace(/\s+/g, ' ').trim() || '',
+    description: comment?.textContent?.trim() || '',
+    descriptionContent,
     previews,
   }
 }

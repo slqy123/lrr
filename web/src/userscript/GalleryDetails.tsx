@@ -10,7 +10,7 @@ import { Feedback, type FeedbackMessage } from './Feedback'
 import { copyLinks, type createClient } from './client'
 import { displayState, type Gallery } from './model'
 import type { Torrent } from './torrents'
-import type { GallerySummary, PreviewPage } from './details'
+import type { CommentContent, GallerySummary, PreviewPage } from './details'
 import { categoryAppearance } from './categories'
 
 const tagGroupLabels: Record<string, string> = { language: '语言', parody: '原作', character: '角色', group: '社团', artist: '作者', male: '男性', female: '女性', mixed: '混合', other: '其他', location: '地点', cosplayer: '角色扮演者', reclass: '重新分类', temp: '临时' }
@@ -69,6 +69,15 @@ function TagGroup({ group }: { group: GallerySummary['tagGroups'][number] }) {
   </div></DescriptionItem>
 }
 
+function CommentBody({ content }: { content: CommentContent[] }) {
+  return content.map((node, index) => {
+    if (typeof node === 'string') return node
+    if (node.tag === 'a') return <TextLink key={index} href={node.href} target="_blank" rel="noopener noreferrer"><CommentBody content={node.children} /></TextLink>
+    const Tag = node.tag
+    return <Tag key={index}>{Tag === 'br' ? undefined : <CommentBody content={node.children} />}</Tag>
+  })
+}
+
 function GalleryInformation({ summary, item }: { summary: GallerySummary; item: Gallery }) {
   const author = summary.facts.find(fact => fact.label === '上传者')
   const posted = summary.facts.find(fact => fact.label === '发布时间')
@@ -91,7 +100,7 @@ function GalleryInformation({ summary, item }: { summary: GallerySummary; item: 
       </div>
     </div>
     {summary.tagGroups.length > 0 && <section className="detail-tag-section"><h4>作品标签 <span className="text-muted-foreground">{summary.tagGroups.reduce((total, group) => total + group.tags.length, 0)}</span></h4><DescriptionList variant="grouped" className="detail-tag-groups" aria-label="作品标签">{summary.tagGroups.map((group, index) => <TagGroup key={`${group.name}-${index}`} group={group} />)}</DescriptionList></section>}
-    {summary.description && <p className="detail-description">{summary.description}</p>}
+    {(summary.descriptionContent?.length || summary.description) ? <section className="detail-description" aria-label="上传者评论">{summary.descriptionContent?.length ? <CommentBody content={summary.descriptionContent} /> : summary.description}</section> : null}
   </>
 }
 
