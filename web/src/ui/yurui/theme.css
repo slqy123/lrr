@@ -450,17 +450,8 @@
   }
 }
 
-/* Portal controls share the same feedback; nested card actions stay still. */
 @media (prefers-reduced-motion: no-preference) {
   :is([data-slot=button], [data-slot=dialog-close]) {
-    transition: translate 150ms ease, background-color 160ms, color 160ms, box-shadow 160ms;
-  }
-  @media (hover: hover) and (pointer: fine) {
-    :is([data-slot=button], [data-slot=dialog-close]):hover:not(:disabled):not([aria-disabled=true]):not(:where([data-slot=poster-card] *)) {
-      translate: 0 -2px;
-    }
-  }
-  :is([data-slot=button], [data-slot=dialog-close]):active:not(:disabled):not([aria-disabled=true]):not(:where([data-slot=poster-card] *)) {
-    translate: 0 1px;
+    transition: background-color 160ms, color 160ms, box-shadow 160ms;
   }
 }
