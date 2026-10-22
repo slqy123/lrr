@@ -2,6 +2,16 @@
 
 Local test and preview HTTP services run under PM2. The production Python service remains managed by systemd. PM2 must be installed locally; do not configure startup persistence for these temporary services.
 
+## Workflow and acceptance policy
+
+- For userscript UI changes, capture `before` before editing, then capture `after` when changes are ready. Serve the comparison when a preview is requested and a saved real-page snapshot is available. Never substitute another revision for a missing baseline.
+- Default assistant verification is defined in the root `AGENTS.md`. Preparing or serving a preview does not authorize browser automation, screenshots or regression matrices; run those only when explicitly requested.
+- A delivery preview uses actual frozen application builds through Tampermonkey, including Shadow DOM and real GM APIs. Only the local backend may be mocked. Do not rewrite snapshot HTML, inject page-side GM mocks or create a parallel preview skin.
+- When browser comparison is requested, open one labeled tab per version and leave both available. Match snapshot input, viewport, zoom, theme, data and interaction state; label intentional differences.
+- When visual acceptance is requested, capture unedited application screenshots showing page context and close-ups, light/dark themes and normal/compact layouts. Compare dimensions, alignment, typography, spacing, material and checked/unchecked, hover, focus and disabled states. Functional or geometry checks alone do not establish visual fidelity.
+- After applying an approved design, visual verification uses fresh application screenshots under matching conditions. Disclose remaining differences rather than claiming an approximate implementation matches the approval.
+- Before requesting approval, disclose the preview source, functioning interactions, simulated backend behavior, unavailable resources and unverified Chromium/Tampermonkey behavior.
+
 ## Manual development on the real site
 
 `make dev` builds and watches the production userscript and serves build files at `http://127.0.0.1:29682`. This is a static file server, not an API backend. Use the real site with a dedicated development Tampermonkey loader and production library/queue settings. A loader using the previous static-server port must be updated to port 29682; local `file:///...` requirements are unaffected. Keep its name/namespace distinct from the offline loaders so GM settings and cache remain separate. Disable the installed release script when the development loader is active on the same site.
@@ -97,6 +107,17 @@ After subsequent edits, capture only `after`, then refresh the existing after ta
 Reuse one browser tab per version. Keep page input, viewport, zoom, theme and interaction state identical. Use actual application screenshots for visual comparisons, not rewritten HTML or parallel preview CSS. The user handles interactive and visual verification by default; browser automation is only run when explicitly requested.
 
 Disclose the saved-page source, missing resources, mocked backend behavior, untested interactions and unverified Firefox/Tampermonkey behavior. Serving a snapshot or passing a build does not establish browser compatibility or visual fidelity.
+
+## Explicit concept exploration
+
+Standalone concepts are allowed only when explicitly requested and must be labeled as concepts, not implementation previews or integration evidence. `userscript/prototype.html` is separate from the installed application.
+
+```bash
+python userscript/build_prototype.py <saved-gallery.html> [output.html]
+node userscript/test-prototype.mjs <generated-prototype.html>
+```
+
+The generated page embeds images, discards source-page scripts and blocks requests with CSP. Its states and actions are simulated; it does not rebuild the userscript. Running its interaction/layout checks and screenshots requires an explicit request under the verification policy.
 
 ## Lifecycle
 
