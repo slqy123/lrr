@@ -24,6 +24,10 @@ const badgeVariants = cva(
         "count-quiet": "yurui-count yurui-count-quiet",
       },
       /** Specs and figures take the round face; a word takes the body face. */
+      shape: {
+        default: "",
+        soft: "yurui-tag-soft",
+      },
       face: {
         spec: "yurui-num",
         text: "",
@@ -49,7 +53,7 @@ type BadgeProps = React.ComponentProps<"span"> &
     tilt?: number
   }
 
-function Badge({ className, variant, face, size, asChild = false, tilt, style, ...props }: BadgeProps) {
+function Badge({ className, variant, shape, face, size, asChild = false, tilt, style, ...props }: BadgeProps) {
   const Comp = asChild ? Slot.Root : "span"
   const tiltStyle =
     tilt === undefined ? style : ({ ...style, "--yurui-tilt": `${tilt}deg` } as React.CSSProperties)
@@ -58,7 +62,7 @@ function Badge({ className, variant, face, size, asChild = false, tilt, style, .
     <Comp
       data-slot="badge"
       data-variant={variant ?? "default"}
-      className={cn(badgeVariants({ variant, face, size }), className)}
+      className={cn(badgeVariants({ variant, shape, face, size }), className)}
       style={tiltStyle}
       {...props}
     />

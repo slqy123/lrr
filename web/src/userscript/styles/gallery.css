@@ -4,13 +4,8 @@
   & [data-slot=poster-card][data-selected=true] { box-shadow: 0 0 0 2px var(--card), 0 0 0 5px var(--selection-highlight, var(--yurui-time-ink)), var(--yurui-shadow-lift); }
 }
 
-@utility gallery-rating {
-  @apply inline-flex gap-[2px] h-[14px] ml-auto shrink-0;
-  @container poster (max-width: 170px) { display: none; }
-}
-
-@utility card-status-stack { @apply flex flex-col items-start w-full min-w-0; }
-@utility card-native-meta { @apply flex w-full items-center justify-between gap-2 mb-2 text-muted-foreground text-[11px]; }
+@utility card-tag-row { @apply flex flex-wrap items-center gap-1.5; }
+@utility card-status-stack { @apply mt-1.5 flex w-full min-w-0 flex-wrap items-center justify-between gap-2 border-t border-dashed border-input pt-1.5; }
 
 @utility status-action {
   @apply relative z-30 inline-flex cursor-pointer rounded-[4px];

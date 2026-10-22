@@ -230,6 +230,9 @@
 @utility yurui-chip-on { &, &:hover { background: var(--yurui-time-wash); color: var(--yurui-time-ink); border-style: solid; border-color: var(--yurui-time-line); box-shadow: inset 3px 0 0 var(--yurui-time); } }
 
 @utility yurui-tag { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding-inline: 7px; border-radius: 2px; border-left: 3px solid currentColor; background: var(--muted); color: var(--yurui-ink2); font-size: 12px; font-weight: 600; line-height: 1; white-space: nowrap; }
+@utility yurui-tag-soft {
+  &[data-slot=badge] { height: 20px; padding-inline: 6px; border-left: 0; border-radius: 6px; font-size: 11px; font-weight: 500; }
+}
 @utility yurui-tag-res { background: var(--yurui-time-wash); color: var(--yurui-time-ink); }
 @utility yurui-tag-lang { background: var(--accent); color: var(--accent-foreground); }
 @utility yurui-tag-ok { background: var(--yurui-ok-wash); color: var(--yurui-ok); }
