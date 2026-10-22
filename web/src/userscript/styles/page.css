@@ -1,0 +1,41 @@
+@utility page-width {
+  margin-inline: auto;
+  width: min(1320px, calc(100% - 64px));
+  @variant layout-compact { width: calc(100% - 40px); }
+}
+
+@utility site-header-inner {
+  @apply flex items-center gap-9;
+  @variant layout-compact { @apply flex-wrap gap-5 py-3; }
+}
+
+@utility brand {
+  display: flex;
+  color: var(--foreground);
+  text-decoration: none;
+  font: 600 23px/1.15 var(--font-yurui-display);
+  & b { color: var(--accent-foreground); font-weight: 600; }
+  & small { display: block; margin-top: 6px; color: var(--muted-foreground); font: 11px/1.4 var(--font-sans); letter-spacing: 1px; }
+}
+
+@utility brand-wordmark {
+  display: block;
+  width: 160px;
+  height: auto;
+  @variant layout-narrow { width: 144px; }
+}
+
+@utility brand-mark {
+  @apply grid place-items-center size-[44px] text-white border-[3px] border-(--yurui-sticker-edge) rounded-[15px] bg-(--yurui-candy) shadow-(--yurui-shadow-sticker) -rotate-[8deg];
+}
+
+@utility page-footer {
+  @apply flex justify-between gap-5 pt-8 pb-3 mt-7 text-muted-foreground text-[11px];
+  & > span { display: flex; align-items: center; gap: 6px; }
+  & a { text-decoration: underline; text-underline-offset: 3px; }
+}
+
+@utility collection-title {
+  @apply yurui-tape h-auto bg-(--club-sun-wash) text-foreground px-[14px] py-[5px];
+  clip-path: polygon(0 0, 100% 0, 96% 50%, 100% 100%, 0 100%, 4% 50%);
+}

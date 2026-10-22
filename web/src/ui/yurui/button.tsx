@@ -14,7 +14,7 @@ const FIELD =
   "yurui-field font-normal aria-expanded:outline-2 aria-expanded:outline-ring disabled:not-aria-busy:bg-muted"
 
 const buttonVariants = cva(
-  "yurui-control-state relative inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[3px_10px_3px_3px] text-[13px] leading-none font-bold whitespace-nowrap outline-hidden select-none aria-busy:cursor-wait disabled:pointer-events-none disabled:not-aria-busy:text-muted-foreground disabled:not-aria-busy:shadow-none aria-disabled:pointer-events-none aria-disabled:not-aria-busy:text-muted-foreground aria-disabled:not-aria-busy:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring focus-visible:outline-solid aria-invalid:outline-2 aria-invalid:outline-yurui-danger-fill aria-invalid:outline-solid [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "yurui-btn relative shrink-0 outline-hidden select-none aria-busy:cursor-wait disabled:pointer-events-none disabled:not-aria-busy:text-muted-foreground disabled:not-aria-busy:shadow-none aria-disabled:pointer-events-none aria-disabled:not-aria-busy:text-muted-foreground aria-disabled:not-aria-busy:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring focus-visible:outline-solid aria-invalid:outline-2 aria-invalid:outline-yurui-danger-fill aria-invalid:outline-solid [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {

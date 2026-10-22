@@ -47,18 +47,14 @@ function TableHeader({
     <thead
       data-slot="table-header"
       data-sticky={sticky ? "true" : undefined}
-      className={cn(
-        "[&_th]:bg-(image:--yurui-stitch) [&_th]:bg-size-[8px_1px] [&_th]:bg-bottom [&_th]:bg-repeat-x [&_tr]:h-auto [&_tr]:bg-none [&_tr]:hover:bg-transparent",
-        sticky && "[&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:bg-card",
-        className
-      )}
+      className={cn("yurui-table-header", className)}
       {...props}
     />
   )
 }
 
 function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
-  return <tbody data-slot="table-body" className={cn("[&_tr:last-child]:bg-none", className)} {...props} />
+  return <tbody data-slot="table-body" className={cn("yurui-table-body", className)} {...props} />
 }
 
 function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
@@ -66,7 +62,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
     <tfoot
       data-slot="table-footer"
       className={cn(
-        "font-semibold text-foreground [&_td]:bg-muted [&_td]:bg-(image:--yurui-stitch) [&_td]:bg-size-[8px_1px] [&_td]:bg-top [&_td]:bg-repeat-x [&_tr]:bg-none [&_tr]:hover:bg-transparent",
+        "yurui-table-footer font-semibold text-foreground",
         className
       )}
       {...props}

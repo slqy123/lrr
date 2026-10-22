@@ -1,4 +1,12 @@
+@custom-variant yurui-soft (:host([data-palette=festival]) &);
+
 :host([data-palette=festival]) {
+  --raised-hover: var(--interaction-hover);
+  --raised-hover-foreground: var(--secondary-foreground);
+  --raised-pressed: var(--interaction-pressed);
+  --raised-pressed-width: 1.5px;
+  --primary-shadow: inset 0 0 0 1px var(--primary), 2px 2px 0 var(--action-shadow);
+  --primary-pressed-shadow: inset 0 0 0 1px var(--action-shadow);
   --background: #fbf7f5;
   --card: #fffcfa;
   --foreground: #49383f;

@@ -5,7 +5,7 @@ import { IconButton } from './icon-button'
 import { cn } from './utils'
 
 export function Pagination({ className, ...props }: ComponentProps<'nav'>) {
-  return <nav data-slot="pagination" className={cn('yurui-well flex flex-nowrap items-center gap-[5px] p-[3px] [&>span]:min-w-[18px] [&>span]:text-center [&>span]:text-accent-foreground [&>span]:[font:500_14px/1_var(--font-yurui-display)]', className)} {...props} />
+  return <nav data-slot="pagination" className={cn('yurui-pagination', className)} {...props} />
 }
 
 type PaginationStepProps = {

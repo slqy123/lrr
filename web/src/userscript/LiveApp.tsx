@@ -4,7 +4,7 @@ import { Flower2, Settings, Sun, Moon, ExternalLink, RefreshCw, Copy, ArrowRight
 import { StatusPanel } from '../ui/yurui/status-panel'
 import { ActionBar, SelectionCount, ActionBarDivider } from '../ui/yurui/action-bar'
 import { mainContentVariants, pageFooterVariants } from './styles/page-layout'
-import { siteHeaderVariants, headerInnerVariants, brandVariants, brandWordmarkStyles } from './styles/header-layout'
+import { siteHeaderVariants, headerInnerVariants, brandVariants } from './styles/header-layout'
 import { TextLink } from '../ui/yurui/text-link'
 import { Button } from '../ui/yurui/button'
 import { IconButton } from '../ui/yurui/icon-button'
@@ -77,9 +77,9 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
   const configured = !!settings.lrrServerUrl && !!settings.queueServerUrl
   const errorCount = items.filter(item => displayState(item) === 'error').length
   const checkingCount = items.filter(item => displayState(item) === 'checking').length
-  return <div className="surface yurui-ground text-[14px] leading-[1.5] showcase live-app yurui-live-motion">
+  return <div className="surface yurui-ground text-[14px] leading-[1.5] showcase live-app live-motion">
     <header className={siteHeaderVariants({ variant: 'live' })}><div className={headerInnerVariants({ variant: 'live' })}>
-      <a className={brandVariants()} href={page.action}><img className={brandWordmarkStyles} src={wordmark} alt="YuruLib" width={480} height={160} /></a>
+      <a className={brandVariants()} href={page.action}><img className="brand-wordmark" src={wordmark} alt="YuruLib" width={480} height={160} /></a>
       <nav className="flex items-center gap-2" aria-label="导航"><Button asChild variant="secondary"><a href={page.action}>发现作品</a></Button>{/^https?:\/\//.test(settings.queueServerUrl) && <Button asChild variant="ghost"><a href={settings.queueServerUrl} target="_blank" rel="noopener noreferrer">队列后台 <ExternalLink size={13} /></a></Button>}
         {!!page.links.length && <Popover><PopoverTrigger asChild><Button variant="ghost">原站导航</Button></PopoverTrigger><PopoverContent container={portal}><PopoverTitle>原站导航</PopoverTitle><NavigationList aria-label="原站导航">{page.links.map((link, index) => <NavigationLink key={index} href={link.url}>{link.title}</NavigationLink>)}</NavigationList></PopoverContent></Popover>}
       </nav>
@@ -91,7 +91,7 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
       <section aria-label="作品画廊">
         <div className="block mb-[18px]">
           <div className="flex min-w-0 flex-wrap items-center gap-3">
-            <h2 className="m-0 flex items-center gap-2 text-[17px] font-extrabold whitespace-nowrap"><span className="yurui-tape h-auto bg-(--club-sun-wash) text-foreground px-[14px] py-[5px] [clip-path:polygon(0_0,100%_0,96%_50%,100%_100%,0_100%,4%_50%)]">发现作品</span></h2>
+            <h2 className="m-0 flex items-center gap-2 text-[17px] font-extrabold whitespace-nowrap"><span className="collection-title">发现作品</span></h2>
             <Separator className="min-w-6 flex-1" />
           </div>
         </div>

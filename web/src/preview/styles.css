@@ -1,0 +1,56 @@
+@import "../userscript/styles.css";
+@source "./";
+
+@utility preview-strip {
+  @apply flex items-center justify-between mb-6 text-muted-foreground text-[12px];
+  & > span, & label { display: flex; align-items: center; gap: 12px; }
+  & select { padding: 4px 8px; color: var(--foreground); background-color: var(--card); border: 1px solid var(--input); border-radius: 8px; }
+}
+
+@utility collection-heading {
+  @apply flex items-center justify-between gap-4 mb-[18px];
+  & h1 { display: flex; align-items: center; gap: 10px; margin-top: 5px; margin-bottom: 8px; font-size: 24px; line-height: 1.4; font-weight: 800; letter-spacing: .5px; }
+  & p { color: var(--muted-foreground); margin: 0; font-size: 12px; }
+  & h2 { margin: 0 0 10px; font-size: 19px; font-weight: 800; }
+  & h2 .yurui-tape { height: auto; padding: 2px 8px; }
+}
+
+@utility eyebrow {
+  font: 500 11px/1.4 var(--font-yurui-display);
+  color: var(--accent-foreground);
+  letter-spacing: 2px;
+}
+
+@utility header-sticker { @apply rotate-[4deg] px-[14px] py-[10px]; }
+@utility count { margin-left: 12px; }
+
+@utility detail-body {
+  @apply grid grid-cols-[180px_1fr] gap-6 py-3;
+  & > img { width: 180px; border-radius: 10px; }
+}
+
+@utility queue-stats { @apply grid grid-cols-4 gap-[18px] my-7; }
+
+@utility stat-card {
+  @apply flex flex-col gap-2 p-[22px];
+  & strong { color: var(--accent-foreground); font-size: 34px; }
+  & small { color: var(--muted-foreground); font-size: 11px; }
+}
+
+@utility task-panel { @apply pt-2 px-[18px] pb-[18px]; }
+@utility task-toolbar { @apply flex items-center justify-between gap-4 py-[14px]; }
+
+@utility task-identity {
+  @apply flex items-center gap-3;
+  & img { width: 32px; height: 44px; object-fit: contain; border-radius: 4px; }
+  & strong { display: block; font-size: 13px; font-weight: 600; }
+  & small { display: block; margin-top: 4px; color: var(--muted-foreground); font-size: 11px; }
+}
+
+@utility progress-track {
+  width: 100px;
+  height: 6px;
+  border-radius: 4px;
+  background-color: var(--muted);
+  & span { display: block; width: 62%; height: 100%; border-radius: inherit; background-color: var(--yurui-water); }
+}

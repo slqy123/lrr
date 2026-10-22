@@ -1,0 +1,47 @@
+@utility gallery-grid {
+  & [data-slot=poster-card-cover], & [data-slot=poster-card-placeholder] { background: var(--card); }
+  & [data-slot=poster-card]:not([data-selected=true]):hover { box-shadow: 0 0 0 1.5px var(--input), var(--yurui-shadow-lift); }
+  & [data-slot=poster-card][data-selected=true] { box-shadow: 0 0 0 2px var(--card), 0 0 0 5px var(--selection-highlight, var(--yurui-time-ink)), var(--yurui-shadow-lift); }
+}
+
+@utility native-rating {
+  @apply inline-block w-[80px] h-4 ml-auto bg-no-repeat shrink-0;
+  @container poster (max-width: 170px) { display: none; }
+}
+
+@utility card-status-stack { @apply flex flex-col items-start w-full min-w-0; }
+@utility card-native-meta { @apply flex w-full items-center justify-between gap-2 mb-2 text-muted-foreground text-[11px]; }
+
+@utility status-action {
+  @apply relative z-30 inline-flex cursor-pointer rounded-[4px];
+  &:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
+}
+
+@utility card-category-row { @apply flex items-center gap-2 mt-2 mx-[3px] pointer-events-none; }
+@utility card-category { @apply yurui-category-key flex flex-1 min-w-0 h-[27px] items-center justify-center rounded-[7px] text-[11px] font-bold whitespace-nowrap; }
+@utility cover-placeholder { @apply absolute inset-0 grid content-center justify-items-center gap-[10px] text-muted-foreground; }
+
+@utility card-detail {
+  @apply absolute inset-0 z-20 cursor-pointer rounded-[14px] bg-transparent;
+  &:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
+}
+
+@utility cover-select {
+  @apply yurui-selection-controls relative z-30 flex flex-none pointer-events-auto;
+  & [data-slot=checkbox] { width: 27px; height: 27px; }
+  & [data-slot=checkbox] svg { width: 14px; height: 14px; }
+}
+
+@utility gallery-marker {
+  &[data-expanded=true]::after {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: calc(50% - 8px);
+    width: 16px;
+    height: 8px;
+    background: var(--ring);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    pointer-events: none;
+  }
+}

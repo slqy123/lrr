@@ -1,0 +1,44 @@
+@utility search-heading {
+  @apply flex items-center justify-between gap-4;
+  & h1 { display: flex; align-items: center; gap: 10px; line-height: 1.4; font-weight: 800; letter-spacing: .5px; }
+  & h1 svg { color: var(--yurui-mark); }
+  & p { color: var(--muted-foreground); margin: 0; font-size: 12px; }
+}
+
+@utility search-heading-live {
+  & h1 { margin: 0; font-size: 18px; }
+}
+
+@utility search-heading-showcase {
+  & h1 { margin-top: 5px; margin-bottom: 8px; font-size: 24px; }
+}
+
+@utility search-row {
+  @apply flex items-center gap-[10px];
+  & > button { min-width: 76px; }
+}
+
+@utility search-row-live {
+  & > a { min-width: 76px; }
+  @variant layout-narrow {
+    flex-wrap: wrap;
+    & > .search-field { flex-basis: 100%; }
+  }
+}
+
+@utility search-panel-live {
+  position: relative;
+  border-top: 5px solid var(--club-stripe);
+  &::before {
+    content: '';
+    position: absolute;
+    width: 72px;
+    height: 16px;
+    left: 28px;
+    top: -11px;
+    rotate: -4deg;
+    background: var(--yurui-tape-fill);
+    clip-path: polygon(0 0, 100% 0, 96% 25%, 100% 50%, 96% 75%, 100% 100%, 0 100%, 4% 75%, 0 50%, 4% 25%);
+    pointer-events: none;
+  }
+}

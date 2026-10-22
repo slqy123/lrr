@@ -2,11 +2,12 @@ import * as React from 'react'
 import { LiveApp } from './LiveApp'
 import { readPage } from './page'
 import { mount } from './mount'
+import styles from './styles.css?inline'
 
 if (document.querySelector('.itg')) {
   try {
     const page = readPage()
-    if (page) mount(context => <LiveApp page={page} {...context} />)
+    if (page) mount(styles, context => <LiveApp page={page} {...context} />)
   } catch {
     const notice = document.createElement('p')
     notice.setAttribute('role', 'alert')

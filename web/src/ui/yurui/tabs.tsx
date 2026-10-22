@@ -10,7 +10,7 @@ type TabsListProps<T extends string> = Omit<ComponentProps<'nav'>, 'onChange' | 
 }
 
 export function TabsList<T extends string>({ items, value, onValueChange, panelId, id, className, ...props }: TabsListProps<T>) {
-  return <nav role="tablist" data-slot="tabs-list" className={cn('yurui-tabs [&_button]:cursor-pointer [&_button]:focus-visible:outline-2 [&_button]:focus-visible:outline-ring [&_button]:focus-visible:outline-offset-[3px] [&_button]:focus-visible:outline-solid', className)} {...props}>
+  return <nav role="tablist" data-slot="tabs-list" className={cn('yurui-tabs', className)} {...props}>
     {items.map((item, index) => <button key={item.key} type="button" role="tab" id={`${id}-${item.key}`} aria-controls={panelId} aria-selected={value === item.key} tabIndex={value === item.key ? 0 : -1} className={cn('yurui-tab', value === item.key && 'yurui-tab-on')} onClick={() => onValueChange(item.key)} onKeyDown={event => {
       const next = event.key === 'ArrowRight' ? (index + 1) % items.length : event.key === 'ArrowLeft' ? (index + items.length - 1) % items.length : event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : -1
       if (next < 0) return

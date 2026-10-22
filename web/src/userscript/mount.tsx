@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
-import styles from './styles.css?inline'
 import { loadDisplayFonts } from './fonts'
 
 type MountContext = { host: HTMLElement; portal: HTMLElement; restore: (message?: string) => void }
@@ -15,7 +14,7 @@ class RecoveryBoundary extends Component<{ restore: (message?: string) => void; 
   render() { return this.state.failed ? null : this.props.children }
 }
 
-export function mount(render: (context: MountContext) => ReactNode) {
+export function mount(styles: string, render: (context: MountContext) => ReactNode) {
   if (document.getElementById('lrr-app')) return
   const host = document.createElement('div')
   host.id = 'lrr-app'

@@ -1,4 +1,4 @@
-@utility yurui-live-motion {
+@utility live-motion {
   @media (prefers-reduced-motion: no-preference) {
     & [data-slot=poster-card] { transition: translate 200ms ease, box-shadow 200ms, outline-color 200ms; }
     & [data-slot=poster-card]:focus-within { translate: 0 -3px; }

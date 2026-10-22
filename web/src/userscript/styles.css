@@ -2,33 +2,20 @@
 @import "tw-animate-css";
 @import "../ui/yurui/theme.css";
 @import "../ui/yurui/palettes.css";
-@import "../ui/yurui/materials.css";
+@import "../ui/yurui/components.css";
+@import "../ui/yurui/motion.css";
+@import "./styles/page.css";
+@import "./styles/gallery.css";
+@import "./styles/search.css";
+@import "./styles/details.css";
+@import "./styles/appearance.css";
 @import "./styles/motion.css";
 @source "./";
-@source "../preview";
 @source "../ui/yurui";
 @custom-variant dark (&:where(.dark, .dark *));
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-}
+@custom-variant layout-compact (@media (max-width: 1150px));
+@custom-variant layout-narrow (@media (max-width: 700px));
+@custom-variant layout-small (@media (max-width: 450px));
 
 :host {
   all: initial;
@@ -47,9 +34,3 @@
   font-family: var(--font-sans);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
-    animation: none !important;
-    transition: none !important;
-  }
-}

@@ -1,0 +1,16 @@
+@keyframes yurui-blink { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+@keyframes yurui-pop { from { transform: scale(.8); } to { transform: scale(1); } }
+@keyframes yurui-indeterminate { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :is([data-slot=button], [data-slot=dialog-close]) {
+    transition: background-color 160ms, color 160ms, box-shadow 160ms;
+  }
+}

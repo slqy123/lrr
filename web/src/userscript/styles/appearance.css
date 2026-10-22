@@ -1,0 +1,33 @@
+@utility appearance-picker {
+  &[data-slot=popover-content] {
+    width: min(260px, calc(100vw - 32px));
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+  }
+  & > p { font-size: 12px; margin-top: 6px; margin-bottom: 12px; }
+}
+
+@utility palette-options { display: grid; gap: 6px; margin-top: 10px; }
+
+@utility palette-option {
+  &[data-slot=button][aria-pressed=true] { background-color: var(--accent); box-shadow: inset 3px 0 0 var(--ring); }
+}
+
+@utility palette-swatches {
+  display: flex;
+  flex: none;
+  & i { width: 12px; height: 28px; border-block: 1px solid #0002; }
+  & i:first-child { border-radius: 4px 0 0 4px; background-color: var(--swatch-primary); }
+  & i:nth-child(2) { background-color: var(--swatch-secondary); }
+  & i:last-child { border-radius: 0 4px 4px 0; background-color: var(--swatch-accent); }
+  &[data-palette-preview=original] {
+    --swatch-primary: #b82d56;
+    --swatch-secondary: #f7e7bb;
+    --swatch-accent: #d9b96c;
+  }
+  &[data-palette-preview=festival] {
+    --swatch-primary: #f29ab2;
+    --swatch-secondary: #f5e8ed;
+    --swatch-accent: #a9cfc4;
+  }
+}

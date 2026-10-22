@@ -6,7 +6,7 @@
 
 - Shared components own presentation, native semantics and reusable interaction behavior.
 - Callers own service requests, gallery categories, queue state, navigation URLs and persistence.
-- Page-specific CVA recipes and motion live in `web/src/userscript/styles/`, not in the component library.
+- Page-specific CSS, CVA recipes and motion live in `web/src/userscript/styles/`, not in the component library.
 - Import components directly from their modules. Reuse existing components and theme tokens before adding a new abstraction.
 
 ## Composition
@@ -32,7 +32,20 @@
 
 ## Theme and isolation
 
-The userscript stylesheet imports Tailwind, the yurui theme, palettes and material utilities. Components use Tailwind and CVA; shared material rules remain in the library CSS. Theme roots target `:host` and `:host(.dark)`.
+The userscript stylesheet is the Tailwind entry point and owns Shadow DOM reset, page imports and responsive variants. Shared styles have explicit owners:
+
+- `theme.css`: semantic tokens, light/dark defaults and Tailwind token mappings.
+- `palettes.css`: palette token overrides and the mapping from palettes to the `yurui-soft` interaction material. Components depend on that semantic variant, not palette names.
+- `components.css`: shared presentation, nested-element rules and reusable selection treatments. `yurui-btn` owns base button geometry; React CVA supplies sizes and variants without repeating that geometry. Padding, dimensions and simple state utilities stay in React where `className` composition must replace them.
+- `motion.css`: shared keyframes, control transitions and the single reduced-motion policy.
+
+Page styles have matching feature owners: `page.css`, `gallery.css`, `search.css`, `details.css` and `appearance.css`. Shared CSS utilities use the `yurui-` prefix; page utilities use feature names. Keep simple element layout in Tailwind and use CVA for class composition that depends on props. Put complex descendants, pseudo-elements and decoration in named CSS utilities rather than exported style-string constants or lookup objects. Scope overrides of shared component defaults through their public `data-slot` when needed; do not rely on a named utility sorting after a component's size utilities.
+
+The `layout-compact`, `layout-narrow` and `layout-small` variants centralize the existing 1150px, 700px and 450px maximum-width breakpoints, in descending order so narrower layouts override wider ones.
+
+The production stylesheet scans only userscript and shared-component sources. `web/src/preview/styles.css` imports that same stylesheet, adds showcase-only layout and scans preview sources. Each entry passes its compiled stylesheet to `mount`; mounting and Shadow DOM isolation are shared, without bundling the showcase stylesheet into the installable userscript.
+
+Theme roots target `:host` and `:host(.dark)`. Keep category-dependent values on the category element rather than resolving them in host-level tokens.
 
 `DialogContent` and `PopoverContent` require an explicit portal container inside the owning Shadow DOM. Do not portal to `document.body` or substitute page-side GM APIs.
 
