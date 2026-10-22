@@ -16,5 +16,5 @@ type PaginationStepProps = {
 
 export function PaginationStep({ direction, label, href }: PaginationStepProps) {
   const Icon = direction === 'previous' ? ChevronLeft : ChevronRight
-  return href ? <Button asChild size="icon-sm" variant="ghost"><a href={href} aria-label={label}><Icon aria-hidden="true" /></a></Button> : <IconButton size="sm" label={label} disabled><Icon aria-hidden="true" /></IconButton>
+  return href ? <Button asChild size="icon-sm" variant="ghost"><a href={href} aria-label={label}><Icon aria-hidden="true" /></a></Button> : <IconButton size="sm" label={label} className="opacity-30" disabled><Icon aria-hidden="true" /></IconButton>
 }
