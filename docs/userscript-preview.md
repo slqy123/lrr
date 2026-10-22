@@ -130,6 +130,6 @@ make test-logs TEST_APP=lrr-test-after
 make test-stop
 ```
 
-`test-stop` targets only the three project services; PM2 may report an error for a service that has never been started. Do not use `pm2 stop all`, `pm2 kill`, `pm2 save` or `pm2 startup` for this workflow. Services have fixed ports, no watch mode and no automatic restart. Inspect PM2 logs if a port is occupied or a process stops.
+`test-stop` targets only the three project services and skips services that have never been started. Do not use `pm2 stop all`, `pm2 kill`, `pm2 save` or `pm2 startup` for this workflow. Services have fixed ports, no watch mode and no automatic restart. Inspect PM2 logs if a port is occupied or a process stops.
 
 Default assistant verification remains the userscript build, `node --check lanraragi-checker.user.js`, and `git diff --check`. Full browser verification must be requested explicitly. The local showcase remains concept exploration, not evidence of real Tampermonkey integration.

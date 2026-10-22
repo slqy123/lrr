@@ -11,7 +11,7 @@ uv pip install -e '.[dev]'
 .venv/bin/python -m lrr_queue
 ```
 
-Fill in `LRR_URL` and `LRR_KEY` in `.env` before running. Environment variables override `.env`; configuration keys are defined by `lrr_queue/config.py` and illustrated in `.env.example`. `HTTP_PORT` is also accepted for `APP_PORT`.
+Fill in `LRR_URL` in `.env` before running. Set `LRR_KEY` according to the target LANraragi authentication configuration; the application defaults it to an empty string. Environment variables override `.env`; configuration keys are defined by `lrr_queue/config.py` and illustrated in `.env.example`. `HTTP_PORT` is also accepted for `APP_PORT`.
 
 For the dashboard:
 

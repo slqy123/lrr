@@ -6,7 +6,7 @@ Read before changing the backend, database or queue semantics.
 
 - SQLite is the source of truth. Keep the reconciler in `lrr_queue/worker.py` single-threaded; LANraragi minion owns execution concurrency. Do not fan out per-task threads.
 - Peewee is synchronous; API handlers use sync `def` through FastAPI's threadpool. Do not introduce async DB access.
-- No migrations: `ensure_schema` creates missing tables, adds missing columns idempotently and merges duplicate URLs before enforcing uniqueness. Never drop, rename or narrow a column; add fields with defaults.
+- No migrations: `ensure_schema` creates missing tables, adds missing columns idempotently and deduplicates URLs before enforcing uniqueness. Deduplication keeps the row with the smallest ID and deletes the others; it does not merge their fields. Never drop, rename or narrow a column; add fields with defaults.
 - Store status as plain strings; compare against `Status.*.value`.
 
 ## Queue contracts
@@ -24,8 +24,9 @@ Preserve the userscript compatibility routes:
 
 - `POST /add` accepts `{"urls": [...]}` and returns `{"ok": true, "added": n, "duplicates": m}`.
 - `GET /status` returns counts per status.
+- `POST /api/tasks/lookup` accepts `{"urls": [...]}` with at most 500 URLs and returns `{"items": [...], "total": n}` for matching `pending`, `running`, `failed` and `dead` tasks.
 
-Route definitions live in `lrr_queue/api.py` and `lrr_queue/legacy.py`. The service listens on `0.0.0.0:$APP_PORT` without authentication for LAN self-hosting; do not introduce unrelated API changes.
+Route definitions live in `lrr_queue/api.py` and `lrr_queue/legacy.py`. The service listens on `$APP_HOST:$APP_PORT` (default `0.0.0.0:29481`) without authentication for LAN self-hosting; do not introduce unrelated API changes.
 
 ## Explicitly requested verification
 
