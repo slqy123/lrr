@@ -10,13 +10,17 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  :is([data-slot=button], [data-slot=dialog-close]) {
+  :is(.yurui-btn, [data-slot=dialog-close]) {
     transition: background-color 160ms, color 160ms, box-shadow 160ms;
   }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .yurui-btn-emphasis::before, .yurui-btn-emphasis [data-slot=button-label]::after {
+  .yurui-btn-emphasis.yurui-btn {
+    transition: background-color 160ms, color 160ms, box-shadow 120ms ease-out, translate 140ms ease;
+  }
+  .yurui-btn-emphasis:not(:disabled, [aria-disabled=true]):active { translate: 2px 2px; }
+  .yurui-btn-emphasis [data-slot=button-label]::after {
     transition: transform 180ms ease-out, opacity 150ms ease;
   }
 }

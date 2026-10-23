@@ -334,15 +334,6 @@
   --primary-shadow: inset 0 0 0 1px var(--input), 2px 2px 0 var(--border);
   --primary-hover-shadow: inset 0 0 0 1px var(--input), 2px 3px 0 var(--border);
   --primary-pressed-shadow: inset 0 0 0 1.5px var(--input);
-  &::before {
-    content: ''; position: absolute; pointer-events: none;
-    box-sizing: border-box;
-    right: 0; top: 0; width: 14px; height: 14px;
-    background: linear-gradient(45deg, var(--card) 0 49%, var(--secondary) 51%);
-    border: 1px solid var(--input);
-    border-top-right-radius: 10px;
-    transform: scale(0); transform-origin: top right; opacity: 0;
-  }
   & [data-slot=button-label] { position: relative; display: inline-block; }
   & [data-slot=button-label]::after {
     content: ''; position: absolute; pointer-events: none;
@@ -350,11 +341,9 @@
     transform: scaleX(0); transform-origin: left; opacity: 0;
   }
   &:is(:hover, :focus-visible):not(:disabled, [aria-disabled=true], [aria-busy=true]) {
-    &::before { transform: scale(1); opacity: 1; }
     & [data-slot=button-label]::after { transform: scaleX(1); opacity: .65; }
   }
   &:active, &:is(:disabled, [aria-disabled=true], [aria-busy=true]) {
-    &::before { transform: scale(0); opacity: 0; }
     & [data-slot=button-label]::after { opacity: 0; }
   }
   &[data-size^=icon] [data-slot=button-label]::after { content: none; }
