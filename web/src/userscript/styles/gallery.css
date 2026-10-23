@@ -28,7 +28,7 @@
 @utility card-status-stack { @apply mt-1.5 flex w-full min-w-0 flex-wrap items-center justify-between gap-2 border-t border-dashed border-input pt-1.5; }
 
 @utility status-action {
-  @apply relative z-30 inline-flex cursor-pointer rounded-[3px] border border-current px-1.5 py-0.5;
+  @apply relative z-30 inline-flex cursor-pointer rounded-[3px] border border-border px-1.5 py-0.5;
   background: color-mix(in srgb, currentColor 7%, transparent);
   rotate: -1deg;
   box-shadow: 1px 1px 0 color-mix(in srgb, currentColor 24%, transparent);

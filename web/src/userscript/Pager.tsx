@@ -6,6 +6,7 @@ import { Input } from '../ui/yurui/input'
 import { FormField } from '../ui/yurui/form-field'
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '../ui/yurui/popover'
 import { FieldGroup } from '../ui/yurui/field-group'
+import { SegmentedControl } from '../ui/yurui/segmented-control'
 import type { GalleryPage } from './page'
 import { jumpURL, type JumpInput, type JumpMode } from './navigation'
 
@@ -74,16 +75,24 @@ function LocateForm({ page, input, setInput, navigate, loading }: Pick<PagerProp
       {mode === 'range' ? <div className="py-1">
         <div className="flex justify-between gap-2 text-[11px] text-muted-foreground"><span>最新</span><output htmlFor={`${id}-range`}>{rangeLabel}</output><span>最早</span></div>
         <input id={`${id}-range`} className="result-locate-slider" type="range" min="0" max={Math.max(0, ranges.length - 1)} step="1" value={rangeIndex} aria-label="搜索结果中的大致位置" aria-valuetext={rangeLabel} onChange={event => update({ range: Number(event.target.value) })} />
-      </div> : <div className="grid grid-cols-2 gap-2 layout-small:grid-cols-1">
+      </div> : <div className="grid gap-3">
         {mode === 'date' && <FormField label="指定日期">{control => <Input {...control} type="date" required min={navigation.minDate} max={navigation.maxDate} value={input.date} onChange={event => update({ date: event.target.value })} />}</FormField>}
         {mode === 'offset' && <div className="grid grid-cols-2 gap-2">
           <FormField label="移动跨度">{control => <Input {...control} type="number" min="1" step="1" required value={input.amount} onChange={event => update({ amount: event.target.value })} />}</FormField>
-          <FormField label="单位">{control => <select {...control} className="yurui-input w-full" value={input.unit} onChange={event => update({ unit: event.target.value as JumpInput['unit'] })}><option value="d">天</option><option value="w">周</option><option value="m">月</option><option value="y">年</option></select>}</FormField>
+          <FieldGroup label="单位">
+            <SegmentedControl<JumpInput['unit']> aria-label="时间单位" className="[&>button]:min-w-0 [&>button]:flex-1" value={input.unit} onValueChange={unit => update({ unit })} items={[
+              { value: 'd', label: '天', content: '天' }, { value: 'w', label: '周', content: '周' },
+              { value: 'm', label: '月', content: '月' }, { value: 'y', label: '年', content: '年' },
+            ]} />
+          </FieldGroup>
         </div>}
         {mode === 'gid' && <FormField label="图库编号（GID）">{control => <Input {...control} type="text" inputMode="numeric" pattern="[1-9][0-9]*" required value={input.gid} placeholder="例如 123456" onChange={event => update({ gid: event.target.value })} />}</FormField>}
-        <FormField label={mode === 'date' ? '当天位置' : '定位方向'}>{control => <select {...control} className="yurui-input w-full" value={input.direction} onChange={event => update({ direction: event.target.value as JumpInput['direction'] })}>
-          <option value="newer">{mode === 'date' ? '当天最新端' : '往更新'}</option><option value="older">{mode === 'date' ? '当天最旧端' : '往更早'}</option>
-        </select>}</FormField>
+        <FieldGroup label={mode === 'date' ? '当天位置' : '定位方向'}>
+          <SegmentedControl<JumpInput['direction']> aria-label={mode === 'date' ? '当天位置' : '定位方向'} className="[&>button]:min-w-0 [&>button]:flex-1" value={input.direction} onValueChange={direction => update({ direction })} items={[
+            { value: 'newer', label: mode === 'date' ? '当天最新端' : '往更新', content: mode === 'date' ? '当天最新端' : '往更新' },
+            { value: 'older', label: mode === 'date' ? '当天最旧端' : '往更早', content: mode === 'date' ? '当天最旧端' : '往更早' },
+          ]} />
+        </FieldGroup>
       </div>}
       {input.error && <p role="alert" className="mt-3 text-[12px] text-destructive">{input.error}</p>}
       <div className="mt-2 flex justify-end"><IconButton type="submit" loading={loading} label="跳转到此处" title="跳转到此处" disabled={mode === 'range' ? !ranges[rangeIndex]?.url : !page.previous && !page.next}><ArrowRight aria-hidden="true" /></IconButton></div>
