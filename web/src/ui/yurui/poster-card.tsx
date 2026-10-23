@@ -142,7 +142,7 @@ function PosterCard({
       className={cn(
         "group/poster @container/poster relative flex h-full min-w-0 flex-col rounded-[3px] bg-card p-1.5 text-left text-card-foreground",
         "shadow-[0_0_0_1px_var(--input),var(--yurui-shadow-panel)] transition-[box-shadow,background-color] duration-150",
-        "hover:z-[2] hover:shadow-[0_0_0_1.5px_var(--yurui-time-line),var(--yurui-shadow-lift)] focus-within:z-[2]",
+        "hover:z-[2] hover:shadow-[0_0_0_1.5px_var(--yurui-wash-line),var(--yurui-shadow-lift)] focus-within:z-[2]",
         "data-[tone]:bg-yurui-time-wash data-[tone]:shadow-[0_0_0_1.5px_var(--yurui-time-line),var(--yurui-shadow-panel)] data-[tone]:hover:shadow-[0_0_0_1.5px_var(--yurui-time-line),var(--yurui-shadow-lift)]",
         "data-[selected=true]:shadow-[0_0_0_2px_var(--yurui-mark),var(--yurui-shadow-lift)] data-[selected=true]:hover:shadow-[0_0_0_2px_var(--yurui-mark),var(--yurui-shadow-lift)]",
         "has-[[data-slot=poster-card-title]_:focus-visible]:outline-2 has-[[data-slot=poster-card-title]_:focus-visible]:outline-offset-2 has-[[data-slot=poster-card-title]_:focus-visible]:outline-ring has-[[data-slot=poster-card-title]_:focus-visible]:outline-solid",

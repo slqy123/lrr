@@ -42,11 +42,8 @@
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: var(--club-sun-wash);
     clip-path: polygon(0 0, 100% 0, calc(100% - 7px) 50%, 100% 100%, 0 100%);
     pointer-events: none;
-  }
-  &::before {
     background: linear-gradient(90deg, var(--club-sun) 0 5px, var(--club-sun-wash) 5px 100%);
     filter: drop-shadow(0 1px 0 color-mix(in srgb, var(--input) 48%, transparent));
   }

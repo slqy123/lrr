@@ -1,7 +1,7 @@
 @utility gallery-grid {
   & [data-slot=poster-card-cover], & [data-slot=poster-card-placeholder] { background: var(--card); }
   & [data-slot=poster-card]:not([data-selected=true]):hover { box-shadow: 0 0 0 1.5px var(--input), var(--yurui-shadow-lift); }
-  & [data-slot=poster-card][data-selected=true] { box-shadow: 0 0 0 2px var(--card), 0 0 0 5px var(--selection-highlight, var(--yurui-time-ink)), var(--yurui-shadow-lift); }
+  & [data-slot=poster-card][data-selected=true] { box-shadow: 0 0 0 2px var(--card), 0 0 0 5px var(--selection-highlight), var(--yurui-shadow-lift); }
   & [data-slot=poster-card]::before {
     content: '';
     position: absolute;
@@ -11,7 +11,7 @@
     width: 20px;
     height: 34px;
     border: 1px solid var(--card);
-    background: var(--selection-highlight, var(--yurui-time-ink));
+    background: var(--selection-highlight);
     filter: drop-shadow(2px 2px 0 var(--border));
     clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%);
     opacity: 0;

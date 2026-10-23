@@ -37,7 +37,7 @@
   background-color: var(--card);
   color: var(--card-foreground);
   border-radius: 4px 14px 4px 4px;
-  box-shadow: 0 0 0 1.5px var(--input), var(--yurui-shadow-panel);
+  box-shadow: 0 0 0 1.5px var(--frame-edge), var(--yurui-shadow-panel);
   & .yurui-sheet { box-shadow: 0 0 0 1px var(--border); }
 }
 @utility yurui-pop {
@@ -45,7 +45,7 @@
   color: var(--popover-foreground);
   border-radius: 4px;
   border-top: 5px solid var(--club-sun);
-  box-shadow: 0 0 0 1.5px var(--input), var(--yurui-shadow-pop);
+  box-shadow: 0 0 0 1.5px var(--frame-edge), var(--yurui-shadow-pop);
 }
 @utility yurui-well {
   background-color: var(--muted);
@@ -74,7 +74,7 @@
   color: var(--foreground);
   box-shadow: inset 0 0 0 1px var(--input), inset 0 -3px 0 var(--secondary);
   font-size: 13px;
-  &:hover { box-shadow: inset 0 0 0 1px var(--yurui-time-ink), inset 0 -3px 0 var(--yurui-time-wash2); }
+  &:hover { box-shadow: inset 0 0 0 1px var(--yurui-mark), inset 0 -3px 0 var(--secondary); }
   &:focus-within { box-shadow: inset 0 0 0 1.5px var(--ring), inset 0 -3px 0 var(--yurui-wash2); }
 }
 @utility yurui-field-on { box-shadow: inset 0 0 0 1.5px var(--ring), inset 0 -3px 0 var(--yurui-wash2); }
@@ -206,17 +206,6 @@
   &:hover { background: var(--secondary); color: var(--foreground); }
 }
 @utility yurui-tab-on { &, &:hover { background: var(--club-sun); color: var(--club-ink); box-shadow: inset 0 3px 0 var(--yurui-mark); } }
-@utility yurui-seg {
-  display: inline-flex;
-  gap: 2px;
-  padding: 3px;
-  border: 1px solid var(--input);
-  border-radius: 4px;
-  background: var(--muted);
-  & > * { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 24px; padding-inline: 8px; border-radius: 2px; color: var(--yurui-ink2); font-size: 12px; cursor: pointer; }
-  & > :is([data-state=on], [data-state=active], [aria-pressed=true], [aria-selected=true], [aria-checked=true]) { background: var(--yurui-time-wash2); color: var(--yurui-time-ink); box-shadow: inset 0 -2px 0 var(--yurui-time); }
-}
-@utility yurui-seg-on { background: var(--yurui-time-wash2); color: var(--yurui-time-ink); box-shadow: inset 0 -2px 0 var(--yurui-time); }
 @utility yurui-chip {
   display: inline-flex;
   align-items: center;
@@ -230,9 +219,19 @@
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
-  &:is(button, a, label, [role=button]):hover { background: var(--secondary); color: var(--foreground); }
+  cursor: pointer;
+  &[aria-pressed=true] {
+    background: var(--secondary);
+    color: var(--foreground);
+    border-style: solid;
+    border-color: var(--yurui-wash-line);
+    & > svg { color: var(--yurui-mark); }
+  }
+  &:hover:not(:disabled) { background: var(--interaction-hover); color: var(--foreground); }
+  &:active:not(:disabled) { background: var(--interaction-pressed); }
+  &:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+  &:disabled { cursor: not-allowed; opacity: .5; }
 }
-@utility yurui-chip-on { &, &:hover { background: var(--yurui-time-wash); color: var(--yurui-time-ink); border-style: solid; border-color: var(--yurui-time-line); box-shadow: inset 3px 0 0 var(--yurui-time); } }
 
 @utility yurui-tag { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding-inline: 7px; border-radius: 2px; border-left: 3px solid currentColor; background: var(--muted); color: var(--yurui-ink2); font-size: 12px; font-weight: 600; line-height: 1; white-space: nowrap; }
 @utility yurui-tag-soft {
@@ -317,9 +316,9 @@
 @utility yurui-check-on { background: var(--primary); color: var(--primary-foreground); box-shadow: inset 0 0 0 1.5px var(--primary), 2px 2px 0 var(--club-sun); }
 @utility yurui-selection-controls {
   & [data-slot=checkbox]:is([data-state=checked], [data-state=indeterminate]):enabled {
-    background: var(--selection-highlight, var(--yurui-time-ink));
-    color: var(--selection-ink, var(--card));
-    box-shadow: inset 0 0 0 1.5px var(--selection-highlight, var(--yurui-time-ink)), 2px 2px 0 var(--selection-shadow, var(--yurui-time-line));
+    background: var(--selection-highlight);
+    color: var(--selection-ink);
+    box-shadow: inset 0 0 0 1.5px var(--selection-highlight), 2px 2px 0 var(--selection-shadow);
   }
 }
 @utility yurui-switch { display: inline-flex; position: relative; flex: none; align-items: center; width: 36px; height: 20px; padding: 2px; border-radius: 3px; background: var(--muted); box-shadow: inset 0 0 0 1.5px var(--input); }
