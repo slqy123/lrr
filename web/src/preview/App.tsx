@@ -8,7 +8,6 @@ import { mainContentVariants, pageFooterVariants } from '../userscript/styles/pa
 import { siteHeaderVariants, headerInnerVariants, brandVariants } from '../userscript/styles/header-layout'
 import { Button } from '../ui/yurui/button'
 import { IconButton } from '../ui/yurui/icon-button'
-import { SegmentedControl } from '../ui/yurui/segmented-control'
 import { FloatingNotice } from '../ui/yurui/floating-notice'
 import { Toolbar, ToolbarGroup } from '../ui/yurui/toolbar'
 import { Input } from '../ui/yurui/input'
@@ -22,7 +21,6 @@ import { Badge } from '../ui/yurui/badge'
 import { FieldLabel } from '../ui/yurui/field-label'
 import { Checkbox } from '../ui/yurui/checkbox'
 import { PosterCardSkeleton } from '../ui/yurui/poster-card'
-import { galleryGridVariants } from '../userscript/styles/gallery'
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '../ui/yurui/popover'
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/yurui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/yurui/table'
@@ -42,7 +40,6 @@ export function App({ host, portal, restore }: { host: HTMLElement; portal: HTML
   const [query, setQuery] = useState('')
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('全部')
-  const [compact, setCompact] = useState(false)
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [settings, setSettings] = useState(false)
   const [detail, setDetail] = useState<(typeof mockGalleries)[number] | null>(null)
@@ -115,14 +112,14 @@ export function App({ host, portal, restore }: { host: HTMLElement; portal: HTML
           {minimumRating && <div className="mt-3"><Badge variant="lang">评分 ≥ 4 ★ · 示意条件</Badge></div>}
         </section>
         <section aria-label="作品画廊">
-          <div className="collection-heading"><div><h2><span className="yurui-tape">发现作品</span> <Badge className="count" variant="count-quiet">{visible.length}</Badge></h2><p className="text-muted-foreground">已入库 2 · 队列中 2 · 查询异常 1</p></div><SegmentedControl aria-label="显示密度" value={compact ? 'compact' : 'standard'} onValueChange={value => setCompact(value === 'compact')} items={[{ value: 'standard', label: '标准', content: '标准' }, { value: 'compact', label: '紧凑', content: '紧凑' }]} /></div>
+          <div className="collection-heading"><div><h2><span className="yurui-tape">发现作品</span> <Badge className="count" variant="count-quiet">{visible.length}</Badge></h2><p className="text-muted-foreground">已入库 2 · 队列中 2 · 查询异常 1</p></div></div>
           <Toolbar variant="spread"><ToolbarGroup><FieldLabel variant="selection"><Checkbox aria-label="选择全部作品" disabled={sending || !visible.length} checked={!visible.some(item => selected.has(item.id)) ? false : visible.every(item => selected.has(item.id)) ? true : 'indeterminate'} onCheckedChange={() => selectGroup()} />全选</FieldLabel>{groups.map(state => {
             const matching = visible.filter(item => item.status === state)
             const count = matching.filter(item => selected.has(item.id)).length
             return <FieldLabel key={state} variant="selection"><Checkbox aria-label={`选择${stateLabels[state]}`} disabled={!matching.length || sending} checked={count === 0 ? false : count === matching.length ? true : 'indeterminate'} onCheckedChange={() => selectGroup(state)} /><Status state={state} /><span className="text-muted-foreground">{matching.length}</span></FieldLabel>
           })}</ToolbarGroup>
           <Pagination aria-label="分页"><Button size="icon-sm" variant="ghost" aria-label="上一页" disabled={page === 1} onClick={() => setPage(page - 1)}><ChevronLeft /></Button><span>{page}</span><Popover open={jumpOpen} onOpenChange={setJumpOpen}><PopoverTrigger asChild><Button size="sm" variant="ghost">跳转</Button></PopoverTrigger><PopoverContent container={portal} align="end"><PopoverTitle>跳到某个时间</PopoverTitle><label htmlFor="preview-jump">日期或偏移量</label><Input id="preview-jump" value={jump} placeholder="2026-01-01 或 1w" onChange={event => setJump(event.target.value)} /><div className="grid grid-cols-4 gap-2">{['1d', '3d', '1w', '2w', '1m', '6m', '1y', '2y'].map(value => <Button key={value} size="sm" variant="secondary" onClick={() => setJump(value)}>{value}</Button>)}</div><Button onClick={() => { setJumpOpen(false); setFeedback(`模拟跳转：${jump || '尚未指定日期'}，未访问原站。`) }}>确认跳转</Button></PopoverContent></Popover><Button size="icon-sm" variant="ghost" aria-label="下一页" onClick={() => { setPage(page + 1); setFeedback('样板分页仅改变页码，作品使用同一组模拟数据。') }}><ChevronRight /></Button></Pagination></Toolbar>
-          {scene === 'loading' ? <div className={galleryGridVariants({ compact })} data-compact={compact}>{Array.from({ length: 6 }, (_, index) => <PosterCardSkeleton key={index} />)}</div> : scene === 'error' ? <StatusPanel><CircleAlert /><h3>暂时没能找到书架</h3><p>模拟连接失败，你的选择不会丢失。</p><Button onClick={() => setScene('normal')}><RefreshCw />重试</Button></StatusPanel> : scene === 'empty' || !visible.length ? <StatusPanel><BookOpen /><h3>这里还没有故事</h3><p>换个关键词，下一本喜欢的作品也许就在附近。</p><Button variant="secondary" onClick={() => { setQuery(''); setSearch(''); setCategory('全部'); setScene('normal') }}>重置筛选</Button></StatusPanel> : <GalleryCards items={visible} selected={selected} toggle={toggle} disabled={sending} compact={compact} detail={setDetail} />}
+          {scene === 'loading' ? <div className="gallery-grid grid grid-cols-6 gap-x-[18px] gap-y-6 layout-compact:grid-cols-5 layout-narrow:grid-cols-3 layout-small:grid-cols-2">{Array.from({ length: 6 }, (_, index) => <PosterCardSkeleton key={index} />)}</div> : scene === 'error' ? <StatusPanel><CircleAlert /><h3>暂时没能找到书架</h3><p>模拟连接失败，你的选择不会丢失。</p><Button onClick={() => setScene('normal')}><RefreshCw />重试</Button></StatusPanel> : scene === 'empty' || !visible.length ? <StatusPanel><BookOpen /><h3>这里还没有故事</h3><p>换个关键词，下一本喜欢的作品也许就在附近。</p><Button variant="secondary" onClick={() => { setQuery(''); setSearch(''); setCategory('全部'); setScene('normal') }}>重置筛选</Button></StatusPanel> : <GalleryCards items={visible} selected={selected} toggle={toggle} disabled={sending} detail={setDetail} />}
         </section>
       </> : <section aria-label="队列后台">
         <div className="collection-heading"><div><span className="eyebrow">YOUR COLLECTION, ON ITS WAY</span><h1>故事正在送达 <span className="yurui-sticker yurui-sticker-water">QUEUE</span></h1><p className="text-muted-foreground">慢慢收集，也是一件让人期待的事。</p></div><Button variant={paused ? 'default' : 'secondary'} onClick={() => setPaused(!paused)}>{paused ? <Play /> : <Pause />}{paused ? '恢复队列' : '暂停队列'}</Button></div>

@@ -1,7 +1,7 @@
 export const defaultSettings = {
   lrrServerUrl: '', lrrApiKey: '', queueServerUrl: '', enableAltSearch: true,
   lrrConcurrency: 8, altSearchConcurrency: 2, requestTimeoutMs: 45000,
-  searchTimeoutMs: 40000, enableLogging: false, density: 'standard',
+  searchTimeoutMs: 40000, enableLogging: false,
 }
 export type Settings = typeof defaultSettings
 

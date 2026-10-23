@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
-import { Flower2, Settings, Sun, Moon, ExternalLink, RefreshCw, Copy, ArrowRight, Check, BookOpen, Search, Filter, FilterX, Grid2X2, Grid3X3 } from 'lucide-react'
+import { Flower2, Settings, Sun, Moon, ExternalLink, RefreshCw, Copy, ArrowRight, Check, BookOpen, Search, Filter, FilterX } from 'lucide-react'
 import { StatusPanel } from '../ui/yurui/status-panel'
 import { ActionBar, SelectionCount, ActionBarDivider } from '../ui/yurui/action-bar'
 import { mainContentVariants, pageFooterVariants } from './styles/page-layout'
@@ -8,7 +8,6 @@ import { siteHeaderVariants, headerInnerVariants, brandVariants } from './styles
 import { TextLink } from '../ui/yurui/text-link'
 import { Button } from '../ui/yurui/button'
 import { IconButton } from '../ui/yurui/icon-button'
-import { SegmentedControl } from '../ui/yurui/segmented-control'
 import { NavigationList, NavigationLink } from '../ui/yurui/navigation-list'
 import { Separator } from '../ui/yurui/separator'
 import { Toolbar, ToolbarGroup, ResultStat } from '../ui/yurui/toolbar'
@@ -35,7 +34,6 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
   const page = useNativePage(initialPage, restore)
   const [theme, setTheme] = useTheme(host)
   const { items, settings, configure, client, recheck, refreshQueue } = useGalleries(page)
-  const [compact, setCompact] = useState(settings.density === 'compact')
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [sending, setSending] = useState(false)
@@ -56,9 +54,6 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
     ids.forEach(id => all ? next.delete(id) : next.add(id))
     return next
   })
-  const density = (value: boolean) => {
-    try { GM_setValue('density', value ? 'compact' : 'standard'); setCompact(value) } catch { setFeedback({ tone: 'fail', message: '无法保存显示密度，请检查 Tampermonkey 权限。' }) }
-  }
   const send = async () => {
     if (sending) return
     const batch = items.filter(item => selected.has(item.id))
@@ -112,17 +107,16 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
             {checkingCount > 0 && <StatusBadge tone="run">{stateLabels.checking} {checkingCount}</StatusBadge>}
           </ToolbarGroup>}
           <div className="results-view-controls ml-auto flex shrink-0 items-center gap-3">
-            <SegmentedControl size="icon-sm" aria-label="显示密度" value={compact ? 'compact' : 'standard'} onValueChange={value => density(value === 'compact')} items={[{ value: 'standard', label: '标准布局', title: '标准布局', content: <Grid2X2 aria-hidden="true" /> }, { value: 'compact', label: '紧凑布局', title: '紧凑布局', content: <Grid3X3 aria-hidden="true" /> }]} />
             <Pager page={page} portal={portal} />
           </div>
         </Toolbar>
-        {items.length ? <GalleryCards items={items} selected={selected} toggle={toggle} disabled={sending} compact={compact} live={{ server: settings.lrrServerUrl, recheck, client, refreshQueue }} /> : <StatusPanel><BookOpen /><h3>这里还没有故事</h3><p>换个关键词，下一本喜欢的作品也许就在附近。</p><Button asChild variant="secondary"><a href={page.action}>重置筛选</a></Button></StatusPanel>}
+        {items.length ? <GalleryCards items={items} selected={selected} toggle={toggle} disabled={sending} live={{ server: settings.lrrServerUrl, recheck, client, refreshQueue }} /> : <StatusPanel><BookOpen /><h3>这里还没有故事</h3><p>换个关键词，下一本喜欢的作品也许就在附近。</p><Button asChild variant="secondary"><a href={page.action}>重置筛选</a></Button></StatusPanel>}
         <div className="mt-7 flex justify-center"><Pager page={page} portal={portal} /></div>
       </section>
       <footer className={pageFooterVariants({ variant: 'live' })}><span><Flower2 size={14} />アッカリーン♪ 今日もお気に入りを見つけよう。</span><span>yurui · credit: AniBT UI · <a href="https://github.com/OpenAniBT/ui">AGPL-3.0-only</a> · <a href="https://github.com/slqy123/lrr">对应源码</a></span></footer>
     </main>
     {selected.size > 0 && <ActionBar aria-label="批量操作"><SelectionCount><Check size={17} />已选择 <Badge asChild variant="count"><strong>{selected.size}</strong></Badge> 部</SelectionCount><Button variant="ghost" size="sm" disabled={sending} onClick={() => setSelected(new Set())}>取消选择</Button><ActionBarDivider /><Button variant="secondary" disabled={sending} onClick={() => { try { copyLinks(items.filter(item => selected.has(item.id)).map(item => item.url).join('\n')); setFeedback({ tone: 'ok', message: `已复制 ${selected.size} 个链接。` }) } catch { setFeedback({ tone: 'fail', message: '无法写入剪贴板，选择已保留。' }) } }}><Copy />复制链接</Button><Button loading={sending} onClick={() => void send()}>发送队列 <ArrowRight /></Button></ActionBar>}
     <Feedback value={feedback} floating onClose={() => setFeedback(null)} />
-    <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} portal={portal} settings={settings} save={value => { configure({ ...value, density: compact ? 'compact' : 'standard' }); setFeedback({ tone: 'mute', message: '设置已保存，正在重新检查当前页。' }) }} theme={theme} setTheme={setTheme} />
+    <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} portal={portal} settings={settings} save={value => { configure(value); setFeedback({ tone: 'mute', message: '设置已保存，正在重新检查当前页。' }) }} theme={theme} setTheme={setTheme} />
   </div>
 }
