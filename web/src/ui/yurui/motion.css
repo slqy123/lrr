@@ -14,3 +14,9 @@
     transition: background-color 160ms, color 160ms, box-shadow 160ms;
   }
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  .yurui-btn-emphasis::before, .yurui-btn-emphasis [data-slot=button-label]::after {
+    transition: transform 180ms ease-out, opacity 150ms ease;
+  }
+}

@@ -19,6 +19,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "yurui-btn-primary",
+        emphasis: "yurui-btn-emphasis",
         secondary: `yurui-btn-raised ${DISABLED_FLAT}`,
         outline: `yurui-btn-raised ${DISABLED_FLAT}`,
         ghost: "yurui-btn-ghost",
@@ -92,6 +93,12 @@ function Button({
   const disabledNow = Boolean(disabled || loading)
   const overlaySpinner = loading && loadingText === undefined
   const classes = cn(buttonVariants({ variant, size, className }))
+  const decorateLabel = (content: React.ReactNode) => variant === "emphasis"
+    ? React.Children.map(content, child => typeof child === "string" || typeof child === "number"
+      ? <span data-slot="button-label">{child}</span>
+      : child)
+    : content
+
 
   if (asChild || render) {
     // A rendered <button> still gets its type and real `disabled`; anything
@@ -109,7 +116,9 @@ function Button({
         {...(native ? { type, disabled: disabledNow } : {})}
         {...props}
       >
-        {child}
+        {variant === "emphasis" && React.isValidElement<{ children?: React.ReactNode }>(child)
+          ? React.cloneElement(child, undefined, decorateLabel(child.props.children))
+          : child}
       </Slot.Root>
     )
   }
@@ -130,12 +139,12 @@ function Button({
           <Spinner className="absolute inset-0 m-auto size-4" />
           {/* `opacity-0`, not `invisible`: the label stays in the
               accessibility tree, so the button keeps its name. */}
-          <span className="inline-flex items-center gap-[inherit] opacity-0">{children}</span>
+          <span className="inline-flex items-center gap-[inherit] opacity-0">{decorateLabel(children)}</span>
         </>
       ) : (
         <>
           {loading ? <Spinner className="size-4" /> : null}
-          {loading ? loadingText : children}
+          {decorateLabel(loading ? loadingText : children)}
         </>
       )}
     </button>

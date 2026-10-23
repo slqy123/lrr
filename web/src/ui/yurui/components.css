@@ -147,7 +147,7 @@
   color: var(--secondary-foreground);
   box-shadow: inset 0 0 0 1px var(--input), 2px 2px 0 var(--border);
   transition: background-color 120ms, color 120ms, box-shadow 120ms;
-  &:hover { --raised-foreground: var(--raised-hover-foreground); background: var(--raised-hover); color: var(--raised-foreground); box-shadow: inset 0 0 0 1px var(--input), 2px 2px 0 var(--input); }
+  &:hover { --raised-foreground: var(--raised-hover-foreground); background: var(--raised-hover); color: var(--raised-foreground); box-shadow: inset 0 0 0 1px var(--input), 2px 3px 0 var(--border); }
   &:active { background: var(--raised-pressed); color: var(--raised-foreground, var(--secondary-foreground)); box-shadow: inset 0 0 0 var(--raised-pressed-width) var(--input); }
 }
 @utility yurui-btn-primary {
@@ -155,7 +155,7 @@
   color: var(--primary-foreground);
   box-shadow: var(--primary-shadow);
   transition: background-color 120ms, box-shadow 120ms;
-  &:hover { background: var(--primary-hover); color: var(--primary-foreground); box-shadow: var(--primary-shadow); }
+  &:hover { background: var(--primary-hover); color: var(--primary-foreground); box-shadow: var(--primary-hover-shadow, var(--primary-shadow)); }
   &:active { background: var(--primary-pressed); color: var(--primary-foreground); box-shadow: var(--primary-pressed-shadow); }
   &:is(:disabled, [aria-disabled=true]):not([aria-busy=true]) { background: var(--muted); color: var(--muted-foreground); box-shadow: inset 0 0 0 1px var(--border); }
 }
@@ -327,3 +327,35 @@
 @utility yurui-pager-item { display: inline-flex; flex: none; align-items: center; justify-content: center; gap: 4px; min-width: 32px; height: 32px; padding-inline: 8px; border-radius: 2px; color: var(--yurui-ink2); font-size: 13px; font-weight: 600; &:hover { background: var(--secondary); } }
 @utility yurui-pager-item-on { &, &:hover { background: var(--club-sun); color: var(--club-ink); box-shadow: inset 0 -2px 0 var(--yurui-mark); } }
 @utility yurui-tip { padding: 5px 9px; border-radius: 2px; background: var(--yurui-tip); color: var(--yurui-tip-ink); font-size: 12px; line-height: 16px; box-shadow: var(--yurui-shadow-sticker); }
+
+@utility yurui-btn-emphasis {
+  @apply yurui-btn-primary;
+  --primary-hover: color-mix(in srgb, var(--primary) 90%, var(--primary-foreground));
+  --primary-shadow: inset 0 0 0 1px var(--input), 2px 2px 0 var(--border);
+  --primary-hover-shadow: inset 0 0 0 1px var(--input), 2px 3px 0 var(--border);
+  --primary-pressed-shadow: inset 0 0 0 1.5px var(--input);
+  &::before {
+    content: ''; position: absolute; pointer-events: none;
+    box-sizing: border-box;
+    right: 0; top: 0; width: 14px; height: 14px;
+    background: linear-gradient(45deg, var(--card) 0 49%, var(--secondary) 51%);
+    border: 1px solid var(--input);
+    border-top-right-radius: 10px;
+    transform: scale(0); transform-origin: top right; opacity: 0;
+  }
+  & [data-slot=button-label] { position: relative; display: inline-block; }
+  & [data-slot=button-label]::after {
+    content: ''; position: absolute; pointer-events: none;
+    left: 0; right: 0; bottom: -5px; height: 2px; background: currentColor;
+    transform: scaleX(0); transform-origin: left; opacity: 0;
+  }
+  &:is(:hover, :focus-visible):not(:disabled, [aria-disabled=true], [aria-busy=true]) {
+    &::before { transform: scale(1); opacity: 1; }
+    & [data-slot=button-label]::after { transform: scaleX(1); opacity: .65; }
+  }
+  &:active, &:is(:disabled, [aria-disabled=true], [aria-busy=true]) {
+    &::before { transform: scale(0); opacity: 0; }
+    & [data-slot=button-label]::after { opacity: 0; }
+  }
+  &[data-size^=icon] [data-slot=button-label]::after { content: none; }
+}
