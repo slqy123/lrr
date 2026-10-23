@@ -1,4 +1,5 @@
 import type { Gallery } from './model'
+import { readNavigation, type ResultNavigation } from './navigation'
 
 export const categories = [
   [2, '同人志'], [4, '漫画'], [8, '画师 CG'], [16, '游戏 CG'], [512, '西方作品'],
@@ -10,6 +11,7 @@ export interface GalleryPage {
   action: string
   fields: [string, string][]
   categoryMask: number
+  navigation: ResultNavigation
   previous?: string
   next?: string
   summary: string
@@ -90,6 +92,7 @@ export function readPage(doc: Document = document, base = location.href): Galler
   return {
     galleries: [...galleries.values()], action, categoryMask,
     fields: [...new FormData(form)].filter((entry): entry is [string, string] => typeof entry[1] === 'string'),
+    navigation: readNavigation(doc, base),
     previous: webURL(doc.querySelector('#uprev, #dprev')?.getAttribute('href') || null, base),
     next: webURL(doc.querySelector('#unext, #dnext')?.getAttribute('href') || null, base),
     summary: resultCounts ? `${resultCounts[1] ? '约 ' : ''}${resultCounts[2]} 个结果${resultCounts[3] ? ` · 本页已过滤 ${resultCounts[3]} 项` : ''}` : summaryText,
@@ -106,14 +109,3 @@ export function readPage(doc: Document = document, base = location.href): Galler
   }
 }
 
-export function jumpURL(href: string | undefined, value: string) {
-  if (!href) return undefined
-  const url = new URL(href)
-  if (/^\d{2,4}-\d{1,2}(?:-\d{1,2})?$/.test(value) || (/^\d{4}$/.test(value) && Number(value) > 2006 && Number(value) < 2100)) url.searchParams.set('seek', value)
-  else if (/^\d+(?:[dwmy]|-)?$/.test(value)) url.searchParams.set('jump', value)
-  else if (/^\d+g$/.test(value)) {
-    if (url.searchParams.has('prev')) url.searchParams.set('prev', String(parseInt(value) - 1))
-    if (url.searchParams.has('next')) url.searchParams.set('next', String(parseInt(value) + 1))
-  } else if (value) throw new Error('请输入日期、偏移量（例如 1w）或图库编号（例如 123g）')
-  return url.href
-}

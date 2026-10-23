@@ -21,6 +21,7 @@ import { Feedback, type FeedbackMessage } from './Feedback'
 import { SettingsDialog } from './SettingsDialog'
 import { SearchPanel } from './SearchPanel'
 import { Pager } from './Pager'
+import { initialJump } from './navigation'
 import { displayState, stateLabels } from './model'
 import { copyLinks } from './client'
 import { useGalleries } from './useGalleries'
@@ -35,6 +36,7 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
   const [theme, setTheme] = useTheme(host)
   const { items, settings, configure, client, recheck, refreshQueue } = useGalleries(page)
   const [selected, setSelected] = useState<Set<number>>(new Set())
+  const [jump, setJump] = useState(initialJump)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [sending, setSending] = useState(false)
   const [feedback, setFeedback] = useState<FeedbackMessage | null>(null)
@@ -106,12 +108,10 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
             {errorCount > 0 && <StatusBadge tone="fail">{stateLabels.error} {errorCount}</StatusBadge>}
             {checkingCount > 0 && <StatusBadge tone="run">{stateLabels.checking} {checkingCount}</StatusBadge>}
           </ToolbarGroup>}
-          <div className="results-view-controls ml-auto flex shrink-0 items-center gap-3">
-            <Pager page={page} portal={portal} />
-          </div>
+          <div className="ml-auto"><Pager portal={portal} page={page} input={jump} setInput={setJump} position="top" /></div>
         </Toolbar>
         {items.length ? <GalleryCards items={items} selected={selected} toggle={toggle} disabled={sending} live={{ server: settings.lrrServerUrl, recheck, client, refreshQueue }} /> : <StatusPanel><BookOpen /><h3>这里还没有故事</h3><p>换个关键词，下一本喜欢的作品也许就在附近。</p><Button asChild variant="secondary"><a href={page.action}>重置筛选</a></Button></StatusPanel>}
-        <div className="mt-7 flex justify-center"><Pager page={page} portal={portal} /></div>
+        <div className="mt-7"><Pager portal={portal} page={page} input={jump} setInput={setJump} position="bottom" /></div>
       </section>
       <footer className={pageFooterVariants({ variant: 'live' })}><span><Flower2 size={14} />アッカリーン♪ 今日もお気に入りを見つけよう。</span><span>yurui · credit: AniBT UI · <a href="https://github.com/OpenAniBT/ui">AGPL-3.0-only</a> · <a href="https://github.com/slqy123/lrr">对应源码</a></span></footer>
     </main>
