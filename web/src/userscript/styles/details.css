@@ -160,8 +160,13 @@
 @utility torrent-row {
   @apply yurui-stitch-over flex items-center gap-5 py-4 px-0;
   & > div:first-child { flex: 1; min-width: 0; }
-  & h4 { font-size: 14px; }
+  & h4 { font-size: 14px; overflow-wrap: anywhere; }
   & p { font-size: 12px; margin: 0; }
+  &[data-outdated=true] {
+    padding-inline: 12px;
+    background-color: var(--yurui-warn-wash);
+    box-shadow: inset 3px 0 0 var(--yurui-warn-fill);
+  }
   @variant layout-narrow { @apply items-start flex-col gap-[10px]; }
 }
 
@@ -181,3 +186,16 @@
 }
 
 @utility archive-tags { @apply text-muted-foreground text-[12px]; }
+
+@utility torrent-metadata {
+  @apply mt-2 flex flex-wrap gap-1.5;
+  & [data-slot=badge] {
+    max-width: 100%;
+    height: auto;
+    min-height: 20px;
+    padding-block: 4px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.3;
+  }
+}

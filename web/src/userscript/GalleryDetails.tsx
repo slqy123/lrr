@@ -1,5 +1,5 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
-import { Star, ChevronDown, ChevronUp, Copy, Download, ExternalLink, Link, RefreshCw, X } from 'lucide-react'
+import { CalendarDays, HardDrive, ArrowUp, ArrowDown, UserRound, TriangleAlert, Star, ChevronDown, ChevronUp, Copy, Download, ExternalLink, Link, RefreshCw, X } from 'lucide-react'
 import { Button } from '../ui/yurui/button'
 import { IconButton } from '../ui/yurui/icon-button'
 import { TabsList, TabsPanel } from '../ui/yurui/tabs'
@@ -9,9 +9,18 @@ import { Badge } from '../ui/yurui/badge'
 import { useToast } from '../ui/yurui/toast'
 import { copyLinks, type createClient } from './client'
 import { displayState, type Gallery } from './model'
-import type { Torrent } from './torrents'
+import type { Torrent, TorrentMetadataKind } from './torrents'
 import type { CommentContent, GallerySummary, PreviewPage } from './details'
 import { categoryAppearance } from './categories'
+
+const torrentMetadata: Record<TorrentMetadataKind, { label: string; icon: typeof CalendarDays }> = {
+  posted: { label: '上传时间', icon: CalendarDays },
+  size: { label: '大小', icon: HardDrive },
+  seeds: { label: '做种', icon: ArrowUp },
+  peers: { label: '下载中', icon: ArrowDown },
+  downloads: { label: '下载次数', icon: Download },
+  uploader: { label: '上传者', icon: UserRound },
+}
 
 const tagGroupLabels: Record<string, string> = { language: '语言', parody: '原作', character: '角色', group: '社团', artist: '作者', male: '男性', female: '女性', mixed: '混合', other: '其他', location: '地点', cosplayer: '角色扮演者', reclass: '重新分类', temp: '临时' }
 
@@ -188,7 +197,10 @@ export function GalleryDetails({ item, tab: requestedTab, changeTab, close, live
         {(item.error || item.queue?.label === '队列查询失败') && <Button variant="ghost" size="sm" onClick={live.recheck}><RefreshCw size={14} />重新检查</Button>}
       </div>}
       {tab === 'torrents' && <div className="torrent-list"><div className="torrent-toolbar"><span className="text-muted-foreground">{resources ? `${resources.length} 个种子` : '原站种子'}</span><Button variant="ghost" size="sm" onClick={() => setRevision(value => value + 1)}><RefreshCw size={14} />重新加载</Button><TextLink href={torrentLink!.url} target="_blank" rel="noopener noreferrer">打开原站种子页 <ExternalLink size={12} /></TextLink></div>
-        {error ? <p role="alert">{error}。可重新加载，或打开原站确认。</p> : !resources ? <p role="status">正在加载种子列表…</p> : !resources.length ? <p>原站暂无种子。</p> : resources.map(resource => <article className="torrent-row" key={resource.url}><div><h4>{resource.title}</h4><p className="text-muted-foreground">{resource.metadata.join(' · ')}</p></div><div className="torrent-actions">{resource.magnet && <Button asChild variant="secondary" size="sm"><a href={resource.magnet}><Link size={14} />磁力</a></Button>}<Button asChild variant="secondary" size="sm"><a href={resource.url}><Download size={14} />下载种子</a></Button></div></article>)}
+        {error ? <p role="alert">{error}。可重新加载，或打开原站确认。</p> : !resources ? <p role="status">正在加载种子列表…</p> : !resources.length ? <p>原站暂无种子。</p> : resources.map(resource => <article className="torrent-row" data-outdated={resource.outdated || undefined} key={resource.url}><div><div className="flex flex-wrap items-center gap-2">{resource.outdated && <Badge variant="warning" shape="soft" face="text"><TriangleAlert aria-hidden="true" />已过期</Badge>}<h4>{resource.title}</h4></div><div className="torrent-metadata">{resource.metadata.map(({ kind, value }) => {
+          const { label, icon: Icon } = torrentMetadata[kind]
+          return <Badge key={kind} shape="soft" face="text" variant="secondary" title={`${label}：${value}`} aria-label={`${label}：${value}`}><Icon aria-hidden="true" />{value}</Badge>
+        })}</div></div><div className="torrent-actions">{resource.magnet && <Button asChild variant="secondary" size="sm"><a href={resource.magnet}><Link size={14} />磁力</a></Button>}<Button asChild variant="secondary" size="sm"><a href={resource.url}><Download size={14} />下载种子</a></Button></div></article>)}
       </div>}
       {tab === 'state' && (stateLabel === '队列' ? <div className="queue-detail"><h4>{item.queue?.label}</h4><p>尝试 {item.queue?.attempts} / {item.queue?.max_attempts}</p>{item.queue?.next_attempt_at && <p>下次尝试：{new Date(item.queue.next_attempt_at * 1000).toLocaleString()}</p>}{item.queue?.error && <p role="alert">{item.queue.error}</p>}</div> : <div className="library-details"><h4>{stateLabel === '重复作品' ? '标题检查发现疑似重复作品' : '已在书库中找到该作品'}</h4>{!item.hits.length && <p>原站 URL 已命中，但服务未返回可打开的条目 ID。</p>}{item.hits.map(hit => <article className="archive-hit" key={hit.id}><div className="archive-hit-heading"><img src={`${base}/api/archivethumbnail?id=${encodeURIComponent(hit.id)}`} alt="" loading="lazy" referrerPolicy="no-referrer" onError={event => { event.currentTarget.hidden = true }} /><strong>{hit.title}</strong></div><p className="text-muted-foreground">{[hit.pagecount ? `${hit.pagecount} 页` : '', hit.filesize ? `${(hit.filesize / 1048576).toFixed(1)} MB` : ''].filter(Boolean).join(' · ')}</p>{hit.tags && <p className="archive-tags">{hit.tags}</p>}<div className="torrent-actions"><Button asChild size="sm"><a href={`${base}/reader?id=${encodeURIComponent(hit.id)}`} target="_blank" rel="noopener noreferrer">阅读器</a></Button><Button asChild variant="secondary" size="sm"><a href={`${base}/edit?id=${encodeURIComponent(hit.id)}`} target="_blank" rel="noopener noreferrer">编辑</a></Button></div></article>)}{item.search && base && <TextLink href={`${base}/?${new URLSearchParams({ sort: '1', sortdir: 'desc', q: item.search })}`} target="_blank" rel="noopener noreferrer">在 LANraragi 中查看全部 →</TextLink>}</div>)}
       {tab === 'state' && <Button variant="ghost" size="sm" onClick={live.recheck}><RefreshCw size={14} />重新检查</Button>}
