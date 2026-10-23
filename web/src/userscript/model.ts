@@ -8,6 +8,9 @@ export interface Archive {
   tags?: string
   pagecount?: number
   filesize?: number
+  filename?: string
+  extension?: string
+  progress?: number
 }
 export interface Gallery {
   id: number

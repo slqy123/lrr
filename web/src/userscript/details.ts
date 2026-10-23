@@ -7,6 +7,7 @@ export interface PreviewPage {
 export type CommentContent = string | { tag: 'p' | 'br' | 'strong' | 'em' | 'u' | 's' | 'blockquote' | 'ul' | 'ol' | 'li' | 'pre' | 'code' | 'a'; href?: string; children: CommentContent[] }
 
 export interface GallerySummary {
+  title?: string
   facts: { label: string; value: string; url?: string }[]
   pages?: number
   tagGroups: { name: string; tags: { title: string; url: string }[] }[]
@@ -82,6 +83,7 @@ export function readDetails(html: string, base: string): GallerySummary {
   const descriptionContent = comment ? [...comment.childNodes].flatMap(readComment) : []
   const length = fields.get('Length')?.textContent?.trim().match(/^([\d,]+)\s+pages?$/i)
   return {
+    title: doc.querySelector('#gn')?.textContent?.trim() || undefined,
     facts,
     pages: length ? Number(length[1].replaceAll(',', '')) : undefined,
     tagGroups: [...doc.querySelectorAll('#taglist tr')].flatMap(row => {

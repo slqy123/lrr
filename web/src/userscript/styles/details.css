@@ -199,3 +199,84 @@
     line-height: 1.3;
   }
 }
+
+@utility comparison-grid {
+  @apply grid grid-cols-2 gap-6;
+  @variant layout-narrow { @apply grid-cols-1 gap-5; }
+}
+
+@utility comparison-work {
+  @apply min-w-0 flex flex-col gap-4 rounded-sm border border-border p-4 text-[12px];
+  & [data-slot=description-list] { margin: 0; }
+  & [data-slot=description-item] { min-height: 32px; }
+  & > [data-slot=text-link] { align-self: flex-start; }
+  @variant layout-small { @apply p-3; }
+}
+
+@utility comparison-heading { @apply flex flex-wrap items-center justify-between gap-2; }
+@utility comparison-identity {
+  @apply grid items-start gap-4;
+  grid-template-columns: 110px minmax(0, 1fr);
+  & h3 { margin: 0; font-size: 15px; line-height: 1.6; font-weight: 650; overflow-wrap: anywhere; }
+  @variant layout-small { grid-template-columns: 80px minmax(0, 1fr); gap: 12px; }
+}
+@utility comparison-cover { @apply w-full text-[11px]; }
+@utility comparison-candidates { @apply flex gap-3 overflow-x-auto p-1; }
+@utility comparison-candidate {
+  @apply relative flex items-center gap-3 min-w-0 shrink-0 w-[230px] rounded-sm border border-border bg-card p-2 text-left cursor-pointer;
+  & > .comparison-cover { width: 36px; flex: none; box-shadow: none; }
+  & > span { min-width: 0; }
+  & strong { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: 12px; font-weight: 600; }
+  & small { display: block; margin-top: 4px; font-size: 11px; color: var(--muted-foreground); }
+  &[aria-pressed=true] { border-color: var(--ring); background: var(--accent); box-shadow: 0 0 0 1px var(--ring); }
+  &:hover { background: var(--accent); }
+  &:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+}
+@utility comparison-more {
+  @apply border-t border-dashed border-border pt-3 text-muted-foreground;
+  & summary { cursor: pointer; color: var(--foreground); }
+  & summary:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+  &[open] > summary { margin-bottom: 12px; }
+  & [data-slot=text-link] { display: inline-block; margin-top: 12px; }
+}
+
+@utility comparison-provenance {
+  @apply flex items-start gap-3 rounded-sm border-l-[3px] border-border bg-muted p-4 text-[12px];
+  & > svg { flex: none; margin-top: 2px; color: var(--muted-foreground); }
+  & strong { font-size: 14px; }
+  & p { margin: 5px 0 8px; color: var(--muted-foreground); }
+  &[data-relation=same] { border-color: var(--yurui-ok); }
+  &[data-relation=same] > svg { color: var(--yurui-ok); }
+  &[data-relation=parent], &[data-relation=child] { border-color: var(--primary); }
+}
+@utility comparison-source-title { @apply mt-2 text-[11px] text-muted-foreground; }
+@utility comparison-metrics {
+  @apply grid grid-cols-3 gap-4;
+  @variant layout-compact { @apply grid-cols-1; }
+}
+@utility comparison-metric {
+  @apply min-w-0 rounded-sm border border-border p-4 text-[12px];
+  & > header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 16px; }
+  & > header h4 { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 12px; }
+  & > header > span { font-size: 11px; color: var(--muted-foreground); }
+  &[data-different=true] { background: var(--yurui-warn-wash); border-color: color-mix(in srgb, var(--yurui-warn-fill) 45%, var(--border)); }
+  &[data-different=true] > header > span { color: var(--yurui-warn); font-weight: 600; }
+  &[data-different=true] .comparison-bar > span { background: var(--yurui-warn-fill); }
+}
+@utility comparison-pair {
+  @apply grid grid-cols-2 gap-4;
+  & > div { min-width: 0; }
+  & > div + div { border-left: 1px dashed var(--border); padding-left: 16px; }
+  & small { display: block; margin-bottom: 10px; color: var(--muted-foreground); font-size: 10px; }
+}
+@utility comparison-number { @apply block text-[20px] font-semibold tabular-nums; }
+@utility comparison-bar {
+  @apply mt-3 h-1.5 overflow-hidden rounded-full bg-muted;
+  & > span { display: block; height: 100%; background: var(--muted-foreground); border-radius: inherit; }
+}
+@utility comparison-language-values {
+  @apply flex flex-wrap gap-2;
+  & > span { display: inline-flex; align-items: center; gap: 5px; font-size: 14px; font-weight: 600; padding: 3px 0; }
+  & > span[data-different=true] { padding-inline: 8px; background: var(--card); border-radius: 4px; box-shadow: inset 0 -2px 0 var(--yurui-warn-fill); color: var(--yurui-warn); }
+}
+@utility comparison-metric-note { @apply mt-3 mb-0 text-[10px] leading-relaxed text-muted-foreground; }

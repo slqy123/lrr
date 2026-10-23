@@ -15,7 +15,7 @@ export async function lookupCache(settings: Settings) {
     const saved = GM_getValue<{ context: string; entries: Entry[] } | null>(key, null)
     if (saved?.context === context && Array.isArray(saved.entries)) {
       for (const entry of saved.entries.slice(-2000)) {
-        if (typeof entry?.url === 'string' && Number.isFinite(entry.timestamp) && Date.now() - entry.timestamp >= 0 && Date.now() - entry.timestamp < lifetime && ['downloaded', 'duplicate', 'missing'].includes(entry.result?.status) && Array.isArray(entry.result.hits)) entries.set(entry.url, entry)
+        if (typeof entry?.url === 'string' && Number.isFinite(entry.timestamp) && Date.now() - entry.timestamp >= 0 && Date.now() - entry.timestamp < lifetime && entry.result?.status === 'downloaded' && Array.isArray(entry.result.hits)) entries.set(entry.url, entry)
       }
     }
   } catch {}
@@ -34,9 +34,9 @@ export async function lookupCache(settings: Settings) {
       return entry && Date.now() - entry.timestamp < lifetime ? entry.result : undefined
     },
     set(url: string, result: Result) {
-      if (!['downloaded', 'duplicate', 'missing'].includes(result.status)) return
-      entries.delete(url)
-      entries.set(url, { url, result, timestamp: Date.now() })
+      const removed = entries.delete(url)
+      if (result.status === 'downloaded') entries.set(url, { url, result, timestamp: Date.now() })
+      else if (!removed) return
       if (entries.size > 2000) entries.delete(entries.keys().next().value!)
       if (timer === undefined) {
         timer = setTimeout(flush, 100)

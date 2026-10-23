@@ -11,6 +11,7 @@ import { copyLinks, type createClient } from './client'
 import { displayState, type Gallery } from './model'
 import type { Torrent, TorrentMetadataKind } from './torrents'
 import type { CommentContent, GallerySummary, PreviewPage } from './details'
+import { ArchiveComparison } from './ArchiveComparison'
 import { categoryAppearance } from './categories'
 
 const torrentMetadata: Record<TorrentMetadataKind, { label: string; icon: typeof CalendarDays }> = {
@@ -34,7 +35,7 @@ export interface LiveGalleryActions {
 
 export function stateTab(item: Gallery) {
   const state = displayState(item)
-  return state === 'downloaded' ? '书库' : state === 'duplicate' ? '重复作品' : state === 'queued' ? '队列' : undefined
+  return state === 'downloaded' ? '书库' : state === 'duplicate' ? '作品对比' : state === 'queued' ? '队列' : undefined
 }
 
 function TagGroup({ group }: { group: GallerySummary['tagGroups'][number] }) {
@@ -202,9 +203,9 @@ export function GalleryDetails({ item, tab: requestedTab, changeTab, close, live
           return <Badge key={kind} shape="soft" face="text" variant="secondary" title={`${label}：${value}`} aria-label={`${label}：${value}`}><Icon aria-hidden="true" />{value}</Badge>
         })}</div></div><div className="torrent-actions">{resource.magnet && <Button asChild variant="secondary" size="sm"><a href={resource.magnet}><Link size={14} />磁力</a></Button>}<Button asChild variant="secondary" size="sm"><a href={resource.url}><Download size={14} />下载种子</a></Button></div></article>)}
       </div>}
-      {tab === 'state' && (stateLabel === '队列' ? <div className="queue-detail"><h4>{item.queue?.label}</h4><p>尝试 {item.queue?.attempts} / {item.queue?.max_attempts}</p>{item.queue?.next_attempt_at && <p>下次尝试：{new Date(item.queue.next_attempt_at * 1000).toLocaleString()}</p>}{item.queue?.error && <p role="alert">{item.queue.error}</p>}</div> : <div className="library-details"><h4>{stateLabel === '重复作品' ? '标题检查发现疑似重复作品' : '已在书库中找到该作品'}</h4>{!item.hits.length && <p>原站 URL 已命中，但服务未返回可打开的条目 ID。</p>}{item.hits.map(hit => <article className="archive-hit" key={hit.id}><div className="archive-hit-heading"><img src={`${base}/api/archivethumbnail?id=${encodeURIComponent(hit.id)}`} alt="" loading="lazy" referrerPolicy="no-referrer" onError={event => { event.currentTarget.hidden = true }} /><strong>{hit.title}</strong></div><p className="text-muted-foreground">{[hit.pagecount ? `${hit.pagecount} 页` : '', hit.filesize ? `${(hit.filesize / 1048576).toFixed(1)} MB` : ''].filter(Boolean).join(' · ')}</p>{hit.tags && <p className="archive-tags">{hit.tags}</p>}<div className="torrent-actions"><Button asChild size="sm"><a href={`${base}/reader?id=${encodeURIComponent(hit.id)}`} target="_blank" rel="noopener noreferrer">阅读器</a></Button><Button asChild variant="secondary" size="sm"><a href={`${base}/edit?id=${encodeURIComponent(hit.id)}`} target="_blank" rel="noopener noreferrer">编辑</a></Button></div></article>)}{item.search && base && <TextLink href={`${base}/?${new URLSearchParams({ sort: '1', sortdir: 'desc', q: item.search })}`} target="_blank" rel="noopener noreferrer">在 LANraragi 中查看全部 →</TextLink>}</div>)}
+      {tab === 'state' && (stateLabel === '队列' ? <div className="queue-detail"><h4>{item.queue?.label}</h4><p>尝试 {item.queue?.attempts} / {item.queue?.max_attempts}</p>{item.queue?.next_attempt_at && <p>下次尝试：{new Date(item.queue.next_attempt_at * 1000).toLocaleString()}</p>}{item.queue?.error && <p role="alert">{item.queue.error}</p>}</div> : item.status === 'duplicate' ? <ArchiveComparison item={item} live={live} /> : <div className="library-details"><h4>已在书库中找到该作品</h4>{!item.hits.length && <p>原站 URL 已命中，但服务未返回可打开的条目 ID。</p>}{item.hits.map(hit => <article className="archive-hit" key={hit.id}><div className="archive-hit-heading"><img src={`${base}/api/archivethumbnail?id=${encodeURIComponent(hit.id)}`} alt="" loading="lazy" referrerPolicy="no-referrer" onError={event => { event.currentTarget.hidden = true }} /><strong>{hit.title}</strong></div><p className="text-muted-foreground">{[hit.pagecount ? `${hit.pagecount} 页` : '', hit.filesize ? `${(hit.filesize / 1048576).toFixed(1)} MB` : ''].filter(Boolean).join(' · ')}</p>{hit.tags && <p className="archive-tags">{hit.tags}</p>}<div className="torrent-actions"><Button asChild size="sm"><a href={`${base}/reader?id=${encodeURIComponent(hit.id)}`} target="_blank" rel="noopener noreferrer">阅读器</a></Button><Button asChild variant="secondary" size="sm"><a href={`${base}/edit?id=${encodeURIComponent(hit.id)}`} target="_blank" rel="noopener noreferrer">编辑</a></Button></div></article>)}{item.search && base && <TextLink href={`${base}/?${new URLSearchParams({ sort: '1', sortdir: 'desc', q: item.search })}`} target="_blank" rel="noopener noreferrer">在 LANraragi 中查看全部 →</TextLink>}</div>)}
       {tab === 'state' && <Button variant="ghost" size="sm" onClick={live.recheck}><RefreshCw size={14} />重新检查</Button>}
     </TabsPanel>
-    <footer className="detail-footer"><div className="torrent-actions"><Button variant="secondary" size="sm" onClick={() => { try { copyLinks(item.url); setFeedback({ tone: 'ok', message: '链接已复制' }) } catch { setFeedback({ tone: 'fail', message: '无法写入剪贴板' }) } }}><Copy size={14} />复制链接</Button><Button size="sm" loading={sending} onClick={() => void send()}>发送到队列</Button></div></footer>
+    <footer className="detail-footer"><div className="torrent-actions"><Button variant="secondary" size="sm" onClick={() => { try { copyLinks(item.url); setFeedback({ tone: 'ok', message: '链接已复制' }) } catch { setFeedback({ tone: 'fail', message: '无法写入剪贴板' }) } }}><Copy size={14} />复制链接</Button><Button size="sm" loading={sending} onClick={() => void send()}>{item.status === 'duplicate' ? '仍然加入队列' : '发送到队列'}</Button></div></footer>
   </section>
 }

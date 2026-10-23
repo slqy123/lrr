@@ -4,6 +4,7 @@ import { lookupCache } from './cache'
 import { readTorrents, type Torrent } from './torrents'
 import { readDetails, type GallerySummary } from './details'
 import { parseTitle } from './title'
+import { archiveTags, ehGallery } from './comparison'
 
 class SearchPending extends Error {}
 
@@ -74,9 +75,9 @@ export function createClient(settings: Settings, fresh = false) {
       } catch { finish(new Error('无法发起服务请求')) }
     })
   }
-  const library = (path: string, method = 'GET') => {
+  const library = (path: string, method = 'GET', signal?: AbortSignal) => {
     const auth: Record<string, string> = settings.lrrApiKey ? { Authorization: `Bearer ${btoa(settings.lrrApiKey)}` } : {}
-    return request(settings.lrrServerUrl, path, method, undefined, auth, method === 'GET' ? settings.searchTimeoutMs : settings.requestTimeoutMs)
+    return request(settings.lrrServerUrl, path, method, undefined, auth, method === 'GET' ? settings.searchTimeoutMs : settings.requestTimeoutMs, false, signal)
   }
   function archives(value: unknown): Archive[] {
     if (!Array.isArray(value)) throw new Error('标题搜索响应格式异常')
@@ -84,8 +85,14 @@ export function createClient(settings: Settings, fresh = false) {
       if (!item || typeof item !== 'object') throw new Error('书库条目格式异常')
       const id = typeof item.id === 'string' ? item.id : typeof item.arcid === 'string' ? item.arcid : undefined
       if (!id) throw new Error('书库条目格式异常')
-      return { id, title: typeof item.title === 'string' ? item.title : id, tags: typeof item.tags === 'string' ? item.tags : undefined, pagecount: typeof item.pagecount === 'number' ? item.pagecount : undefined, filesize: typeof item.filesize === 'number' ? item.filesize : undefined }
+      return { id, title: typeof item.title === 'string' ? item.title : id, tags: typeof item.tags === 'string' ? item.tags : undefined, pagecount: typeof item.pagecount === 'number' ? item.pagecount : undefined, filesize: typeof item.size === 'number' ? item.size : typeof item.filesize === 'number' ? item.filesize : undefined, filename: typeof item.filename === 'string' ? item.filename : undefined, extension: typeof item.extension === 'string' ? item.extension : undefined, progress: typeof item.progress === 'number' ? item.progress : undefined }
     })
+  }
+  async function archive(id: string, signal?: AbortSignal): Promise<Archive> {
+    const result = await libraryPool(() => library(`/api/archives/${encodeURIComponent(id)}/metadata`, 'GET', signal))
+    const [value] = archives([result])
+    if (value.id !== id) throw new Error('书库返回了其他作品的元数据')
+    return value
   }
   async function checkRemote(item: Gallery): Promise<Partial<Gallery>> {
     try {
@@ -97,11 +104,26 @@ export function createClient(settings: Settings, fresh = false) {
         return { status: 'downloaded', hits: id ? archives([{ ...result.data, id, title: result.data?.title || item.title }]) : [], error: undefined }
       }
       if ((result.success !== false && result.success !== 0) || ![result.error, result.data?.error].some(error => typeof error === 'string' && /^URL not found in database\.?$/i.test(error))) throw new Error('无法判断书库查询结果')
+      const gallery = ehGallery(item.url)
+      if (gallery) {
+        const candidates = await searchArchives(`/g/${gallery.id}/`)
+        const matched = candidates.filter(candidate => archiveTags(candidate.tags).get('source')?.some(value => ehGallery(value)?.id === gallery.id))
+        if (matched.length) return { status: 'downloaded', hits: matched, error: undefined }
+      }
       const { author, title } = parseTitle(item.title)
       if (!settings.enableAltSearch || !author || !title || title === author) return { status: 'missing', hits: [], error: undefined }
       const search = `${author},${title}`
-      if (!searches.has(search)) searches.set(search, searchPool(async () => {
-        const path = `/api/search?${new URLSearchParams({ filter: search, start: '0', groupby_tanks: 'false' })}`
+      const hits = await searchArchives(search)
+      const matched = gallery ? hits.filter(candidate => archiveTags(candidate.tags).get('source')?.some(value => ehGallery(value)?.id === gallery.id)) : []
+      return { status: matched.length ? 'downloaded' : hits.length ? 'duplicate' : 'missing', hits: matched.length ? matched : hits, search, error: undefined }
+    } catch (error) { return { status: 'error', hits: [], error: error instanceof Error ? error.message : '书库查询失败' } }
+  }
+  async function searchArchives(search: string): Promise<Archive[]> {
+    if (!searches.has(search)) searches.set(search, searchPool(async () => {
+      const hits: Archive[] = []
+      let start = 0
+      do {
+        const path = `/api/search?${new URLSearchParams({ filter: search, start: String(start), groupby_tanks: 'false' })}`
         let response: { data?: unknown; recordsFiltered?: number }
         try { response = await library(path) as typeof response }
         catch (error) {
@@ -114,13 +136,16 @@ export function createClient(settings: Settings, fresh = false) {
           })
           response = await library(path) as typeof response
         }
-        const hits = archives(response?.data)
-        if (typeof response.recordsFiltered === 'number' && response.recordsFiltered > 0 && !hits.length) throw new Error('标题搜索返回数量与条目不一致')
-        return hits
-      }))
-      const hits = await searches.get(search)!
-      return { status: hits.length ? 'duplicate' : 'missing', hits, search, error: undefined }
-    } catch (error) { return { status: 'error', hits: [], error: error instanceof Error ? error.message : '书库查询失败' } }
+        const page = archives(response?.data)
+        if (typeof response.recordsFiltered === 'number' && response.recordsFiltered > start && !page.length) throw new Error('标题搜索返回数量与条目不一致')
+        hits.push(...page)
+        start += page.length
+        if (!page.length || typeof response.recordsFiltered !== 'number' || start >= response.recordsFiltered) break
+      } while (!controller.signal.aborted)
+      if (controller.signal.aborted) throw new Error('检查已取消')
+      return hits
+    }))
+    return await searches.get(search)!
   }
   async function check(item: Gallery): Promise<Partial<Gallery>> {
     const store = await cache
@@ -191,5 +216,5 @@ export function createClient(settings: Settings, fresh = false) {
     if (!controller.signal.aborted && !signal?.aborted) detailCache.set(url.href, summary)
     return summary
   }
-  return { check, lookup, send, torrents, details, dispose: () => { controller.abort(); void cache.then(store => store.flush()) } }
+  return { check, lookup, send, torrents, details, archive, dispose: () => { controller.abort(); void cache.then(store => store.flush()) } }
 }
