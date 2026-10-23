@@ -11,9 +11,9 @@
 // @grant        GM_addStyle
 // @grant        GM_setClipboard
 // @connect      *
-// @run-at       document-idle
+// @run-at       document-start
 // @license      AGPL-3.0-only
-// @version      2.0.0-alpha.130
+// @version      2.0.0-alpha.131
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==

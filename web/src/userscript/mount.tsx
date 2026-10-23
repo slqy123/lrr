@@ -14,7 +14,7 @@ class RecoveryBoundary extends Component<{ restore: (message?: string) => void; 
   render() { return this.state.failed ? null : this.props.children }
 }
 
-export function mount(styles: string, render: (context: MountContext) => ReactNode) {
+export function mount(styles: string, render: (context: MountContext) => ReactNode, onRestore?: () => void) {
   if (document.getElementById('lrr-app')) return
   const host = document.createElement('div')
   host.id = 'lrr-app'
@@ -44,6 +44,7 @@ export function mount(styles: string, render: (context: MountContext) => ReactNo
     nativeStyle.remove()
     unloadFonts()
     host.remove()
+    onRestore?.()
     queueMicrotask(() => root.unmount())
     if (message) {
       const notice = document.createElement('p')
