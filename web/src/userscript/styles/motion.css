@@ -1,5 +1,6 @@
 @utility live-motion {
   @media (prefers-reduced-motion: no-preference) {
+    & .gallery-grid [data-slot=poster-card]::before { transition: opacity 150ms ease, translate 180ms var(--ease-yurui-out); }
     & [data-slot=poster-card] { transition: translate 200ms ease, box-shadow 200ms, outline-color 200ms; }
     & [data-slot=poster-card]:focus-within { translate: 0 -3px; }
     & :is([data-slot=button], [data-slot=filter-chip], [role=tab], .detail-tags-toggle) {
