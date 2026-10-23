@@ -1,13 +1,14 @@
 import type { Archive, Gallery } from './model'
 import type { Settings } from './settings'
 import { lookupCache } from './cache'
-import { readTorrents } from './torrents'
+import { readTorrents, type Torrent } from './torrents'
 import { readDetails, type GallerySummary } from './details'
 import { parseTitle } from './title'
 
 class SearchPending extends Error {}
 
 const detailCache = new Map<string, GallerySummary>()
+const torrentCache = new Map<string, Torrent[]>()
 
 type Response = { status: number; responseText: string }
 declare function GM_xmlhttpRequest(options: {
@@ -167,18 +168,23 @@ export function createClient(settings: Settings, fresh = false) {
     }
     return await request(url.origin, url.pathname + url.search, 'GET', undefined, {}, settings.requestTimeoutMs, true, signal) as string
   }
-  async function torrents(href: string, signal?: AbortSignal) {
+  async function torrents(href: string, signal?: AbortSignal, refresh = false) {
     const url = new URL(href, location.href)
     if ((!offline && url.origin !== location.origin) || !['http:', 'https:'].includes(url.protocol) || url.pathname !== '/gallerytorrents.php') throw new Error('无效的原站种子地址')
+    if (controller.signal.aborted || signal?.aborted) throw new Error('检查已取消')
+    const saved = refresh ? undefined : torrentCache.get(url.href)
+    if (saved !== undefined) return saved
     const html = await nativeHTML(url, signal)
-    return readTorrents(html, url.href)
+    const torrents = readTorrents(html, url.href)
+    if (!controller.signal.aborted && !signal?.aborted) torrentCache.set(url.href, torrents)
+    return torrents
   }
-  async function details(href: string, signal?: AbortSignal) {
+  async function details(href: string, signal?: AbortSignal, refresh = false) {
     const url = new URL(href, location.href)
     const sites = ['e-hentai.org', 'exhentai.org', 'g.e-hentai.org']
     if (!['http:', 'https:'].includes(url.protocol) || (url.origin !== location.origin && !(sites.includes(url.hostname) && (offline || sites.includes(location.hostname)))) || !/^\/g\/\d+\/[a-zA-Z0-9]+\/$/.test(url.pathname)) throw new Error('无效的原站作品地址')
     if (controller.signal.aborted || signal?.aborted) throw new Error('检查已取消')
-    const saved = detailCache.get(url.href)
+    const saved = refresh ? undefined : detailCache.get(url.href)
     if (saved) return saved
     const html = await nativeHTML(url, signal)
     const summary = readDetails(html, url.href)

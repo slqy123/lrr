@@ -126,13 +126,14 @@ export function GalleryDetails({ item, tab: requestedTab, changeTab, close, live
   const [summary, setSummary] = useState<GallerySummary>()
   const [detailError, setDetailError] = useState('')
   const [detailRevision, setDetailRevision] = useState(0)
+  const loadedRevisions = useRef({ detail: 0, torrents: 0 })
   useEffect(() => {
     if (tab !== 'detail') return
     let active = true
     const controller = new AbortController()
     setSummary(undefined)
     setDetailError('')
-    void live.client.details(item.url, controller.signal).then(value => { if (active) setSummary(value) }, reason => { if (active) setDetailError(reason instanceof Error ? reason.message : '详情加载失败') })
+    void live.client.details(item.url, controller.signal, detailRevision !== loadedRevisions.current.detail).then(value => { if (active) { loadedRevisions.current.detail = detailRevision; setSummary(value) } }, reason => { if (active) setDetailError(reason instanceof Error ? reason.message : '详情加载失败') })
     return () => { active = false; controller.abort() }
   }, [tab, item.url, live.client, detailRevision])
   const [resources, setResources] = useState<Torrent[]>()
@@ -150,7 +151,7 @@ export function GalleryDetails({ item, tab: requestedTab, changeTab, close, live
     const controller = new AbortController()
     setError('')
     setResources(undefined)
-    void live.client.torrents(torrentLink.url, controller.signal).then(value => { if (active) setResources(value) }, reason => { if (active) setError(reason instanceof Error ? reason.message : '种子加载失败') })
+    void live.client.torrents(torrentLink.url, controller.signal, revision !== loadedRevisions.current.torrents).then(value => { if (active) { loadedRevisions.current.torrents = revision; setResources(value) } }, reason => { if (active) setError(reason instanceof Error ? reason.message : '种子加载失败') })
     return () => { active = false; controller.abort() }
   }, [tab, torrentLink?.url, live.client, revision])
   const base = live.server.replace(/\/+$/, '')
