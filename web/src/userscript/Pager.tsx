@@ -1,17 +1,18 @@
 import { useId, useState, type Dispatch, type SetStateAction } from 'react'
-import { ArrowRight, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, LocateFixed } from 'lucide-react'
+import { ArrowRight, CalendarDays, Clock3, Hash, SlidersHorizontal, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, LocateFixed } from 'lucide-react'
 import { Button } from '../ui/yurui/button'
 import { IconButton } from '../ui/yurui/icon-button'
 import { DatePicker } from '../ui/yurui/date-picker'
 import { Input } from '../ui/yurui/input'
 import { FormField } from '../ui/yurui/form-field'
-import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '../ui/yurui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/yurui/popover'
+import { TabsList, TabsPanel } from '../ui/yurui/tabs'
 import { FieldGroup } from '../ui/yurui/field-group'
 import { SegmentedControl } from '../ui/yurui/segmented-control'
 import type { GalleryPage } from './page'
 import { jumpURL, type JumpInput, type JumpMode } from './navigation'
 
-const modes: { value: JumpMode; label: string }[] = [{ value: 'range', label: '范围' }, { value: 'date', label: '日期' }, { value: 'offset', label: '时间跨度' }, { value: 'gid', label: '图库编号' }]
+const modes: { value: JumpMode; label: string; icon: typeof CalendarDays }[] = [{ value: 'range', label: '范围', icon: SlidersHorizontal }, { value: 'date', label: '日期', icon: CalendarDays }, { value: 'offset', label: '时间跨度', icon: Clock3 }, { value: 'gid', label: '图库编号', icon: Hash }]
 
 type PagerProps = {
   page: GalleryPage
@@ -25,7 +26,6 @@ type PagerProps = {
 
 export function Pager({ page, input, setInput, position, portal, navigate, loading }: PagerProps) {
   const [open, setOpen] = useState(false)
-  const titleId = useId()
   const { navigation } = page
   const step = (href: string | undefined, label: string, Icon: typeof ChevronLeft) => href
     ? <Button asChild variant="ghost" size="icon-sm"><a href={href} title={label} aria-label={label} onClick={event => {
@@ -40,8 +40,7 @@ export function Pager({ page, input, setInput, position, portal, navigate, loadi
       {step(page.previous, '上一批', ChevronLeft)}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild><IconButton size="sm" label="定位" title="定位"><LocateFixed aria-hidden="true" /></IconButton></PopoverTrigger>
-        <PopoverContent container={portal} align="end" side={position === 'top' ? 'bottom' : 'top'} className="w-96 max-h-[var(--radix-popover-content-available-height)] overflow-y-auto" aria-labelledby={titleId}>
-          <PopoverTitle id={titleId}>定位</PopoverTitle>
+        <PopoverContent container={portal} align="end" side={position === 'top' ? 'bottom' : 'top'} className="result-locate-popover w-[420px] max-h-[var(--radix-popover-content-available-height)] overflow-y-auto gap-0 p-0" aria-label="定位">
           <LocateForm page={page} input={input} setInput={setInput} loading={loading} navigate={async href => { const changed = await navigate(href); if (changed) setOpen(false); return changed }} />
         </PopoverContent>
       </Popover>
@@ -71,9 +70,9 @@ function LocateForm({ page, input, setInput, navigate, loading }: Pick<PagerProp
       }
       catch (error) { setInput(previous => ({ ...previous, error: (error as Error).message })) }
     }}>
-      <FieldGroup label="定位方式" className="mb-2">
-        <div className="flex flex-wrap gap-3">{modes.filter(option => option.value !== 'range' || ranges.length > 0).map(option => <label key={option.value} className="flex cursor-pointer items-center gap-2"><input type="radio" name={`${id}-mode`} value={option.value} checked={mode === option.value} onChange={() => update({ mode: option.value })} className="accent-ring" />{option.label}</label>)}</div>
-      </FieldGroup>
+      <TabsList<JumpMode> variant="notebook" className="result-locate-tabs" aria-label="定位方式" id={`${id}-mode`} panelId={`${id}-panel`} value={mode} onValueChange={mode => update({ mode })} items={modes.filter(option => option.value !== 'range' || ranges.length > 0).map(({ value, label, icon: Icon }) => ({ key: value, label: <><Icon aria-hidden="true" />{label}</> }))} />
+      <div className="result-locate-body">
+      <TabsPanel id={`${id}-panel`} className="min-w-0" aria-labelledby={`${id}-mode-${mode}`}>
       {mode === 'range' ? <div className="py-1">
         <div className="flex justify-between gap-2 text-[11px] text-muted-foreground"><span>最新</span><output htmlFor={`${id}-range`}>{rangeLabel}</output><span>最早</span></div>
         <input id={`${id}-range`} className="result-locate-slider" type="range" min="0" max={Math.max(0, ranges.length - 1)} step="1" value={rangeIndex} aria-label="搜索结果中的大致位置" aria-valuetext={rangeLabel} onChange={event => update({ range: Number(event.target.value) })} />
@@ -96,7 +95,9 @@ function LocateForm({ page, input, setInput, navigate, loading }: Pick<PagerProp
           ]} />
         </FieldGroup>
       </div>}
+      </TabsPanel>
       {input.error && <p role="alert" className="mt-3 text-[12px] text-destructive">{input.error}</p>}
-      <div className="mt-2 flex justify-end"><Button type="submit" variant="emphasis" loading={loading} title="跳转到此处" disabled={mode === 'range' ? !ranges[rangeIndex]?.url : !page.previous && !page.next}>跳转 <ArrowRight aria-hidden="true" /></Button></div>
+      <div className="mt-4 flex justify-end border-t border-border pt-3"><Button type="submit" variant="emphasis" loading={loading} title="跳转到此处" disabled={mode === 'range' ? !ranges[rangeIndex]?.url : !page.previous && !page.next}>跳转 <ArrowRight aria-hidden="true" /></Button></div>
+      </div>
   </form>
 }

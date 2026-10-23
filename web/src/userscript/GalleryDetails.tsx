@@ -175,7 +175,7 @@ export function GalleryDetails({ item, tab: requestedTab, changeTab, close, live
         <IconButton size="sm" label="收起作品详情" onClick={() => close()}><X /></IconButton>
       </div>
     </header>
-    <TabsList variant="unstyled" className="detail-tabs" items={tabs} value={tab} onValueChange={changeTab} id={id} panelId={`${id}-content`} aria-label="作品信息" />
+    <TabsList variant="notebook" className="detail-tabs" items={tabs} value={tab} onValueChange={changeTab} id={id} panelId={`${id}-content`} aria-label="作品信息" />
     <TabsPanel key={tab} className="detail-content" id={`${id}-content`} aria-labelledby={`${id}-${tab}`}>
       {tab === 'detail' && <div className="detail-summary">
         {detailError ? <div className="detail-load-error"><p role="alert">{detailError}</p><Button variant="ghost" size="sm" onClick={() => setDetailRevision(value => value + 1)}><RefreshCw size={14} />重试详情</Button></div> : !summary ? <p className="text-muted-foreground" role="status">正在加载作品详情…</p> : <>

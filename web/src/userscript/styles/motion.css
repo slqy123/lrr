@@ -11,8 +11,6 @@
     & [data-slot=checkbox]:not(:disabled):active { scale: .9; }
     & .detail-preview-page { transition: translate 160ms ease, box-shadow 160ms; }
     & .detail-content { animation: detail-file-enter 240ms var(--ease-yurui-out); transform-origin: top left; }
-    & .detail-tabs [role=tab]::before { transition: background-color 160ms, box-shadow 160ms; }
-    & .detail-tabs [aria-selected=true]::before { animation: detail-tab-enter 180ms var(--ease-yurui-out); }
     & [data-slot=checkbox]:is([data-state=checked], [data-state=indeterminate]) svg { animation: yurui-check 180ms ease-out; }
     & .gallery-details { animation: yurui-unfold 220ms ease-out; transform-origin: top; }
     & .selection-bar { animation: yurui-arrive 240ms cubic-bezier(.2,.8,.3,1); }
@@ -38,8 +36,4 @@
 @keyframes detail-file-enter {
   from { opacity: .35; transform: perspective(1000px) translate(10px, 5px) rotateX(-2deg); }
   to { opacity: 1; transform: perspective(1000px) translate(0, 0) rotateX(0); }
-}
-@keyframes detail-tab-enter {
-  from { translate: 0 4px; }
-  to { translate: 0 0; }
 }
