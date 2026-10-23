@@ -6,7 +6,7 @@ import { TabsList, TabsPanel } from '../ui/yurui/tabs'
 import { TextLink } from '../ui/yurui/text-link'
 import { DescriptionList, DescriptionItem } from '../ui/yurui/description-list'
 import { Badge } from '../ui/yurui/badge'
-import { Feedback, type FeedbackMessage } from './Feedback'
+import { useToast } from '../ui/yurui/toast'
 import { copyLinks, type createClient } from './client'
 import { displayState, type Gallery } from './model'
 import type { Torrent } from './torrents'
@@ -139,7 +139,7 @@ export function GalleryDetails({ item, tab: requestedTab, changeTab, close, live
   const [error, setError] = useState('')
   const [revision, setRevision] = useState(0)
   const [sending, setSending] = useState(false)
-  const [feedback, setFeedback] = useState<FeedbackMessage | null>(null)
+  const { notify: setFeedback } = useToast()
   useEffect(() => {
     setResources(undefined)
     setError('')
@@ -193,6 +193,5 @@ export function GalleryDetails({ item, tab: requestedTab, changeTab, close, live
       {tab === 'state' && <Button variant="ghost" size="sm" onClick={live.recheck}><RefreshCw size={14} />重新检查</Button>}
     </TabsPanel>
     <footer className="detail-footer"><div className="torrent-actions"><Button variant="secondary" size="sm" onClick={() => { try { copyLinks(item.url); setFeedback({ tone: 'ok', message: '链接已复制' }) } catch { setFeedback({ tone: 'fail', message: '无法写入剪贴板' }) } }}><Copy size={14} />复制链接</Button><Button size="sm" loading={sending} onClick={() => void send()}>发送到队列</Button></div></footer>
-    <Feedback value={feedback} className="detail-feedback" />
   </section>
 }

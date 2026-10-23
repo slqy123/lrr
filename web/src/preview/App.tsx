@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useState } from 'react'
-import { BookOpen, BookHeart, Copy, CircleAlert, Search, SlidersHorizontal, Flower2, Settings, Sun, Moon, ArrowRight, ChevronLeft, ChevronRight, RefreshCw, Check, Upload, X, Pause, Play, ExternalLink } from 'lucide-react'
+import { BookOpen, BookHeart, Copy, CircleAlert, Search, SlidersHorizontal, Flower2, Settings, Sun, Moon, ArrowRight, ChevronLeft, ChevronRight, RefreshCw, Check, Upload, Pause, Play, ExternalLink } from 'lucide-react'
 import { StatusPanel } from '../ui/yurui/status-panel'
 import { ActionBar, SelectionCount, ActionBarDivider } from '../ui/yurui/action-bar'
 import { categoryRowVariants, searchRowVariants, searchPanelVariants, searchHeadingVariants } from '../userscript/styles/search-layout'
@@ -8,7 +8,7 @@ import { mainContentVariants, pageFooterVariants } from '../userscript/styles/pa
 import { siteHeaderVariants, headerInnerVariants, brandVariants } from '../userscript/styles/header-layout'
 import { Button } from '../ui/yurui/button'
 import { IconButton } from '../ui/yurui/icon-button'
-import { FloatingNotice } from '../ui/yurui/floating-notice'
+import { useToast } from '../ui/yurui/toast'
 import { Toolbar, ToolbarGroup } from '../ui/yurui/toolbar'
 import { Input } from '../ui/yurui/input'
 import { InputGroup } from '../ui/yurui/input-group'
@@ -46,7 +46,8 @@ export function App({ host, portal, restore }: { host: HTMLElement; portal: HTML
   const [page, setPage] = useState(1)
   const [jump, setJump] = useState('')
   const [jumpOpen, setJumpOpen] = useState(false)
-  const [feedback, setFeedback] = useState('')
+  const { notify, dismiss } = useToast()
+  const setFeedback = (message: string) => message ? notify({ tone: 'mute', message }, 'preview') : dismiss('preview')
   const [sending, setSending] = useState(false)
   const [simulateFailure, setSimulateFailure] = useState(false)
   const [paused, setPaused] = useState(false)
@@ -131,7 +132,6 @@ export function App({ host, portal, restore }: { host: HTMLElement; portal: HTML
       <footer className={pageFooterVariants({ variant: 'showcase' })}><span><Flower2 size={14} />アッカリーン♪ 今日もお気に入りを見つけよう。</span><span>yurui · credit: AniBT UI · <a href="https://github.com/OpenAniBT/ui">AGPL-3.0-only</a> · <a href="https://github.com/slqy123/lrr">对应源码</a></span></footer>
     </main>
     {selected.size > 0 && view === 'gallery' && <ActionBar variant="plain" aria-label="批量操作"><SelectionCount><Check size={17} />已选择 <Badge asChild variant="count"><strong>{selected.size}</strong></Badge> 部</SelectionCount><Button variant="ghost" size="sm" disabled={sending} onClick={() => setSelected(new Set())}>取消选择</Button><ActionBarDivider /><Button variant="secondary" disabled={sending} onClick={() => setFeedback(`已模拟复制 ${selected.size} 个链接，未修改剪贴板。`)}><Copy />复制链接</Button><Button loading={sending} onClick={send}>发送队列 <ArrowRight /></Button></ActionBar>}
-    {feedback && <FloatingNotice spacing="relaxed" action={<IconButton size="sm" label="关闭提示" onClick={() => setFeedback('')}><X /></IconButton>}>{feedback}</FloatingNotice>}
     <Dialog open={settings} onOpenChange={setSettings}><DialogContent container={portal}><DialogHeader><DialogTitle><Settings size={18} />让书架更合心意</DialogTitle><DialogDescription>设置样板：仅主题会保存，其余字段不连接服务。</DialogDescription></DialogHeader><DialogBody><FormFields><FormField label="外观主题">{control => <NativeSelect {...control} value={theme} onChange={event => setTheme(event.target.value as typeof theme)}><option value="auto">跟随系统</option><option value="light">白樱 · 浅色</option><option value="dark">夜樱 · 深色</option></NativeSelect>}</FormField><FormField label="图库服务地址">{control => <Input {...control} placeholder="填写你的 LANraragi 地址" />}</FormField><FormField label="API 密钥">{control => <Input {...control} type="password" placeholder="本地保存，不向第三方发送" autoComplete="off" />}</FormField><FormField label="队列服务地址">{control => <Input {...control} placeholder="填写你的队列服务地址" />}</FormField><FieldLabel><Checkbox defaultChecked />启用标题匹配检查</FieldLabel><FieldLabel><Checkbox checked={simulateFailure} onCheckedChange={value => setSimulateFailure(value === true)} />模拟发送失败（用于验收失败保留选择）</FieldLabel></FormFields></DialogBody><DialogFooter><Button variant="ghost" onClick={() => setSettings(false)}>取消</Button><Button onClick={() => { setSettings(false); setFeedback('样板设置已确认；服务配置尚未接入。') }}>保存设置</Button></DialogFooter></DialogContent></Dialog>
     <Dialog open={!!detail} onOpenChange={open => { if (!open) setDetail(null) }}><DialogContent container={portal}><DialogHeader><DialogTitle>{detail?.title}</DialogTitle><DialogDescription>{detail?.author} · {detail?.category} · {detail?.pages} 页</DialogDescription></DialogHeader><DialogBody>{detail && <div className="detail-body"><img src={detail.cover} alt={detail.title} /><div><Status state={detail.status} /><p className="mt-4 text-muted-foreground">原创示意封面，仅用于评估画廊布局。正式版本将在此展示图库匹配与队列状态详情。</p></div></div>}</DialogBody><DialogFooter><Button variant="secondary" onClick={() => setDetail(null)}>关闭</Button></DialogFooter></DialogContent></Dialog>
   </div>

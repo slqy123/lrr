@@ -32,7 +32,7 @@ Page-specific expressions of this language remain in userscript styles. Shared c
 - `FilterChip` and `CategoryButton` take a controlled `checked` value and native button events. `SegmentedControl` takes a controlled value and `onValueChange`.
 - `TabsList` takes controlled items, a value, an ID prefix and a panel ID. Give `TabsPanel` that panel ID and set its `aria-labelledby` to the selected tab's ID (the prefix, a hyphen and the selected value). Arrow keys, Home and End move focus and activate a tab.
 - `Pagination` owns presentation; `PaginationStep` renders a link when given an href and a disabled button otherwise. Compute URLs in the caller.
-- `Notice` and `FloatingNotice` accept content, an optional status label/tone and an action. Callers decide when to show or dismiss them.
+- `Notice` presents inline contextual information. `ToastProvider` owns transient notifications in the supplied Shadow DOM portal; `useToast` publishes or dismisses messages. Reuse a stable ID for ongoing operations. Loading stays until dismissed or replaced, errors remain dismissible, and ordinary messages expire after five seconds (paused on hover or focus).
 - `DescriptionList` and `DescriptionItem` render native description-list semantics. The grouped variant supports a marked term with a count supplied by the caller.
 - `NavigationList` contains ordinary `NavigationLink` anchors, not ARIA menu items.
 - `Separator` is decorative by default; use `decorative={false}` for an announced separator.

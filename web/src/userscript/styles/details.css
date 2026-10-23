@@ -55,7 +55,6 @@
   @apply yurui-stitch-over flex justify-end flex-wrap gap-3 px-[18px] py-2;
 }
 
-@utility detail-feedback { @apply px-5 pt-0 pb-[14px] text-[12px]; }
 @utility detail-tabs { @apply flex-wrap px-[18px]; }
 
 @utility detail-content {

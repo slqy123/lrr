@@ -13,7 +13,7 @@
     & :is(.detail-editorial, .detail-tag-section, .torrent-row) { animation: yurui-reveal 180ms ease-out; }
     & [data-slot=checkbox]:is([data-state=checked], [data-state=indeterminate]) svg { animation: yurui-check 180ms ease-out; }
     & .gallery-details { animation: yurui-unfold 220ms ease-out; transform-origin: top; }
-    & .selection-bar, & .preview-feedback { animation: yurui-arrive 240ms cubic-bezier(.2,.8,.3,1); }
+    & .selection-bar { animation: yurui-arrive 240ms cubic-bezier(.2,.8,.3,1); }
     & .search-field { transition: translate 160ms ease; }
     & .search-field:focus-within { translate: 0 -1px; }
     @media (hover: hover) and (pointer: fine) {

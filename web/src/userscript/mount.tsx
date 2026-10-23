@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { loadDisplayFonts } from './fonts'
+import { ToastProvider } from '../ui/yurui/toast'
 
 type MountContext = { host: HTMLElement; portal: HTMLElement; restore: (message?: string) => void }
 
@@ -56,7 +57,7 @@ export function mount(styles: string, render: (context: MountContext) => ReactNo
   try {
     document.body.append(host)
     document.head.append(nativeStyle)
-    root.render(<RecoveryBoundary restore={restore}>{render({ host, portal, restore })}</RecoveryBoundary>)
+    root.render(<RecoveryBoundary restore={restore}><ToastProvider container={portal}>{render({ host, portal, restore })}</ToastProvider></RecoveryBoundary>)
   } catch {
     restore('LRR 新界面启动失败，已恢复原站。')
   }
