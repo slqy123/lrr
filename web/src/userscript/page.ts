@@ -86,7 +86,7 @@ export function readPage(doc: Document = document, base = location.href): Galler
   const summary = doc.querySelector('.searchtext')?.cloneNode(true) as HTMLElement | undefined
   summary?.querySelectorAll('a').forEach(link => link.remove())
   const summaryText = summary?.textContent?.replace(/\[\s*\]/g, '').replace(/\s+/g, ' ').trim() || `${galleries.size} 个画廊`
-  const resultCounts = summaryText.match(/^Found\s+(about\s+)?([\d,]+)\s+results?\.\s*(?:Filtered\s+([\d,]+)\s+galler(?:y|ies)\s+from this page\.)?$/i)
+  const resultCounts = summaryText.match(/^Found\s+(about\s+)?([\d,]+\+?)\s+results?\.\s*(?:Filtered\s+([\d,]+)\s+galler(?:y|ies)\s+from this page\.)?$/i)
   return {
     galleries: [...galleries.values()], action, categoryMask,
     fields: [...new FormData(form)].filter((entry): entry is [string, string] => typeof entry[1] === 'string'),

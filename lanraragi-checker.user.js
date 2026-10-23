@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-idle
 // @license      AGPL-3.0-only
-// @version      2.0.0-alpha.129
+// @version      2.0.0-alpha.130
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -12704,7 +12704,7 @@
 		const summary = doc.querySelector(".searchtext")?.cloneNode(true);
 		summary?.querySelectorAll("a").forEach((link) => link.remove());
 		const summaryText = summary?.textContent?.replace(/\[\s*\]/g, "").replace(/\s+/g, " ").trim() || `${galleries.size} 个画廊`;
-		const resultCounts = summaryText.match(/^Found\s+(about\s+)?([\d,]+)\s+results?\.\s*(?:Filtered\s+([\d,]+)\s+galler(?:y|ies)\s+from this page\.)?$/i);
+		const resultCounts = summaryText.match(/^Found\s+(about\s+)?([\d,]+\+?)\s+results?\.\s*(?:Filtered\s+([\d,]+)\s+galler(?:y|ies)\s+from this page\.)?$/i);
 		return {
 			galleries: [...galleries.values()],
 			action,
