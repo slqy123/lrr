@@ -2,14 +2,41 @@
   & [data-slot=poster-card-cover], & [data-slot=poster-card-placeholder] { background: var(--card); }
   & [data-slot=poster-card]:not([data-selected=true]):hover { box-shadow: 0 0 0 1.5px var(--input), var(--yurui-shadow-lift); }
   & [data-slot=poster-card][data-selected=true] { box-shadow: 0 0 0 2px var(--card), 0 0 0 5px var(--selection-highlight, var(--yurui-time-ink)), var(--yurui-shadow-lift); }
+  & [data-slot=poster-card]::before {
+    content: '';
+    position: absolute;
+    z-index: 26;
+    top: -7px;
+    right: 10px;
+    width: 20px;
+    height: 34px;
+    border: 1px solid var(--input);
+    background: var(--secondary);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%);
+    opacity: 0;
+    translate: 0 -7px;
+    transition: opacity 150ms ease, translate 180ms var(--ease-yurui-out);
+    pointer-events: none;
+  }
+  & [data-slot=poster-card][data-selected=true]::before {
+    opacity: 1;
+    translate: 0 0;
+    background: var(--selection-highlight, var(--yurui-time-ink));
+    border-color: var(--card);
+    filter: drop-shadow(2px 2px 0 var(--border));
+  }
 }
 
 @utility card-tag-row { @apply flex flex-wrap items-center gap-1.5; }
 @utility card-status-stack { @apply mt-1.5 flex w-full min-w-0 flex-wrap items-center justify-between gap-2 border-t border-dashed border-input pt-1.5; }
 
 @utility status-action {
-  @apply relative z-30 inline-flex cursor-pointer rounded-[4px];
+  @apply relative z-30 inline-flex cursor-pointer rounded-[3px] border border-current px-1.5 py-0.5;
+  background: color-mix(in srgb, currentColor 7%, transparent);
+  rotate: -1deg;
+  box-shadow: 1px 1px 0 color-mix(in srgb, currentColor 24%, transparent);
   &:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
+  &:hover { rotate: 0deg; }
 }
 
 @utility card-category-row { @apply flex items-center gap-2 mt-2 mx-[3px] pointer-events-none; }

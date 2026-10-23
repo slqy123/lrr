@@ -27,5 +27,20 @@
 }
 
 @utility search-panel-live {
+  position: relative;
   border-top: 1px solid var(--border);
+  &::before {
+    content: '';
+    position: absolute;
+    z-index: 2;
+    top: -8px;
+    left: clamp(24px, 5%, 52px);
+    width: 86px;
+    height: 14px;
+    rotate: -1deg;
+    background: var(--yurui-tape-fill);
+    clip-path: polygon(3% 0, 100% 5%, 97% 100%, 0 92%);
+    opacity: .58;
+    pointer-events: none;
+  }
 }

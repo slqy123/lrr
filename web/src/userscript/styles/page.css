@@ -46,4 +46,22 @@
     clip-path: polygon(0 0, 100% 0, calc(100% - 7px) 50%, 100% 100%, 0 100%);
     pointer-events: none;
   }
+  &::before {
+    background: linear-gradient(90deg, var(--club-sun) 0 5px, var(--club-sun-wash) 5px 100%);
+    filter: drop-shadow(0 1px 0 color-mix(in srgb, var(--input) 48%, transparent));
+  }
+}
+
+@utility results-toolbar {
+  :host(:not(.dark)) & {
+    & > .selection-groups,
+    & .results-view-controls > [data-slot=segmented-control],
+    & .results-view-controls > [data-slot=pagination] {
+      background: color-mix(in srgb, var(--card) 88%, var(--secondary));
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--input) 72%, var(--card));
+    }
+    & .results-view-controls [data-slot=button][data-variant=secondary] {
+      background: color-mix(in srgb, var(--card) 58%, var(--secondary));
+    }
+  }
 }

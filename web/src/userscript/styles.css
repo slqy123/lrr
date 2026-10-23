@@ -1,14 +1,12 @@
 @import "tailwindcss" source(none);
 @import "tw-animate-css";
 @import "../ui/yurui/theme.css";
-@import "../ui/yurui/palettes.css";
 @import "../ui/yurui/components.css";
 @import "../ui/yurui/motion.css";
 @import "./styles/page.css";
 @import "./styles/gallery.css";
 @import "./styles/search.css";
 @import "./styles/details.css";
-@import "./styles/appearance.css";
 @import "./styles/motion.css";
 @source "./";
 @source "../ui/yurui";

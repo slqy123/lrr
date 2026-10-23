@@ -18,7 +18,7 @@ YuruLib is a personal manga library with the character of a reader's notebook: p
 - Use badges for categorical tags and short status labels, not as a default container for every fact. Present measurements as numbers with captions, and people and dates as attribution.
 - Give each section at most one decorative motif. Bookmarks, paper edges and stitched separators should clarify grouping, not frame every element. Decorations must not obstruct content or pointer targets.
 - Keep covers uncropped. Keep descriptions, comments and long tag groups on calm surfaces; do not add patterns behind reading content.
-- Consume existing semantic theme and material tokens. Avoid palette-specific page skins and arbitrary new colors.
+- Consume existing semantic theme and material tokens. Avoid theme-specific page skins and arbitrary new colors.
 - Motion confirms an action or introduces newly available content. Prefer short, small movements without loops, staggered entrances or bounces; respect reduced motion and disabled states.
 
 Page-specific expressions of this language remain in userscript styles. Shared component defaults must remain useful outside a single page.
@@ -48,12 +48,11 @@ Page-specific expressions of this language remain in userscript styles. Shared c
 
 The userscript stylesheet is the Tailwind entry point and owns Shadow DOM reset, page imports and responsive variants. Shared styles have explicit owners:
 
-- `theme.css`: semantic tokens, light/dark defaults and Tailwind token mappings.
-- `palettes.css`: palette token overrides and the mapping from palettes to the `yurui-soft` interaction material. Components depend on that semantic variant, not palette names.
+- `theme.css`: semantic tokens, light/dark values, interaction materials and Tailwind token mappings for the single supported palette.
 - `components.css`: shared presentation, nested-element rules and reusable selection treatments. `yurui-btn` owns base button geometry; React CVA supplies sizes and variants without repeating that geometry. Padding, dimensions and simple state utilities stay in React where `className` composition must replace them.
 - `motion.css`: shared keyframes, control transitions and the single reduced-motion policy.
 
-Page styles have matching feature owners: `page.css`, `gallery.css`, `search.css`, `details.css` and `appearance.css`. Shared CSS utilities use the `yurui-` prefix; page utilities use feature names. Keep simple element layout in Tailwind and use CVA for class composition that depends on props. Put complex descendants, pseudo-elements and decoration in named CSS utilities rather than exported style-string constants or lookup objects. Scope overrides of shared component defaults through their public `data-slot` when needed; do not rely on a named utility sorting after a component's size utilities.
+Page styles have matching feature owners: `page.css`, `gallery.css`, `search.css` and `details.css`. Shared CSS utilities use the `yurui-` prefix; page utilities use feature names. Keep simple element layout in Tailwind and use CVA for class composition that depends on props. Put complex descendants, pseudo-elements and decoration in named CSS utilities rather than exported style-string constants or lookup objects. Scope overrides of shared component defaults through their public `data-slot` when needed; do not rely on a named utility sorting after a component's size utilities.
 
 The `layout-compact`, `layout-narrow` and `layout-small` variants centralize the existing 1150px, 700px and 450px maximum-width breakpoints, in descending order so narrower layouts override wider ones.
 

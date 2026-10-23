@@ -13,7 +13,6 @@ import { NavigationList, NavigationLink } from '../ui/yurui/navigation-list'
 import { Separator } from '../ui/yurui/separator'
 import { Toolbar, ToolbarGroup, ResultStat } from '../ui/yurui/toolbar'
 import wordmark from './assets/yurulib-wordmark.png'
-import { AppearancePicker } from './AppearancePicker'
 import { Badge, StatusBadge } from '../ui/yurui/badge'
 import { FieldLabel } from '../ui/yurui/field-label'
 import { Checkbox } from '../ui/yurui/checkbox'
@@ -83,7 +82,7 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
       <nav className="flex items-center gap-2" aria-label="导航"><Button asChild variant="secondary"><a href={page.action}>发现作品</a></Button>{/^https?:\/\//.test(settings.queueServerUrl) && <Button asChild variant="ghost"><a href={settings.queueServerUrl} target="_blank" rel="noopener noreferrer">队列后台 <ExternalLink size={13} /></a></Button>}
         {!!page.links.length && <Popover><PopoverTrigger asChild><Button variant="ghost">原站导航</Button></PopoverTrigger><PopoverContent container={portal}><PopoverTitle>原站导航</PopoverTitle><NavigationList aria-label="原站导航">{page.links.map((link, index) => <NavigationLink key={index} href={link.url}>{link.title}</NavigationLink>)}</NavigationList></PopoverContent></Popover>}
       </nav>
-      <div className="ml-auto flex items-center gap-2"><AppearancePicker host={host} portal={portal} /><IconButton label="切换主题" onClick={() => setTheme(host.classList.contains('dark') ? 'light' : 'dark')}><Sun className="hidden [:host(.dark)_&]:block" /><Moon className="[:host(.dark)_&]:hidden" /></IconButton><IconButton label="重新检查" onClick={recheck}><RefreshCw /></IconButton><IconButton label="设置" onClick={() => setSettingsOpen(true)}><Settings /></IconButton><Button variant="ghost" size="sm" onClick={() => restore()}>原站界面 <ExternalLink size={13} /></Button></div>
+      <div className="ml-auto flex items-center gap-2"><IconButton label="切换主题" onClick={() => setTheme(host.classList.contains('dark') ? 'light' : 'dark')}><Sun className="hidden [:host(.dark)_&]:block" /><Moon className="[:host(.dark)_&]:hidden" /></IconButton><IconButton label="重新检查" onClick={recheck}><RefreshCw /></IconButton><IconButton label="设置" onClick={() => setSettingsOpen(true)}><Settings /></IconButton><Button variant="ghost" size="sm" onClick={() => restore()}>原站界面 <ExternalLink size={13} /></Button></div>
     </div></header>
     <main className={mainContentVariants({ variant: 'live' })}>
       {!configured && <StatusPanel variant="connection" role="status"><span>请填写图库和队列服务地址，查询异常不会计入“未收录”。</span><Button size="sm" onClick={() => setSettingsOpen(true)}>连接设置</Button></StatusPanel>}
@@ -95,7 +94,7 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
             <Separator className="min-w-6 flex-1" />
           </div>
         </div>
-        <Toolbar>
+        <Toolbar className="results-toolbar">
           <ToolbarGroup><FieldLabel variant="selection"><Checkbox aria-label="选择全部作品" disabled={sending || !items.length} checked={!items.some(item => selected.has(item.id)) ? false : items.every(item => selected.has(item.id)) ? true : 'indeterminate'} onCheckedChange={() => selectGroup(items.map(item => item.id))} />全选</FieldLabel>{groups.map(state => {
           const matching = items.filter(item => displayState(item) === state)
           const count = matching.filter(item => selected.has(item.id)).length
@@ -112,7 +111,7 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
             {errorCount > 0 && <StatusBadge tone="fail">{stateLabels.error} {errorCount}</StatusBadge>}
             {checkingCount > 0 && <StatusBadge tone="run">{stateLabels.checking} {checkingCount}</StatusBadge>}
           </ToolbarGroup>}
-          <div className="ml-auto flex shrink-0 items-center gap-3">
+          <div className="results-view-controls ml-auto flex shrink-0 items-center gap-3">
             <SegmentedControl size="icon-sm" aria-label="显示密度" value={compact ? 'compact' : 'standard'} onValueChange={value => density(value === 'compact')} items={[{ value: 'standard', label: '标准布局', title: '标准布局', content: <Grid2X2 aria-hidden="true" /> }, { value: 'compact', label: '紧凑布局', title: '紧凑布局', content: <Grid3X3 aria-hidden="true" /> }]} />
             <Pager page={page} portal={portal} />
           </div>
