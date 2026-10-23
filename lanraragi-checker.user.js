@@ -13,7 +13,7 @@
 // @connect      *
 // @run-at       document-start
 // @license      AGPL-3.0-only
-// @version      2.0.0-alpha.154
+// @version      2.0.0-alpha.155
 // @updateURL    https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // @downloadURL  https://raw.githubusercontent.com/slqy123/lrr/main/lanraragi-checker.user.js
 // ==/UserScript==
@@ -12870,7 +12870,7 @@
 							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CategoryButton, {
 								checked: mask === 0,
 								indicator: false,
-								onClick: () => setMask(0),
+								onClick: () => setMask((value) => value === 0 ? 1023 : 0),
 								children: "全部"
 							}), categories.map(([bit, title]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CategoryButton, {
 								checked: !(mask & bit),

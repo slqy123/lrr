@@ -58,7 +58,7 @@ export function SearchPanel({ page, portal }: { page: GalleryPage; portal: HTMLE
       <input type="hidden" name="f_srdd" value={jumpRating} disabled={jumpRating === '0'} />
       {advanced.filter(([name]) => flags.has(name)).map(([name]) => <input key={name} type="hidden" name={name} value="on" />)}
       <div className={categoryRowVariants({ variant: 'live' })} role="group" aria-label="作品分类">
-        <CategoryButton checked={mask === 0} indicator={false} onClick={() => setMask(0)}>全部</CategoryButton>
+        <CategoryButton checked={mask === 0} indicator={false} onClick={() => setMask(value => value === 0 ? 1023 : 0)}>全部</CategoryButton>
         {categories.map(([bit, title]) => <CategoryButton key={bit} checked={!(mask & bit)} style={categoryAppearance(title).style} onClick={() => setMask(value => value ^ bit)}>{categoryAppearance(title).label}</CategoryButton>)}
       </div>
       <div className={searchRowVariants({ variant: 'live' })}>
