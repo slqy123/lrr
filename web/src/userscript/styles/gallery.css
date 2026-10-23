@@ -37,7 +37,11 @@
 }
 
 @utility card-category-row { @apply flex items-center gap-2 mt-2 mx-[3px] pointer-events-none; }
-@utility card-category { @apply yurui-category-key flex flex-1 min-w-0 h-[27px] items-center justify-center rounded-[7px] text-[11px] font-bold whitespace-nowrap; }
+@utility card-category {
+  @apply yurui-category-ink flex flex-1 min-w-0 h-[27px] items-center justify-center rounded-[7px] text-[11px] font-bold whitespace-nowrap;
+  background: var(--secondary);
+  box-shadow: inset 0 0 0 1px var(--input), 2px 2px 0 var(--border);
+}
 @utility cover-placeholder { @apply absolute inset-0 grid content-center justify-items-center gap-[10px] text-muted-foreground; }
 
 @utility card-detail {

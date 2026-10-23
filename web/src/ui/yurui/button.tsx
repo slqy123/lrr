@@ -22,6 +22,7 @@ const buttonVariants = cva(
         secondary: `yurui-btn-raised ${DISABLED_FLAT}`,
         outline: `yurui-btn-raised ${DISABLED_FLAT}`,
         ghost: "yurui-btn-ghost",
+        category: `yurui-category-filter ${DISABLED_FLAT}`,
         destructive: `yurui-btn-danger ${DISABLED_FLAT}`,
         link: LINK,
         field: FIELD,

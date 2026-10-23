@@ -23,6 +23,8 @@ YuruLib is a personal manga library with the character of a reader's notebook: p
 
 Page-specific expressions of this language remain in userscript styles. Shared component defaults must remain useful outside a single page.
 
+Each component combines at most one complete appearance recipe. That recipe owns its background, foreground, border and shadow across selection, hover and active states; shared button geometry, sizes, focus and disabled behavior remain reusable. For example, `CategoryButton` uses the `category` button variant, rather than stacking `secondary` or `ghost` with category appearance overrides. `yurui-category-ink` shares only category color resolution; it must not import button surfaces or interaction states. Static gallery category labels define their own surface without inheriting button interactions.
+
 ## Composition
 
 - `FormFields` lays out fields. `FormField` supplies a label and control attributes through its render function. Pass those attributes to the input or native select.
