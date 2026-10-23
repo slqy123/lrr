@@ -9,6 +9,20 @@
 - Page-specific CSS, CVA recipes and motion live in `web/src/userscript/styles/`, not in the component library.
 - Import components directly from their modules. Reuse existing components and theme tokens before adding a new abstraction.
 
+## Design language
+
+YuruLib is a personal manga library with the character of a reader's notebook: paper surfaces, bookmark accents and restrained sticker-like controls. Editorial typography keeps the artwork and reading content in focus. This is not a comic-effects skin.
+
+- Use offset shadows and slight asymmetry for primary actions and brand accents. Keep secondary controls quieter; do not tilt reading text or entire content cards.
+- Establish hierarchy with typography, spacing and alignment before adding backgrounds or borders. Reserve the strongest accent for the primary action or current state.
+- Use badges for categorical tags and short status labels, not as a default container for every fact. Present measurements as numbers with captions, and people and dates as attribution.
+- Give each section at most one decorative motif. Bookmarks, paper edges and stitched separators should clarify grouping, not frame every element. Decorations must not obstruct content or pointer targets.
+- Keep covers uncropped. Keep descriptions, comments and long tag groups on calm surfaces; do not add patterns behind reading content.
+- Consume existing semantic theme and material tokens. Avoid palette-specific page skins and arbitrary new colors.
+- Motion confirms an action or introduces newly available content. Prefer short, small movements without loops, staggered entrances or bounces; respect reduced motion and disabled states.
+
+Page-specific expressions of this language remain in userscript styles. Shared component defaults must remain useful outside a single page.
+
 ## Composition
 
 - `FormFields` lays out fields. `FormField` supplies a label and control attributes through its render function. Pass those attributes to the input or native select.
