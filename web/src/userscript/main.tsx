@@ -28,6 +28,9 @@ function Ready({ children }: { children: React.ReactNode }) {
 }
 
 function start() {
+  const nativeOnce = sessionStorage.getItem('lrr-native-once')
+  sessionStorage.removeItem('lrr-native-once')
+  if (nativeOnce === location.href) { reveal(); return }
   if (document.querySelector('.itg')) {
     try {
       const page = readPage()

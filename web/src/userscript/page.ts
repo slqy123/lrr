@@ -33,7 +33,7 @@ function webURL(value: string | null, base: string): string | undefined {
   if (url.protocol === 'https:' || url.protocol === 'http:') return url.href
 }
 
-export function readPage(doc: Document = document, base = location.href): GalleryPage | null {
+export function readPage(doc: Document = document, base = location.href, ratingImage?: string): GalleryPage | null {
   if (/^\/(?:g|s|mpv)\//.test(new URL(base).pathname)) return null
   const list = doc.querySelector('.itg')
   const form = doc.querySelector<HTMLFormElement>('#searchbox form')
@@ -72,7 +72,8 @@ export function readPage(doc: Document = document, base = location.href): Galler
     const favoriteURL = webURL(favorite || null, base)
     if (favoriteURL && sameSite(favoriteURL, base)) links.unshift({ title: '收藏', url: favoriteURL })
     const ratingNode = card.querySelector('.ir')
-    const rating = ratingNode ? doc.defaultView?.getComputedStyle(ratingNode) : undefined
+    const rating = ratingNode ? doc.defaultView?.getComputedStyle(ratingNode) || (ratingNode as HTMLElement).style : undefined
+    const imageStyle = rating?.backgroundImage || ratingImage
     galleries.set(canonical, {
       id: Number(match[1]), url: canonical, title,
       author: '',
@@ -80,7 +81,7 @@ export function readPage(doc: Document = document, base = location.href): Galler
       pages: pages ? Number(pages[1]) : null, cover,
       language: /中国翻訳|中文|汉化|漢化|Chinese/i.test(title) ? '中文' : '',
       posted: posted?.textContent?.trim(), links,
-      rating: rating?.backgroundImage && rating.backgroundImage !== 'none' ? { image: rating.backgroundImage, position: rating.backgroundPosition, opacity: rating.opacity } : undefined,
+      rating: rating && imageStyle && imageStyle !== 'none' ? { image: imageStyle, position: rating.backgroundPosition, opacity: rating.opacity || '1' } : undefined,
       status: 'checking', hits: [],
     })
   }

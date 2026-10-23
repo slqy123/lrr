@@ -9,6 +9,7 @@ Read before changing `web/src/userscript/`, shared UI or userscript tooling. For
 - The userscript owns its DOM inside Shadow DOM. Keep portal containers inside that boundary.
 - `page.ts` reads native DOM without moving nodes or executing inline handlers. Preserve successful search fields, excluded-category masks, original navigation/cursor URLs and native file-search form semantics.
 - Parse page counts from standalone metadata nodes, not concatenated card text.
+- Pagination and positioning use same-origin HTML requests and `readPage` to update the mounted interface without reloading. Never execute scripts from fetched pages. Preserve cursor/search URLs, cancel superseded requests, and update history only after successful parsing; failures retain the current results. History navigation uses a bounded in-memory page cache. After asynchronous navigation, the hidden native document is stale and must not overwrite current results.
 
 ## Requests, cache and result semantics
 

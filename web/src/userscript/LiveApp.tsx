@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Flower2, Settings, Sun, Moon, ExternalLink, RefreshCw, Copy, ArrowRight, Check, BookOpen, Search, Filter, FilterX } from 'lucide-react'
 import { StatusPanel } from '../ui/yurui/status-panel'
 import { ActionBar, SelectionCount, ActionBarDivider } from '../ui/yurui/action-bar'
@@ -32,7 +32,13 @@ import type { GalleryPage } from './page'
 const groups = ['missing', 'duplicate', 'queued', 'downloaded'] as const
 
 export function LiveApp({ page: initialPage, host, portal, restore }: { page: GalleryPage; host: HTMLElement; portal: HTMLElement; restore: (message?: string) => void }) {
-  const page = useNativePage(initialPage, restore)
+  const { page, loading, error: navigationError, navigate, restoreNative } = useNativePage(initialPage, restore)
+  const results = useRef<HTMLElement>(null)
+  const changePage = async (href: string) => {
+    const changed = await navigate(href)
+    if (changed) requestAnimationFrame(() => results.current?.scrollIntoView({ block: 'start' }))
+    return changed
+  }
   const [theme, setTheme] = useTheme(host)
   const { items, settings, configure, client, recheck, refreshQueue } = useGalleries(page)
   const [selected, setSelected] = useState<Set<number>>(new Set())
@@ -43,7 +49,9 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
   useEffect(() => {
     const available = new Set(page.galleries.map(item => item.id))
     setSelected(previous => new Set([...previous].filter(id => available.has(id))))
+    setJump(previous => ({ ...previous, range: null, error: '' }))
   }, [page])
+  useEffect(() => { setJump(previous => ({ ...previous, error: navigationError })) }, [navigationError])
   const toggle = (id: number) => setSelected(previous => {
     const next = new Set(previous)
     if (next.has(id)) next.delete(id)
@@ -79,12 +87,14 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
       <nav className="flex items-center gap-2" aria-label="导航"><Button asChild variant="secondary"><a href={page.action}>发现作品</a></Button>{/^https?:\/\//.test(settings.queueServerUrl) && <Button asChild variant="ghost"><a href={settings.queueServerUrl} target="_blank" rel="noopener noreferrer">队列后台 <ExternalLink size={13} /></a></Button>}
         {!!page.links.length && <Popover><PopoverTrigger asChild><Button variant="ghost">原站导航</Button></PopoverTrigger><PopoverContent container={portal}><PopoverTitle>原站导航</PopoverTitle><NavigationList aria-label="原站导航">{page.links.map((link, index) => <NavigationLink key={index} href={link.url}>{link.title}</NavigationLink>)}</NavigationList></PopoverContent></Popover>}
       </nav>
-      <div className="ml-auto flex items-center gap-2"><IconButton label="切换主题" onClick={() => setTheme(host.classList.contains('dark') ? 'light' : 'dark')}><Sun className="hidden [:host(.dark)_&]:block" /><Moon className="[:host(.dark)_&]:hidden" /></IconButton><IconButton label="重新检查" onClick={recheck}><RefreshCw /></IconButton><IconButton label="设置" onClick={() => setSettingsOpen(true)}><Settings /></IconButton><Button variant="ghost" size="sm" onClick={() => restore()}>原站界面 <ExternalLink size={13} /></Button></div>
+      <div className="ml-auto flex items-center gap-2"><IconButton label="切换主题" onClick={() => setTheme(host.classList.contains('dark') ? 'light' : 'dark')}><Sun className="hidden [:host(.dark)_&]:block" /><Moon className="[:host(.dark)_&]:hidden" /></IconButton><IconButton label="重新检查" onClick={recheck}><RefreshCw /></IconButton><IconButton label="设置" onClick={() => setSettingsOpen(true)}><Settings /></IconButton><Button variant="ghost" size="sm" onClick={restoreNative}>原站界面 <ExternalLink size={13} /></Button></div>
     </div></header>
     <main className={mainContentVariants({ variant: 'live' })}>
       {!configured && <StatusPanel variant="connection" role="status"><span>请填写图库和队列服务地址，查询异常不会计入“未收录”。</span><Button size="sm" onClick={() => setSettingsOpen(true)}>连接设置</Button></StatusPanel>}
       <SearchPanel page={page} portal={portal} />
-      <section aria-label="作品画廊">
+      <section ref={results} aria-label="作品画廊" aria-busy={loading}>
+        {loading && <p role="status" className="mb-3 text-[12px] text-muted-foreground">正在加载作品…</p>}
+        {navigationError && <p role="alert" className="mb-3 text-[12px] text-destructive">{navigationError}；当前结果已保留，请重试。</p>}
         <div className="block mb-[18px]">
           <div className="flex min-w-0 flex-wrap items-center gap-3">
             <h2 className="m-0 flex items-center gap-2 text-[17px] font-extrabold whitespace-nowrap"><span className="collection-title">发现作品</span></h2>
@@ -108,10 +118,10 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
             {errorCount > 0 && <StatusBadge tone="fail">{stateLabels.error} {errorCount}</StatusBadge>}
             {checkingCount > 0 && <StatusBadge tone="run">{stateLabels.checking} {checkingCount}</StatusBadge>}
           </ToolbarGroup>}
-          <div className="ml-auto"><Pager portal={portal} page={page} input={jump} setInput={setJump} position="top" /></div>
+          <div className="ml-auto"><Pager navigate={changePage} loading={loading} portal={portal} page={page} input={jump} setInput={setJump} position="top" /></div>
         </Toolbar>
         {items.length ? <GalleryCards items={items} selected={selected} toggle={toggle} disabled={sending} live={{ server: settings.lrrServerUrl, recheck, client, refreshQueue }} /> : <StatusPanel><BookOpen /><h3>这里还没有故事</h3><p>换个关键词，下一本喜欢的作品也许就在附近。</p><Button asChild variant="secondary"><a href={page.action}>重置筛选</a></Button></StatusPanel>}
-        <div className="mt-7"><Pager portal={portal} page={page} input={jump} setInput={setJump} position="bottom" /></div>
+        <div className="mt-7"><Pager navigate={changePage} loading={loading} portal={portal} page={page} input={jump} setInput={setJump} position="bottom" /></div>
       </section>
       <footer className={pageFooterVariants({ variant: 'live' })}><span><Flower2 size={14} />アッカリーン♪ 今日もお気に入りを見つけよう。</span><span>yurui · credit: AniBT UI · <a href="https://github.com/OpenAniBT/ui">AGPL-3.0-only</a> · <a href="https://github.com/slqy123/lrr">对应源码</a></span></footer>
     </main>

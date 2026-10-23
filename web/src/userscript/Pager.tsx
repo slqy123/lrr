@@ -17,14 +17,20 @@ type PagerProps = {
   setInput: Dispatch<SetStateAction<JumpInput>>
   position: 'top' | 'bottom'
   portal: HTMLElement
+  navigate: (href: string) => Promise<boolean>
+  loading: boolean
 }
 
-export function Pager({ page, input, setInput, position, portal }: PagerProps) {
+export function Pager({ page, input, setInput, position, portal, navigate, loading }: PagerProps) {
   const [open, setOpen] = useState(false)
   const titleId = useId()
   const { navigation } = page
   const step = (href: string | undefined, label: string, Icon: typeof ChevronLeft) => href
-    ? <Button asChild variant="ghost" size="icon-sm"><a href={href} title={label} aria-label={label}><Icon aria-hidden="true" /></a></Button>
+    ? <Button asChild variant="ghost" size="icon-sm"><a href={href} title={label} aria-label={label} onClick={event => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      event.preventDefault()
+      void navigate(href)
+    }}><Icon aria-hidden="true" /></a></Button>
     : <IconButton size="sm" label={label} title={label} disabled><Icon aria-hidden="true" /></IconButton>
   return <nav className="result-navigation" data-position={position} aria-label={position === 'top' ? '顶部结果导航' : '底部结果导航'}>
     <div className="result-navigation-actions">
@@ -34,7 +40,7 @@ export function Pager({ page, input, setInput, position, portal }: PagerProps) {
         <PopoverTrigger asChild><IconButton size="sm" label="定位" title="定位"><LocateFixed aria-hidden="true" /></IconButton></PopoverTrigger>
         <PopoverContent container={portal} align="end" side={position === 'top' ? 'bottom' : 'top'} className="w-96 max-h-[var(--radix-popover-content-available-height)] overflow-y-auto" aria-labelledby={titleId}>
           <PopoverTitle id={titleId}>定位</PopoverTitle>
-          <LocateForm page={page} input={input} setInput={setInput} />
+          <LocateForm page={page} input={input} setInput={setInput} loading={loading} navigate={async href => { const changed = await navigate(href); if (changed) setOpen(false); return changed }} />
         </PopoverContent>
       </Popover>
       {step(page.next, '下一批', ChevronRight)}
@@ -43,7 +49,7 @@ export function Pager({ page, input, setInput, position, portal }: PagerProps) {
   </nav>
 }
 
-function LocateForm({ page, input, setInput }: Pick<PagerProps, 'page' | 'input' | 'setInput'>) {
+function LocateForm({ page, input, setInput, navigate, loading }: Pick<PagerProps, 'page' | 'input' | 'setInput' | 'navigate' | 'loading'>) {
   const id = useId()
   const update = (patch: Partial<JumpInput>) => setInput(previous => ({ ...previous, ...patch, error: '' }))
   const { navigation } = page
@@ -53,12 +59,12 @@ function LocateForm({ page, input, setInput }: Pick<PagerProps, 'page' | 'input'
   const rangeIndex = Math.max(0, Math.min(ranges.length - 1, input.range ?? currentRange))
   const rangeURL = ranges[rangeIndex]?.url
   const rangeLabel = `${rangeURL ? Number(new URL(rangeURL).searchParams.get('range') || 0) : 0}%`
-  return <form id={id} onSubmit={event => {
+  return <form id={id} onSubmit={async event => {
       event.preventDefault()
       try {
         const target = mode === 'range' ? ranges[rangeIndex]?.url : jumpURL(page.previous, page.next, { ...input, mode })
         if (!target) throw new Error('当前结果没有可用的范围定位地址')
-        location.assign(target)
+        await navigate(target)
       }
       catch (error) { setInput(previous => ({ ...previous, error: (error as Error).message })) }
     }}>
@@ -80,6 +86,6 @@ function LocateForm({ page, input, setInput }: Pick<PagerProps, 'page' | 'input'
         </select>}</FormField>
       </div>}
       {input.error && <p role="alert" className="mt-3 text-[12px] text-destructive">{input.error}</p>}
-      <div className="mt-2 flex justify-end"><IconButton type="submit" label="跳转到此处" title="跳转到此处" disabled={mode === 'range' ? !ranges[rangeIndex]?.url : !page.previous && !page.next}><ArrowRight aria-hidden="true" /></IconButton></div>
+      <div className="mt-2 flex justify-end"><IconButton type="submit" loading={loading} label="跳转到此处" title="跳转到此处" disabled={mode === 'range' ? !ranges[rangeIndex]?.url : !page.previous && !page.next}><ArrowRight aria-hidden="true" /></IconButton></div>
   </form>
 }
