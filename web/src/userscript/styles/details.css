@@ -1,5 +1,6 @@
 @utility gallery-details {
   @apply yurui-sheet col-span-full min-w-0 overflow-hidden;
+  background: var(--muted);
 }
 
 @utility detail-heading {
@@ -55,23 +56,86 @@
   @apply yurui-stitch-over flex justify-end flex-wrap gap-3 px-[18px] py-2;
 }
 
-@utility detail-tabs { @apply flex-wrap px-[18px]; }
+@utility detail-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0;
+  margin-inline: 18px;
+  padding-top: 3px;
+  border-bottom: 1px solid var(--frame-edge);
+  & [role=tab] {
+    position: relative;
+    isolation: isolate;
+    min-height: 28px;
+    max-width: 100%;
+    padding: 5px 18px;
+    border: 0;
+    background: transparent;
+    color: var(--muted-foreground);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 18px;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+    &:not(:first-child) { margin-left: -10px; }
+    &:focus-visible { z-index: 2; }
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: var(--background);
+      border-radius: 12px 14px 0 0;
+      pointer-events: none;
+    }
+    &:hover { color: var(--foreground); }
+    &:hover::before { background: var(--card); }
+    &:active::before { background: var(--background); }
+    &[aria-selected=true] {
+      z-index: 1;
+      padding-top: 7px;
+      color: var(--foreground);
+      &::before {
+        background: var(--card);
+        box-shadow: inset 0 2px 0 var(--primary);
+      }
+      &::after {
+        content: '';
+        position: absolute;
+        inset: auto -6px -1px;
+        height: 6px;
+        background:
+          radial-gradient(circle at 0 0, transparent 6px, var(--card) 6px) left / 6px 100% no-repeat,
+          radial-gradient(circle at 100% 0, transparent 6px, var(--card) 6px) right / 6px 100% no-repeat,
+          linear-gradient(var(--card), var(--card)) center / calc(100% - 12px) 100% no-repeat;
+        pointer-events: none;
+      }
+      &:first-child::after { clip-path: inset(0 0 0 6px); }
+    }
+  }
+  @variant layout-narrow { margin-inline: 14px; }
+}
 
 @utility detail-content {
   min-height: 100px;
-  padding: 12px 18px;
+  margin: 0 18px 14px;
+  padding: 18px;
+  border: 0;
+  border-radius: 0 0 4px 4px;
+  background: var(--card);
+  box-shadow: 0 2px 0 var(--border);
   overflow-wrap: anywhere;
   & h4 { margin: 0 0 8px; font-weight: 650; }
-  @variant layout-narrow { padding: 14px; }
+  @variant layout-narrow { margin-inline: 14px; padding: 14px; }
 }
 
 @utility detail-summary { @apply grid gap-4 text-[12px]; }
 
 @utility detail-metrics {
   @apply mt-5 mb-0 flex flex-wrap gap-y-4;
-  & > div { min-width: 100px; padding-inline: 20px; border-left: 1px solid var(--border); }
+  & > div { display: flex; flex-direction: column-reverse; gap: 5px; min-width: 100px; padding-inline: 20px; border-left: 1px solid var(--border); }
   & > div:first-child { padding-left: 0; border-left: 0; }
-  & > div { display: flex; flex-direction: column-reverse; gap: 5px; }
   & dt { font-size: 10px; color: var(--muted-foreground); }
   & dd { display: flex; align-items: center; gap: 5px; margin: 0; font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
   @variant layout-small {

@@ -6,11 +6,13 @@
     & :is(.yurui-btn, [data-slot=filter-chip], [role=tab], .detail-tags-toggle) {
       transition: background-color 160ms, color 160ms, border-color 160ms, box-shadow 160ms, translate 140ms ease, scale 100ms ease;
     }
-    & :is(.yurui-btn, [data-slot=filter-chip], [role=tab], .detail-tags-toggle):not([data-variant=emphasis]):not(:disabled):not([aria-disabled=true]):active { scale: .97; }
+    & :is(.yurui-btn, [data-slot=filter-chip], .detail-tags-toggle):not([data-variant=emphasis]):not(:disabled):not([aria-disabled=true]):active { scale: .97; }
     & [data-slot=checkbox] { transition: background-color 140ms, box-shadow 140ms, scale 120ms ease; }
     & [data-slot=checkbox]:not(:disabled):active { scale: .9; }
     & .detail-preview-page { transition: translate 160ms ease, box-shadow 160ms; }
-    & :is(.detail-editorial, .detail-tag-section, .torrent-row) { animation: yurui-reveal 180ms ease-out; }
+    & .detail-content { animation: detail-file-enter 240ms var(--ease-yurui-out); transform-origin: top left; }
+    & .detail-tabs [role=tab]::before { transition: background-color 160ms, box-shadow 160ms; }
+    & .detail-tabs [aria-selected=true]::before { animation: detail-tab-enter 180ms var(--ease-yurui-out); }
     & [data-slot=checkbox]:is([data-state=checked], [data-state=indeterminate]) svg { animation: yurui-check 180ms ease-out; }
     & .gallery-details { animation: yurui-unfold 220ms ease-out; transform-origin: top; }
     & .selection-bar { animation: yurui-arrive 240ms cubic-bezier(.2,.8,.3,1); }
@@ -29,7 +31,15 @@
   }
 }
 
-@keyframes yurui-reveal { from { opacity: 0; translate: 0 3px; } to { opacity: 1; translate: 0 0; } }
 @keyframes yurui-check { from { opacity: .2; scale: .5; } to { opacity: 1; scale: 1; } }
 @keyframes yurui-unfold { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes yurui-arrive { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+@keyframes detail-file-enter {
+  from { opacity: .35; transform: perspective(1000px) translate(10px, 5px) rotateX(-2deg); }
+  to { opacity: 1; transform: perspective(1000px) translate(0, 0) rotateX(0); }
+}
+@keyframes detail-tab-enter {
+  from { translate: 0 4px; }
+  to { translate: 0 0; }
+}
