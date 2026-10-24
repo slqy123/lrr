@@ -19,6 +19,7 @@ YuruLib is a personal manga library with the character of a reader's notebook: p
 - Give each section at most one decorative motif. Bookmarks, paper edges and stitched separators should clarify grouping, not frame every element. Decorations must not obstruct content or pointer targets.
 - Keep covers uncropped. Keep descriptions, comments and long tag groups on calm surfaces; do not add patterns behind reading content.
 - Consume existing semantic theme and material tokens. Avoid theme-specific page skins and arbitrary new colors.
+- Prefer visual state, layout and recognizable icons over visible instructional text when they communicate the same meaning clearly. Do not add prose that merely explains an available control. Icon-only controls still require accessible names and, where needed, short tooltips; retain text for actual content, ambiguous actions, errors and destructive confirmations.
 - Motion confirms an action or introduces newly available content. Prefer short, small movements without loops, staggered entrances or bounces; respect reduced motion and disabled states.
 
 Page-specific expressions of this language remain in userscript styles. Shared component defaults must remain useful outside a single page.

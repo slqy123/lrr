@@ -21,6 +21,7 @@ import { useToast } from '../ui/yurui/toast'
 import { SettingsDialog } from './SettingsDialog'
 import { SearchPanel } from './SearchPanel'
 import { Pager } from './Pager'
+import { Bookmarks } from './Bookmarks'
 import { initialJump } from './navigation'
 import { displayState, stateLabels } from './model'
 import { copyLinks } from './client'
@@ -128,6 +129,7 @@ export function LiveApp({ page: initialPage, host, portal, restore }: { page: Ga
       <footer className={pageFooterVariants({ variant: 'live' })}><span><Flower2 size={14} />アッカリーン♪ 今日もお気に入りを見つけよう。</span><span>yurui · credit: AniBT UI · <a href="https://github.com/OpenAniBT/ui">AGPL-3.0-only</a> · <a href="https://github.com/slqy123/lrr">对应源码</a></span></footer>
     </main>
     {selected.size > 0 && <ActionBar aria-label="批量操作"><SelectionCount><Check size={17} />已选择 <Badge asChild variant="count"><strong>{selected.size}</strong></Badge> 部</SelectionCount><Button variant="ghost" size="sm" disabled={sending} onClick={() => setSelected(new Set())}>取消选择</Button><ActionBarDivider /><Button variant="secondary" disabled={sending} onClick={() => { try { copyLinks(items.filter(item => selected.has(item.id)).map(item => item.url).join('\n')); setFeedback({ tone: 'ok', message: `已复制 ${selected.size} 个链接。` }) } catch { setFeedback({ tone: 'fail', message: '无法写入剪贴板，选择已保留。' }) } }}><Copy />复制链接</Button><Button variant="emphasis" loading={sending} onClick={() => void send()}>发送队列 <ArrowRight /></Button></ActionBar>}
+    <Bookmarks page={page} host={host} loading={loading} navigate={navigate} />
     <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} portal={portal} settings={settings} save={value => { configure(value); setFeedback({ tone: 'mute', message: '设置已保存，正在重新检查当前页。' }) }} theme={theme} setTheme={setTheme} />
   </div>
 }

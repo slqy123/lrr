@@ -1,0 +1,93 @@
+.bookmark-dock {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 40;
+  width: 18px;
+  height: min(86dvh, 480px);
+}
+.bookmark-panel {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 64px;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: transform 240ms ease, opacity 180ms ease, visibility 240ms;
+}
+.bookmark-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 100%;
+  width: 12px;
+}
+.bookmark-dock[data-open="true"] .bookmark-panel {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(0);
+}
+.bookmark-slots {
+  height: 100%;
+  display: grid;
+  grid-template-rows: repeat(12, minmax(0, 1fr));
+  gap: 6px;
+}
+.bookmark-slot { min-height: 0; padding-left: 6px; }
+.bookmark-tab {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-right: 0;
+  border-radius: 7px 0 0 16px;
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: transform 180ms ease, background-color 180ms, color 180ms;
+}
+.bookmark-tab[data-saved="true"] { color: var(--primary-foreground); background: var(--primary); }
+.bookmark-empty { position: absolute; right: 6px; top: 6px; }
+.bookmark-fact { display: flex; align-items: flex-start; gap: 8px; overflow-wrap: anywhere; }
+.bookmark-fact > svg { flex-shrink: 0; margin-top: 2px; }
+.bookmark-search { display: grid; gap: 10px; }
+.bookmark-search-heading { display: flex; align-items: flex-start; gap: 12px; }
+.bookmark-search-summary { display: grid; gap: 8px; flex: 1; min-width: 0; }
+.bookmark-cover { width: 64px; height: 96px; object-fit: contain; flex-shrink: 0; border-radius: 4px; background: var(--muted); }
+.bookmark-parameters { display: grid; gap: 6px; margin: 0; padding: 10px 0; border-block: 1px dashed var(--border); }
+.bookmark-parameters > div { display: flex; justify-content: space-between; gap: 12px; }
+.bookmark-parameters dt { color: var(--muted-foreground); }
+.bookmark-parameters dd { margin: 0; overflow-wrap: anywhere; min-width: 0; text-align: right; }
+.bookmark-slot[data-active="true"] .bookmark-tab { transform: translateX(-6px); color: var(--foreground); }
+.bookmark-tab:disabled { opacity: .6; cursor: wait; }
+.bookmark-saved { position: absolute; right: 7px; top: 7px; width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+.bookmark-info {
+  position: absolute;
+  top: clamp(0px, calc((100% + 6px) / 12 * var(--bookmark-index)), max(0px, calc(100% - var(--bookmark-info-height))));
+  right: calc(100% + 10px);
+  width: min(300px, calc(100vw - 84px));
+  max-height: min(320px, 100%);
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px 4px 12px 12px;
+  background: var(--card);
+  color: var(--card-foreground);
+  font-size: 12px;
+  opacity: 0;
+  transform: translateX(8px);
+  visibility: hidden;
+  transition: opacity 180ms ease, transform 220ms ease, top 180ms ease, visibility 180ms;
+}
+.bookmark-dock[data-open="true"] .bookmark-info[data-visible="true"] { opacity: 1; transform: translateX(0); visibility: visible; }
+.bookmark-info p { margin: 6px 0; }

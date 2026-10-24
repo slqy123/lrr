@@ -5,6 +5,7 @@
 @import "../ui/yurui/motion.css";
 @import "./styles/page.css";
 @import "./styles/navigation.css";
+@import "./styles/bookmarks.css";
 @import "./styles/gallery.css";
 @import "./styles/search.css";
 @import "./styles/details.css";
