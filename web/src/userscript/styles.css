@@ -9,6 +9,7 @@
 @import "./styles/gallery.css";
 @import "./styles/search.css";
 @import "./styles/details.css";
+@import "./styles/native-gallery.css";
 @import "./styles/motion.css";
 @source "./";
 @source "../ui/yurui";

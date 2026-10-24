@@ -16,7 +16,7 @@ export interface GallerySummary {
   previews: PreviewPage[]
 }
 
-export function readDetails(html: string, base: string): GallerySummary {
+export function readDetails(html: string, base: string, previewLimit = 5): GallerySummary {
   const template = document.createElement('template')
   template.innerHTML = html
   const doc = template.content
@@ -48,7 +48,7 @@ export function readDetails(html: string, base: string): GallerySummary {
   const previews = [...doc.querySelectorAll<HTMLAnchorElement>('#gdt a[href]')].filter(link => {
     const url = webURL(link.getAttribute('href'))
     return url && new URL(url).origin === new URL(base).origin && new RegExp(`^/s/[^/]+/${galleryId}-\\d+$`).test(new URL(url).pathname)
-  }).slice(0, 5).map(link => {
+  }).slice(0, previewLimit).map(link => {
     const url = webURL(link.getAttribute('href'))!
     const page: PreviewPage = { url, page: Number(new URL(url).pathname.match(/-(\d+)$/)![1]) }
     const image = link.querySelector('img')

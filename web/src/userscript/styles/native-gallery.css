@@ -1,0 +1,51 @@
+@utility native-gallery {
+  & .native-gallery-top { max-width: 1280px; margin: auto; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+  & .native-gallery-brand { font-family: var(--font-display); font-size: 24px; font-weight: 800; color: var(--primary); }
+  & .native-gallery-brand small { margin-left: 12px; color: var(--muted-foreground); font: 12px var(--font-sans); }
+  & .native-gallery-main { max-width: 1160px; margin: auto; padding: 8px 32px 32px; }
+  & .native-gallery-paper { display: grid; grid-template-columns: minmax(0, 1fr) 180px; align-items: start; gap: 24px; padding: 24px; background: var(--card); border: 1px solid var(--border); border-radius: 5px 16px 16px 5px; box-shadow: 4px 5px 0 var(--muted); border-top: 3px solid var(--primary); }
+  & .detail-editorial { grid-template-columns: 170px minmax(0, 1fr); gap: 24px; }
+  & .detail-cover { width: 170px; }
+  & .detail-story h3 { font-size: 22px; line-height: 1.4; }
+  & .native-gallery-paper > .detail-tag-section,
+  & .native-gallery-paper > .detail-description,
+  & .native-gallery-paper > .native-gallery-subtitle { grid-column: 1 / -1; min-width: 0; }
+  & .detail-tag-section { margin-top: 0; }
+  & .native-gallery-subtitle { color: var(--muted-foreground); font-size: 13px; overflow-wrap: anywhere; margin-top: 12px; }
+  & .native-gallery-actions { grid-column: 2; grid-row: 1; display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+  & .native-gallery-actions > a { display: flex; align-items: center; gap: 10px; padding: 8px 12px; color: var(--foreground); text-decoration: none; border-radius: 4px; }
+  & .native-gallery-actions > a:hover { background: var(--accent); color: var(--primary); }
+  & .native-gallery-actions > a svg { flex: none; color: var(--muted-foreground); }
+  & .native-gallery-actions small { margin-left: auto; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+  & .native-gallery-actions [data-slot="button"] { align-self: flex-start; margin-top: 4px; color: var(--muted-foreground); }
+  & .native-gallery-section { margin-top: 24px; scroll-margin-top: 20px; }
+  & .native-gallery-section > header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; }
+  & h2 { font-size: 19px; font-weight: 700; }
+  & h2 span { margin-left: 8px; font-size: 13px; font-weight: 400; color: var(--muted-foreground); }
+  & .native-gallery-previews { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+  & .detail-preview-page { width: auto; padding: 8px 6px 6px; background: var(--card); border: 1px solid var(--border); border-radius: 5px; }
+  & .detail-preview-image { margin: auto; }
+  & .native-gallery-pagination { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 24px; }
+  & .native-gallery-comment { padding: 16px 0; border-top: 1px solid var(--border); }
+  & .native-gallery-comment h3 { font-weight: 700; margin-bottom: 4px; }
+  & .native-gallery-comment p { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.85; margin-top: 14px; }
+  & .native-gallery-bottom { margin-top: 24px; padding-top: 16px; border-top: 1px dashed var(--border); display: flex; align-items: center; justify-content: space-between; color: var(--muted-foreground); font-size: 12px; }
+  @media (max-width: 700px) {
+    & .native-gallery-top { padding: 16px; flex-wrap: wrap; gap: 12px; }
+    & .native-gallery-brand { font-size: 20px; }
+    & .native-gallery-brand small { display: none; }
+    & .native-gallery-main { padding: 0 16px 24px; }
+    & .native-gallery-paper { grid-template-columns: minmax(0, 1fr); padding: 16px; gap: 16px; }
+    & .native-gallery-actions { grid-column: 1; grid-row: 2; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+    & .native-gallery-actions [data-slot="button"] { align-self: auto; margin-top: 0; }
+    & .detail-editorial { grid-template-columns: 120px minmax(0, 1fr); gap: 20px; }
+    & .detail-cover { width: 120px; }
+    & .detail-story h3 { font-size: 18px; }
+    & .detail-metrics { flex-wrap: wrap; gap: 12px; }
+    & .detail-metrics > div { min-width: 0; padding-inline: 10px; }
+  }
+  @media (max-width: 450px) {
+    & .detail-editorial { grid-template-columns: minmax(0, 1fr); }
+    & .detail-cover { width: 160px; margin: auto; }
+  }
+}

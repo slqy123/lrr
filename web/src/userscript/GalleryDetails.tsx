@@ -88,7 +88,7 @@ function CommentBody({ content }: { content: CommentContent[] }) {
   })
 }
 
-function GalleryInformation({ summary, item }: { summary: GallerySummary; item: Gallery }) {
+export function GalleryInformation({ summary, item }: { summary: GallerySummary; item: Gallery }) {
   const author = summary.facts.find(fact => fact.label === '上传者')
   const posted = summary.facts.find(fact => fact.label === '发布时间')
   const metrics = summary.facts.filter(fact => ['页数', '文件大小', '评分'].includes(fact.label))
@@ -114,7 +114,7 @@ function GalleryInformation({ summary, item }: { summary: GallerySummary; item: 
   </>
 }
 
-function PagePreview({ page }: { page: PreviewPage }) {
+export function PagePreview({ page }: { page: PreviewPage }) {
   const [failed, setFailed] = useState(false)
   const sprite = page.sprite
   return <a className="detail-preview-page" href={page.url} target="_blank" rel="noopener noreferrer" aria-label={`打开第 ${page.page} 页`}>

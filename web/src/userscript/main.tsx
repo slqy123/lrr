@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { LiveApp } from './LiveApp'
+import { NativeGallery, readNativeGallery } from './NativeGallery'
 import { readPage } from './page'
 import { mount } from './mount'
 import styles from './styles.css?inline'
@@ -31,6 +32,16 @@ function start() {
   const nativeOnce = sessionStorage.getItem('lrr-native-once')
   sessionStorage.removeItem('lrr-native-once')
   if (nativeOnce === location.href) { reveal(); return }
+  if (document.querySelector('#gdd') && document.querySelector('#gdt')) {
+    try {
+      const data = readNativeGallery()
+      mount(styles, context => <Ready><NativeGallery data={data} {...context} /></Ready>, reveal)
+      return
+    } catch {
+      reveal()
+      return
+    }
+  }
   if (document.querySelector('.itg')) {
     try {
       const page = readPage()
